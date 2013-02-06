@@ -1,7 +1,7 @@
 #esr-scanner
 * * *
 
-An experimental app for Android that reads the code row of an orange (swiss) payment slip using the device camera.
+An app for Android that reads the code row of an orange (swiss) payment slip using the device camera.
 
 Runs the Tesseract 3.01 OCR engine using a fork of Tesseract Tools for Android.
 
@@ -15,7 +15,7 @@ Most of the code making up the core structure of this project has been adapted f
 Installing the APK
 ==================
 
-There is no apk at the moment. You have to build it by yourself.
+You can buy the app on the [Google play store](https://play.google.com/store/apps/details?id=ch.luklanis.esscan). If you don't like it, write an email. I give refunds up to two days. Otherwise you can build it by yourself.
 
 License
 =======
