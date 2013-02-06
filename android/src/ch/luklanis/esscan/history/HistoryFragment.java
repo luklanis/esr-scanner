@@ -195,15 +195,14 @@ public class HistoryFragment extends ListFragment {
 		if (adapter != null && adapter.getCount() > position) {
 			HistoryItem listItem = adapter.getItem(position);
 			listItem.update(item);
+
+			getActivity().runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					adapter.notifyDataSetChanged();
+				}
+			});
 		}
-
-		getActivity().runOnUiThread(new Runnable() {
-
-			@Override
-			public void run() {
-				adapter.notifyDataSetChanged();
-			}
-		});
 	}
 
 	public void setHistoryItemAdapter(HistoryItemAdapter adapter) {
@@ -216,13 +215,18 @@ public class HistoryFragment extends ListFragment {
 		}
 
 		this.adapter = adapter;
-		setListAdapter(this.adapter);
-		setListShown(true);
+		
+		try {
+			setListAdapter(this.adapter);
+			setListShown(true);
 
-		this.adapter.notifyDataSetInvalidated();
+			this.adapter.notifyDataSetInvalidated();
 
-		int position = historyCallbacks.getPositionToActivate();
-		setActivatedPosition(position);
+			int position = historyCallbacks.getPositionToActivate();
+			setActivatedPosition(position);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public HistoryItemAdapter getHistoryItemAdapter() {

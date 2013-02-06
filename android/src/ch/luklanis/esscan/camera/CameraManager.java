@@ -134,8 +134,9 @@ public final class CameraManager {
 			autoFocusManager = null;
 		}
 		if (camera != null && previewing) {
-			camera.stopPreview();
+			camera.setOneShotPreviewCallback(null);
 			previewCallback.setHandler(null, 0);
+			camera.stopPreview();
 
 			this.configManager.setTorch(camera, false);
 

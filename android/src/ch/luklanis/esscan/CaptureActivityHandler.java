@@ -108,9 +108,6 @@ final class CaptureActivityHandler extends Handler {
 
 	public void quitSynchronously() {    
 		state = State.DONE;
-		if (cameraManager != null) {
-			cameraManager.stopPreview();
-		}
 
 		if (decodeThread != null) {
 			try {
@@ -130,6 +127,10 @@ final class CaptureActivityHandler extends Handler {
 		removeMessages(R.id.restart_decode);
 		removeMessages(R.id.decode_failed);
 		removeMessages(R.id.decode_succeeded);
+		
+		if (cameraManager != null) {
+			cameraManager.stopPreview();
+		}
 	}
 
 	/**
