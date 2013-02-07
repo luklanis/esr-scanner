@@ -26,7 +26,7 @@ import android.widget.Toast;
 public class PsDetailActivity extends SherlockFragmentActivity {
 
 	private static SherlockFragmentActivity callerActivity;
-	
+
 	private HistoryManager historyManager;
 	private Intent serviceIntent;
 	private boolean serviceIsBound;
@@ -37,7 +37,7 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			boundService = ((ESRSender.LocalBinder)service).getService();
+			boundService = ((ESRSender.LocalBinder) service).getService();
 		}
 
 		@Override
@@ -58,13 +58,12 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 
 		if (icicle == null) {
 			Bundle arguments = new Bundle();
-			arguments.putInt(PsDetailFragment.ARG_POSITION,
-					getIntent().getIntExtra(PsDetailFragment.ARG_POSITION, 0));
+			arguments.putInt(PsDetailFragment.ARG_POSITION, getIntent()
+					.getIntExtra(PsDetailFragment.ARG_POSITION, 0));
 			PsDetailFragment fragment = new PsDetailFragment();
 			fragment.setArguments(arguments);
 			getSupportFragmentManager().beginTransaction()
-			.add(R.id.ps_detail_container, fragment)
-			.commit();
+					.add(R.id.ps_detail_container, fragment).commit();
 		}
 
 		historyManager = new HistoryManager(this);
@@ -75,23 +74,23 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 		super.onResume();
 
 		Intent intent = new Intent(this, HistoryActivity.class);
-		intent.putExtra(Intents.History.ITEM_NUMBER, 
-				getIntent().getIntExtra(PsDetailFragment.ARG_POSITION, ListView.INVALID_POSITION));
+		intent.putExtra(
+				Intents.History.ITEM_NUMBER,
+				getIntent().getIntExtra(PsDetailFragment.ARG_POSITION,
+						ListView.INVALID_POSITION));
 		setResult(Activity.RESULT_OK, intent);
 
-		if (ESRSender.EXISTS) {
-			serviceIntent =  new Intent(this, ESRSender.class);
-			startService(serviceIntent);
-			
-			doBindService();
-		}
+		serviceIntent = new Intent(this, ESRSender.class);
+		startService(serviceIntent);
+
+		doBindService();
 	}
 
 	@Override
 	protected void onPause() {
 
 		doUnbindService();
-		
+
 		super.onPause();
 	}
 
@@ -103,7 +102,7 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 	}
 
 	private void doUnbindService() {
-		if (serviceIsBound) {		
+		if (serviceIsBound) {
 			unbindService(serviceConnection);
 			serviceIsBound = false;
 		}
@@ -127,58 +126,65 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 			NavUtils.navigateUpTo(this, new Intent(this, HistoryActivity.class));
 			return true;
 		}
-		case R.id.details_menu_copy_code_row:
-		{
-			PsDetailFragment fragment = (PsDetailFragment)getSupportFragmentManager()
+		case R.id.details_menu_copy_code_row: {
+			PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager()
 					.findFragmentById(R.id.ps_detail_container);
 
 			if (fragment != null) {
-				String completeCode = fragment.getHistoryItem().getResult().getCompleteCode();
+				String completeCode = fragment.getHistoryItem().getResult()
+						.getCompleteCode();
 
 				ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 				clipboardManager.setText(completeCode);
 
-				//        clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult", ocrResultView.getText()));
-				//      if (clipboardManager.hasPrimaryClip()) {
+				// clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult",
+				// ocrResultView.getText()));
+				// if (clipboardManager.hasPrimaryClip()) {
 				if (clipboardManager.hasText()) {
-					Toast toast = Toast.makeText(getApplicationContext(), R.string.msg_copied, Toast.LENGTH_SHORT);
+					Toast toast = Toast.makeText(getApplicationContext(),
+							R.string.msg_copied, Toast.LENGTH_SHORT);
 					toast.setGravity(Gravity.BOTTOM, 0, 0);
 					toast.show();
 				}
 			}
 		}
-		break;
-		case R.id.details_menu_send_code_row:
-		{
-			PsDetailFragment fragment = (PsDetailFragment)getSupportFragmentManager()
+			break;
+		case R.id.details_menu_send_code_row: {
+			PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager()
 					.findFragmentById(R.id.ps_detail_container);
 
 			if (fragment != null) {
-				String completeCode = fragment.getHistoryItem().getResult().getCompleteCode();
-				
+				String completeCode = fragment.getHistoryItem().getResult()
+						.getCompleteCode();
+
 				int msgId = 0;
 
 				if (boundService != null && boundService.isConnectedLocal()) {
-					boolean sent = this.boundService.sendToListeners(completeCode);
+					boolean sent = this.boundService
+							.sendToListeners(completeCode);
 
 					if (sent) {
-						historyManager.updateHistoryItemFileName(completeCode, getResources().getString(R.string.history_item_sent));
+						historyManager.updateHistoryItemFileName(
+								completeCode,
+								getResources().getString(
+										R.string.history_item_sent));
 						msgId = R.string.msg_coderow_sent;
 					} else {
 						msgId = R.string.msg_coderow_not_sent;
 					}
-				} else if (boundService != null) { 
+				} else if (boundService != null) {
 					msgId = R.string.msg_stream_mode_not_available;
 				}
-				
+
 				if (msgId != 0) {
-					Toast toast = Toast.makeText(getApplicationContext(), msgId, Toast.LENGTH_SHORT);
+					Toast toast = Toast.makeText(getApplicationContext(),
+							msgId, Toast.LENGTH_SHORT);
 					toast.setGravity(Gravity.BOTTOM, 0, 0);
 					toast.show();
 				}
 			}
 		}
-		break;
+			break;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -197,8 +203,9 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 	}
 
 	public static boolean savePaymentSlip(SherlockFragmentActivity activity) {
-		PsDetailFragment oldFragment = (PsDetailFragment)activity.getSupportFragmentManager()
-				.findFragmentById(R.id.ps_detail_container);
+		PsDetailFragment oldFragment = (PsDetailFragment) activity
+				.getSupportFragmentManager().findFragmentById(
+						R.id.ps_detail_container);
 
 		if (oldFragment != null) {
 			int error = oldFragment.save();
@@ -212,19 +219,22 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 		return true;
 	}
 
-	private static void setCancelOkAlert(SherlockFragmentActivity activity, int id){
+	private static void setCancelOkAlert(SherlockFragmentActivity activity,
+			int id) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 		callerActivity = activity;
 
 		builder.setMessage(id)
-		.setNegativeButton(R.string.button_cancel, null)
-		.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+				.setNegativeButton(R.string.button_cancel, null)
+				.setPositiveButton(R.string.button_ok,
+						new DialogInterface.OnClickListener() {
 
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				callerActivity.finish();
-			}
-		});
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								callerActivity.finish();
+							}
+						});
 
 		builder.show();
 	}

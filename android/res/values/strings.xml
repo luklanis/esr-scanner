@@ -110,5 +110,6 @@
     <string name="help_button_done">Done</string>
     <string name="help_button_back">Back</string>
     <string name="status_view_ip_address">IP Address(es):%s</string>
+    <string name="status_stream_mode_active">Payment slip stream mode active</string>
 
 </resources>

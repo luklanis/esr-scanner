@@ -29,24 +29,19 @@ public class ESRSender extends Service {
 			return ESRSender.this;
 		}
 	}
-	
-	public static final boolean EXISTS = true;
 
-	private static final int SERVER_PORT = 8765;
 	private static final String TAG = ESRSender.class.getName();
-	private final IBinder binder = new LocalBinder();
+	
+	private static int sServerPort = 0;
 
-	private ServerSocket server;
-	private Socket socket;
-
-	public ESRSender() {
-		this.socket = null;
-		this.server = null;
-	}
+	private static ServerSocket sServerSocket = null;
+	private static Socket sClientSocket = null;
+	
+	private final IBinder mBinder = new LocalBinder();
 
 	@Override
 	public IBinder onBind(Intent intent) {		
-		return this.binder;
+		return this.mBinder;
 	}
 
 	@Override
@@ -54,7 +49,7 @@ public class ESRSender extends Service {
 
 		super.onStartCommand(intent, flags, startId);
 
-		if (socket != null) {
+		if (sClientSocket != null) {
 			return START_NOT_STICKY;
 		}
 
@@ -122,14 +117,6 @@ public class ESRSender extends Service {
 		}
 
 		return false;
-		//		return !TextUtils.isEmpty(getLocalIpAddress());
-
-		//		if (!info.isConnected()) {
-		//			Log.w(TAG, "Wifi is not connected!");
-		//			return false;
-		//		}
-		//
-		//		return true;
 	}
 
 	public String getLocalIpAddress() {
@@ -157,14 +144,14 @@ public class ESRSender extends Service {
 		ArrayList<DataOutputStream> dataOutputStreams = new ArrayList<DataOutputStream>();
 
 		try {
-			if (this.socket != null && !this.socket.isClosed()) {
-				dataOutputStreams.add(new DataOutputStream(this.socket.getOutputStream()));
+			if (sClientSocket != null && !sClientSocket.isClosed()) {
+				dataOutputStreams.add(new DataOutputStream(sClientSocket.getOutputStream()));
 			} else {
 				return false;
 			}
 		} catch (IOException e) {
 			try {
-				this.socket.close();
+				sClientSocket.close();
 			} catch (IOException ex) {
 			}
 
@@ -178,14 +165,14 @@ public class ESRSender extends Service {
 
 	public void stopServer() {
 		try {
-			if (this.server != null && !this.server.isClosed()) {
-				this.server.close();
-				this.server = null;
+			if (sServerSocket != null && !sServerSocket.isClosed()) {
+				sServerSocket.close();
+				sServerSocket = null;
 			}
 
-			if (this.socket != null) {
-				this.socket.close();
-				this.socket = null;
+			if (sClientSocket != null) {
+				sClientSocket.close();
+				sClientSocket = null;
 			}
 		} catch (IOException e) {
 		}
@@ -194,12 +181,16 @@ public class ESRSender extends Service {
 	public void startServer() {
 
 		if(isConnectedLocal()) {
-			if (this.server != null) {
+			if (sServerSocket != null) {
 				return;
 			}
 
 			try {
-				server = new ServerSocket(SERVER_PORT);
+				sServerSocket = new ServerSocket(sServerPort);
+				
+				if (sServerPort == 0) {
+					sServerPort = sServerSocket.getLocalPort();
+				}
 			} catch (IOException e) {
 				Log.e(TAG, "Open a server socket failed!", e);
 			}
@@ -208,9 +199,9 @@ public class ESRSender extends Service {
 				@Override
 				public void run() {
 
-					while(server != null && !server.isClosed()) {
+					while(sServerSocket != null && !sServerSocket.isClosed()) {
 						try {
-							socket = server.accept();
+							sClientSocket = sServerSocket.accept();
 						} catch (IOException e) {
 						}
 					} 
@@ -219,5 +210,9 @@ public class ESRSender extends Service {
 
 			new Thread(runnable).start();
 		}
+	}
+	
+	public int getServerPort() {
+		return sServerPort;
 	}
 }

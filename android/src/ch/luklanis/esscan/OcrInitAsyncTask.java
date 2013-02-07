@@ -43,7 +43,6 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	private Context context;
 	private TessBaseAPI baseApi;
 	private ProgressDialog dialog;
-	private ProgressDialog indeterminateDialog;
 	private final String languageCode;
 	private String languageName;
 	private int ocrEngineMode;
@@ -66,14 +65,12 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	 * @param ocrEngineMode
 	 *          Whether to use Tesseract, Cube, or both
 	 */
-	OcrInitAsyncTask(CaptureActivity activity, TessBaseAPI baseApi, ProgressDialog dialog, 
-			ProgressDialog indeterminateDialog, String languageCode, String languageName, 
+	OcrInitAsyncTask(CaptureActivity activity, TessBaseAPI baseApi, ProgressDialog dialog, String languageCode, String languageName, 
 			int ocrEngineMode) {
 		this.activity = activity;
 		this.context = activity.getBaseContext();
 		this.baseApi = baseApi;
 		this.dialog = dialog;
-		this.indeterminateDialog = indeterminateDialog;
 		this.languageCode = languageCode;
 		this.languageName = languageName;
 		this.ocrEngineMode = ocrEngineMode;
@@ -141,7 +138,6 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 		}
 
 		// Dismiss the progress dialog box, revealing the indeterminate dialog box behind it
-		dialog.dismiss();
 
 		// Initialize the OCR engine
 		if (baseApi.init(destinationDirBase + File.separator, languageCode, ocrEngineMode)) {
@@ -263,7 +259,8 @@ final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	@Override
 	protected void onPostExecute(Boolean result) {
 		super.onPostExecute(result);
-		indeterminateDialog.dismiss();
+		
+		dialog.dismiss();
 
 		if (result) {
 			activity.setBaseApi(baseApi);

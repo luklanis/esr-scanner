@@ -53,7 +53,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.widget.SearchView;
 import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 
-public final class HistoryActivity extends SherlockFragmentActivity implements HistoryFragment.HistoryCallbacks {
+public final class HistoryActivity extends SherlockFragmentActivity implements
+		HistoryFragment.HistoryCallbacks {
 
 	public static final String ACTION_SHOW_RESULT = "action_show_result";
 
@@ -70,27 +71,30 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 
 	private int[] tmpPositions;
 
-	final private OnQueryTextListener queryListener = new OnQueryTextListener() {       
+	final private OnQueryTextListener queryListener = new OnQueryTextListener() {
 
 		@Override
 		public boolean onQueryTextChange(String newText) {
 			if (TextUtils.isEmpty(newText)) {
 				getSupportActionBar().setSubtitle("History");
 			} else {
-				getSupportActionBar().setSubtitle("History - Searching for: " + newText);
+				getSupportActionBar().setSubtitle(
+						"History - Searching for: " + newText);
 			}
 
-			HistoryItemAdapter adapter = historyFragment.getHistoryItemAdapter();
+			HistoryItemAdapter adapter = historyFragment
+					.getHistoryItemAdapter();
 
 			if (adapter != null) {
-				adapter.getFilter().filter(newText); 
+				adapter.getFilter().filter(newText);
 			}
 			return true;
 		}
 
 		@Override
-		public boolean onQueryTextSubmit(String query) {            
-			Toast.makeText(getApplication(), "Searching for: " + query + "...", Toast.LENGTH_SHORT).show();
+		public boolean onQueryTextSubmit(String query) {
+			Toast.makeText(getApplication(), "Searching for: " + query + "...",
+					Toast.LENGTH_SHORT).show();
 			return true;
 		}
 	};
@@ -105,9 +109,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
-			if (ESRSender.EXISTS) {
-				boundService = ((ESRSender.LocalBinder)service).getService();
-			}
+			boundService = ((ESRSender.LocalBinder) service).getService();
 		}
 
 		@Override
@@ -137,28 +139,30 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 		}
 
 		tmpPositions = new int[2];
-		tmpPositions[0] = ListView.INVALID_POSITION;	// old position
-		tmpPositions[1] = ListView.INVALID_POSITION;	// new position
+		tmpPositions[0] = ListView.INVALID_POSITION; // old position
+		tmpPositions[1] = ListView.INVALID_POSITION; // new position
 
 		dtaFileCreator = new DTAFileCreator(this);
 		historyManager = new HistoryManager(this);
 
 		Intent intent = getIntent();
 
-		if (intent.getAction() != null && intent.getAction().equals(ACTION_SHOW_RESULT)){
+		if (intent.getAction() != null
+				&& intent.getAction().equals(ACTION_SHOW_RESULT)) {
 			String codeRow = intent.getStringExtra(EXTRA_CODE_ROW);
-			PsResult psResult = PsResult.getCoderowType(codeRow).equals(EsResult.PS_TYPE_NAME) 
-					? new EsResult(codeRow) : new EsrResult(codeRow);
-					this.historyManager.addHistoryItem(psResult);
+			PsResult psResult = PsResult.getCoderowType(codeRow).equals(
+					EsResult.PS_TYPE_NAME) ? new EsResult(codeRow)
+					: new EsrResult(codeRow);
+			this.historyManager.addHistoryItem(psResult);
 
-					if (twoPane) {
-						setNewDetails(0);
-						intent.setAction(null);
-					} else {
-						Intent detailIntent = new Intent(this, PsDetailActivity.class);
-						detailIntent.putExtra(PsDetailFragment.ARG_POSITION, 0);
-						startActivityForResult(detailIntent, DETAILS_REQUEST_CODE);
-					}
+			if (twoPane) {
+				setNewDetails(0);
+				intent.setAction(null);
+			} else {
+				Intent detailIntent = new Intent(this, PsDetailActivity.class);
+				detailIntent.putExtra(PsDetailFragment.ARG_POSITION, 0);
+				startActivityForResult(detailIntent, DETAILS_REQUEST_CODE);
+			}
 		}
 	}
 
@@ -167,18 +171,18 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 		if (historyManager.hasHistoryItems()) {
 			getSupportMenuInflater().inflate(R.menu.history_menu, menu);
 
-			SearchView searchView = (SearchView) menu.findItem(R.id.history_menu_search).getActionView();
+			SearchView searchView = (SearchView) menu.findItem(
+					R.id.history_menu_search).getActionView();
 			searchView.setOnQueryTextListener(queryListener);
 
 			MenuItem copyItem = menu.findItem(R.id.history_menu_copy_code_row);
 			MenuItem sendItem = menu.findItem(R.id.history_menu_send_code_row);
 
-			if (twoPane && this.historyFragment.getActivatedPosition() != ListView.INVALID_POSITION) {
+			if (twoPane
+					&& this.historyFragment.getActivatedPosition() != ListView.INVALID_POSITION) {
 				copyItem.setVisible(true);
 
-				if (ESRSender.EXISTS) {
-					sendItem.setVisible(true);
-				}
+				sendItem.setVisible(true);
 			} else {
 				copyItem.setVisible(false);
 				sendItem.setVisible(false);
@@ -186,7 +190,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 
 			MenuItem item = menu.findItem(R.id.history_menu_send_dta);
 
-			if(dtaFileCreator.getFirstErrorId() != 0) {
+			if (dtaFileCreator.getFirstErrorId() != 0) {
 				item.setVisible(false);
 			}
 
@@ -203,45 +207,50 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 			if (dtaFileUri != null) {
 			}
 		}
-		break;
+			break;
 		case R.id.history_menu_send_dta_email: {
 			Uri dtaFileUri = createDTAFile();
 			if (dtaFileUri != null) {
 				try {
 					startActivity(createMailIntent(dtaFileUri));
 				} catch (Exception ex) {
-					Toast toast = Toast.makeText(getApplicationContext(), R.string.msg_no_email_client, Toast.LENGTH_SHORT);
+					Toast toast = Toast.makeText(getApplicationContext(),
+							R.string.msg_no_email_client, Toast.LENGTH_SHORT);
 					toast.setGravity(Gravity.BOTTOM, 0, 0);
 					toast.show();
 				}
 			}
 		}
-		break;
+			break;
 		case R.id.history_menu_send_dta_other: {
 			Uri dtaFileUri = createDTAFile();
 			if (dtaFileUri != null) {
-				startActivity(Intent.createChooser(createShareIntent(dtaFileUri), "Send with..."));
+				startActivity(Intent.createChooser(
+						createShareIntent(dtaFileUri), "Send with..."));
 			}
 		}
-		break;
+			break;
 		case R.id.history_menu_send_dta_save: {
 			createDTAFile();
 		}
-		break;
+			break;
 		case R.id.history_menu_send_csv: {
 			CharSequence history = historyManager.buildHistory();
 			Uri historyFile = HistoryManager.saveHistory(history.toString());
 
-			String[] recipients = new String[]{PreferenceManager.getDefaultSharedPreferences(this)
-					.getString(PreferencesActivity.KEY_EMAIL_ADDRESS, "")};
+			String[] recipients = new String[] { PreferenceManager
+					.getDefaultSharedPreferences(this).getString(
+							PreferencesActivity.KEY_EMAIL_ADDRESS, "") };
 
 			if (historyFile == null) {
 				setOkAlert(R.string.msg_unmount_usb);
 			} else {
-				Intent intent = new Intent(Intent.ACTION_SEND, Uri.parse("mailto:"));
+				Intent intent = new Intent(Intent.ACTION_SEND,
+						Uri.parse("mailto:"));
 				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 				intent.putExtra(Intent.EXTRA_EMAIL, recipients);
-				String subject = getResources().getString(R.string.history_email_title);
+				String subject = getResources().getString(
+						R.string.history_email_title);
 				intent.putExtra(Intent.EXTRA_SUBJECT, subject);
 				intent.putExtra(Intent.EXTRA_TEXT, subject);
 				intent.putExtra(Intent.EXTRA_STREAM, historyFile);
@@ -249,23 +258,24 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 				startActivity(intent);
 			}
 		}
-		break;
+			break;
 		case R.id.history_menu_clear: {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage(R.string.msg_sure);
 			builder.setCancelable(true);
-			builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int i2) {
-					historyManager.clearHistory();
-					dialog.dismiss();
-					finish();
-				}
-			});
+			builder.setPositiveButton(R.string.button_ok,
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int i2) {
+							historyManager.clearHistory();
+							dialog.dismiss();
+							finish();
+						}
+					});
 			builder.setNegativeButton(R.string.button_cancel, null);
 			builder.show();
 		}
-		break;
+			break;
 		case android.R.id.home: {
 			if (!PsDetailActivity.savePaymentSlip(this)) {
 				return true;
@@ -274,67 +284,74 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 			NavUtils.navigateUpTo(this, new Intent(this, CaptureActivity.class));
 			return true;
 		}
-		case R.id.history_menu_copy_code_row:
-		{
-			PsDetailFragment fragment = (PsDetailFragment)getSupportFragmentManager()
+		case R.id.history_menu_copy_code_row: {
+			PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager()
 					.findFragmentById(R.id.ps_detail_container);
 
 			if (fragment != null) {
-				String completeCode = fragment.getHistoryItem().getResult().getCompleteCode();
+				String completeCode = fragment.getHistoryItem().getResult()
+						.getCompleteCode();
 
 				ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 				clipboardManager.setText(completeCode);
 
-				//        clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult", ocrResultView.getText()));
-				//      if (clipboardManager.hasPrimaryClip()) {
+				// clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult",
+				// ocrResultView.getText()));
+				// if (clipboardManager.hasPrimaryClip()) {
 				if (clipboardManager.hasText()) {
-					Toast toast = Toast.makeText(getApplicationContext(), R.string.msg_copied, Toast.LENGTH_SHORT);
+					Toast toast = Toast.makeText(getApplicationContext(),
+							R.string.msg_copied, Toast.LENGTH_SHORT);
 					toast.setGravity(Gravity.BOTTOM, 0, 0);
 					toast.show();
 				}
 			}
 		}
-		break;
-		case R.id.history_menu_send_code_row:
-		{
-			PsDetailFragment fragment = (PsDetailFragment)getSupportFragmentManager()
+			break;
+		case R.id.history_menu_send_code_row: {
+			PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager()
 					.findFragmentById(R.id.ps_detail_container);
 
 			if (fragment != null) {
-				String completeCode = fragment.getHistoryItem().getResult().getCompleteCode();
+				String completeCode = fragment.getHistoryItem().getResult()
+						.getCompleteCode();
 
 				int msgId = 0;
 
-				if (ESRSender.EXISTS) {
-					if (boundService != null && boundService.isConnectedLocal()) {
-						boolean sent = this.boundService.sendToListeners(completeCode);
+				if (boundService != null && boundService.isConnectedLocal()) {
+					boolean sent = this.boundService
+							.sendToListeners(completeCode);
 
-						if (sent) {
-							String msg = getResources().getString(R.string.history_item_sent);
-							historyManager.updateHistoryItemFileName(completeCode, msg);
+					if (sent) {
+						String msg = getResources().getString(
+								R.string.history_item_sent);
+						historyManager.updateHistoryItemFileName(completeCode,
+								msg);
 
-							int position = this.historyFragment.getActivatedPosition();
+						int position = this.historyFragment
+								.getActivatedPosition();
 
-							HistoryItem historyItem = historyManager.buildHistoryItem(position);
-							this.historyFragment.updatePosition(position, historyItem);
+						HistoryItem historyItem = historyManager
+								.buildHistoryItem(position);
+						this.historyFragment.updatePosition(position,
+								historyItem);
 
-							msgId = R.string.msg_coderow_sent;
-						} else {
-							msgId = R.string.msg_coderow_not_sent;
-						}
-					} else if (boundService != null) { 
-						msgId = R.string.msg_stream_mode_not_available;
+						msgId = R.string.msg_coderow_sent;
+					} else {
+						msgId = R.string.msg_coderow_not_sent;
 					}
+				} else if (boundService != null) {
+					msgId = R.string.msg_stream_mode_not_available;
+				}
 
-					if (msgId != 0) {
-						Toast toast = Toast.makeText(getApplicationContext(), msgId, Toast.LENGTH_SHORT);
-						toast.setGravity(Gravity.BOTTOM, 0, 0);
-						toast.show();
-					}
+				if (msgId != 0) {
+					Toast toast = Toast.makeText(getApplicationContext(),
+							msgId, Toast.LENGTH_SHORT);
+					toast.setGravity(Gravity.BOTTOM, 0, 0);
+					toast.show();
 				}
 			}
 		}
-		break;
+			break;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -354,7 +371,8 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 		if (twoPane) {
 			tmpPositions[0] = ListView.INVALID_POSITION;
 			tmpPositions[1] = ListView.INVALID_POSITION;
-			PsDetailFragment oldFragment = (PsDetailFragment)getSupportFragmentManager().findFragmentById(R.id.ps_detail_container);
+			PsDetailFragment oldFragment = (PsDetailFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.ps_detail_container);
 			if (oldPosition != ListView.INVALID_POSITION && oldFragment != null) {
 				int error = oldFragment.save();
 
@@ -382,7 +400,8 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 
 	@Override
 	public int getPositionToActivate() {
-		PsDetailFragment fragment = (PsDetailFragment)getSupportFragmentManager().findFragmentById(R.id.ps_detail_container);
+		PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager()
+				.findFragmentById(R.id.ps_detail_container);
 		if (fragment != null && fragment.isInLayout()) {
 			return fragment.getListPosition();
 		}
@@ -392,10 +411,11 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		if(resultCode == RESULT_OK && requestCode == DETAILS_REQUEST_CODE){
+		if (resultCode == RESULT_OK && requestCode == DETAILS_REQUEST_CODE) {
 
 			if (intent.hasExtra(Intents.History.ITEM_NUMBER)) {
-				int position = intent.getIntExtra(Intents.History.ITEM_NUMBER, -1);
+				int position = intent.getIntExtra(Intents.History.ITEM_NUMBER,
+						-1);
 
 				HistoryItem item = historyManager.buildHistoryItem(position);
 
@@ -410,18 +430,16 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 		PsDetailFragment fragment = new PsDetailFragment();
 		fragment.setArguments(arguments);
 
-		getSupportFragmentManager()
-		.beginTransaction()
-		.replace(R.id.ps_detail_container, fragment)
-		.commit();
+		getSupportFragmentManager().beginTransaction()
+				.replace(R.id.ps_detail_container, fragment).commit();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 
-		if (ESRSender.EXISTS && twoPane) {
-			serviceIntent =  new Intent(this, ESRSender.class);
+		if (twoPane) {
+			serviceIntent = new Intent(this, ESRSender.class);
 			startService(serviceIntent);
 
 			doBindService();
@@ -429,7 +447,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 
 		int error = dtaFileCreator.getFirstErrorId();
 
-		if(error != 0){
+		if (error != 0) {
 			setOptionalOkAlert(error);
 		} else {
 		}
@@ -446,7 +464,8 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			PsDetailFragment oldFragment = (PsDetailFragment)getSupportFragmentManager().findFragmentById(R.id.ps_detail_container);
+			PsDetailFragment oldFragment = (PsDetailFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.ps_detail_container);
 			if (oldFragment != null) {
 				int error = oldFragment.save();
 
@@ -468,7 +487,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 	}
 
 	private void doUnbindService() {
-		if (serviceIsBound) {		
+		if (serviceIsBound) {
 			unbindService(serviceConnection);
 			serviceIsBound = false;
 		}
@@ -478,16 +497,20 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 		return createShareIntent("text/plain", dtaFileUri);
 	}
 
-	private Intent createMailIntent(Uri dtaFileUri) {		
+	private Intent createMailIntent(Uri dtaFileUri) {
 		return createShareIntent("message/rfc822", dtaFileUri);
 	}
 
 	private Intent createShareIntent(String mime, Uri dtaFileUri) {
-		String[] recipients = new String[]{PreferenceManager.getDefaultSharedPreferences(this)
-				.getString(PreferencesActivity.KEY_EMAIL_ADDRESS, "")};
-		String subject = getResources().getString(R.string.history_share_as_dta_title);
-		String text = String.format(getResources().getString(R.string.history_share_as_dta_summary), 
-				dtaFileUri.getPath());
+		String[] recipients = new String[] { PreferenceManager
+				.getDefaultSharedPreferences(this).getString(
+						PreferencesActivity.KEY_EMAIL_ADDRESS, "") };
+		String subject = getResources().getString(
+				R.string.history_share_as_dta_title);
+		String text = String
+				.format(getResources().getString(
+						R.string.history_share_as_dta_summary),
+						dtaFileUri.getPath());
 
 		Intent intent = new Intent(Intent.ACTION_SEND, Uri.parse("mailto:"));
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
@@ -502,93 +525,104 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 		return intent;
 	}
 
-	private void setOkAlert(int id){
+	private void setOkAlert(int id) {
 		setOkAlert(getResources().getString(id));
 	}
 
-	private void setOkAlert(String message){
+	private void setOkAlert(String message) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage(message);
 		builder.setPositiveButton(R.string.button_ok, null);
 		builder.show();
 	}
 
-	private void setCancelOkAlert(int id, boolean finish){
+	private void setCancelOkAlert(int id, boolean finish) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-		builder.setMessage(id)
-		.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
+		builder.setMessage(id).setNegativeButton(R.string.button_cancel,
+				new DialogInterface.OnClickListener() {
 
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				historyFragment.setActivatedPosition(tmpPositions[0]);
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						historyFragment.setActivatedPosition(tmpPositions[0]);
 
-				tmpPositions[0] = ListView.INVALID_POSITION;
-				tmpPositions[1] = ListView.INVALID_POSITION;
-			}
-		});
+						tmpPositions[0] = ListView.INVALID_POSITION;
+						tmpPositions[1] = ListView.INVALID_POSITION;
+					}
+				});
 
 		if (finish) {
-			builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+			builder.setPositiveButton(R.string.button_ok,
+					new DialogInterface.OnClickListener() {
 
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					finish();
-				}
-			});
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							finish();
+						}
+					});
 		} else {
-			builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+			builder.setPositiveButton(R.string.button_ok,
+					new DialogInterface.OnClickListener() {
 
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					setNewDetails(tmpPositions[1]);
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							setNewDetails(tmpPositions[1]);
 
-					tmpPositions[0] = ListView.INVALID_POSITION;
-					tmpPositions[1] = ListView.INVALID_POSITION;
-				}
-			});
+							tmpPositions[0] = ListView.INVALID_POSITION;
+							tmpPositions[1] = ListView.INVALID_POSITION;
+						}
+					});
 		}
 
 		builder.show();
 	}
 
 	public void setOptionalOkAlert(int id) {
-		int dontShow = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-				.getInt(PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(id), 0);
+		int dontShow = PreferenceManager.getDefaultSharedPreferences(
+				getApplicationContext()).getInt(
+				PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(id), 0);
 
 		if (dontShow == 0) {
 			lastAlertId = id;
 
 			LayoutInflater inflater = getLayoutInflater();
-			final View checkboxLayout = inflater.inflate(R.layout.dont_show_again, null);
-			dontShowAgainCheckBox = (CheckBox)checkboxLayout.findViewById(R.id.dont_show_again_checkbox);
+			final View checkboxLayout = inflater.inflate(
+					R.layout.dont_show_again, null);
+			dontShowAgainCheckBox = (CheckBox) checkboxLayout
+					.findViewById(R.id.dont_show_again_checkbox);
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(this)
-			.setTitle(R.string.alert_title_information)
-			.setMessage(lastAlertId)
-			.setView(checkboxLayout)
-			.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+					.setTitle(R.string.alert_title_information)
+					.setMessage(lastAlertId)
+					.setView(checkboxLayout)
+					.setPositiveButton(R.string.button_ok,
+							new DialogInterface.OnClickListener() {
 
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					if (dontShowAgainCheckBox.isChecked()) {
-						PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-						.edit()
-						.putInt(PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(lastAlertId), 1)
-						.apply();
-					}
-				}
-			});
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									if (dontShowAgainCheckBox.isChecked()) {
+										PreferenceManager
+												.getDefaultSharedPreferences(
+														getApplicationContext())
+												.edit()
+												.putInt(PreferencesActivity.KEY_NOT_SHOW_ALERT
+														+ String.valueOf(lastAlertId),
+														1).apply();
+									}
+								}
+							});
 
 			builder.show();
 		}
 	}
 
 	private Uri createDTAFile() {
-		List<HistoryItem> historyItems = historyManager.buildHistoryItemsForDTA();
+		List<HistoryItem> historyItems = historyManager
+				.buildHistoryItemsForDTA();
 		String error = dtaFileCreator.getFirstError(historyItems);
 
-		if(error != ""){
+		if (error != "") {
 			setOkAlert(error);
 			return null;
 		}
@@ -603,14 +637,15 @@ public final class HistoryActivity extends SherlockFragmentActivity implements H
 			String dtaFileName = dtaFileUri.getLastPathSegment();
 
 			new HistoryExportUpdateAsyncTask(historyManager, dtaFileName)
-			.execute(historyItems.toArray(new HistoryItem[historyItems.size()]));
+					.execute(historyItems.toArray(new HistoryItem[historyItems
+							.size()]));
 
 			this.dtaFileCreator = new DTAFileCreator(getApplicationContext());
 
-			Toast toast = Toast.makeText(this, 
-					getResources().getString(R.string.msg_dta_saved, 
-							dtaFileUri.getPath()), 
-							Toast.LENGTH_LONG);
+			Toast toast = Toast.makeText(
+					this,
+					getResources().getString(R.string.msg_dta_saved,
+							dtaFileUri.getPath()), Toast.LENGTH_LONG);
 			toast.setGravity(Gravity.BOTTOM, 0, 0);
 			toast.show();
 

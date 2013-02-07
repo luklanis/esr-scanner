@@ -110,5 +110,6 @@
     <string name="help_button_done">Schliessen</string>
     <string name="help_button_back">Zurück</string>
     <string name="status_view_ip_address">IP Adresse(n):%s</string>
+    <string name="status_stream_mode_active">Beleglesermodus aktiv</string>
 
 </resources>
