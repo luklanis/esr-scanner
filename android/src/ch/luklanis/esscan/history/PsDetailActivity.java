@@ -161,7 +161,7 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 
 				if (boundService != null && boundService.isConnectedLocal()) {
 					boolean sent = this.boundService
-							.sendToListeners(completeCode);
+							.sendToListener(completeCode);
 
 					if (sent) {
 						historyManager.updateHistoryItemFileName(

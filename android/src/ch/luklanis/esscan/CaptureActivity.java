@@ -106,8 +106,13 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE;
 	private static final String CHARACTER_WHITELIST = "0123456789>+";
-	
-	private final String SERVICE_TYPE = "_esr._tcp.local";
+
+	private static final String SERVICE_TYPE = "_esr._tcp.local.";
+
+	private static JmDNS mJmDns = null;
+	private static ServiceInfo mServiceInfo;
+
+	private static MulticastLock mMusticastLock;
 
 	private CameraManager mCameraManager;
 	private CaptureActivityHandler mCaptureActivityHandler;
@@ -142,11 +147,6 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private NetworkReceiver mNetworkReceiver;
 
-	private JmDNS mJmDns = null;
-	private ServiceInfo mServiceInfo;
-
-	private MulticastLock mMusticastLock;
-
 	private ESRSender mEsrSenderService;
 
 	private ServiceConnection mServiceConnection = new ServiceConnection() {
@@ -158,10 +158,10 @@ public final class CaptureActivity extends SherlockActivity implements
 			if (mEsrSenderService.isConnectedLocal()) {
 				showIPAddresses();
 				new Thread(new Runnable() {
-			        public void run() {
-			        	setUpJmDNS(mEsrSenderService.getServerPort());
-			        }
-			    }).start();
+					public void run() {
+						setUpJmDNS(mEsrSenderService.getServerPort());
+					}
+				}).start();
 
 				invalidateOptionsMenu();
 			} else {
@@ -323,23 +323,8 @@ public final class CaptureActivity extends SherlockActivity implements
 			SurfaceHolder surfaceHolder = surfaceView.getHolder();
 			surfaceHolder.removeCallback(this);
 		}
-		
-    	if (mJmDns != null) {
-            mJmDns.unregisterAllServices();
-            
-            try {
-            	mJmDns.close();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            
-            mJmDns = null;
-    	}
 
-    	if (mMusticastLock != null && mMusticastLock.isHeld()) {
-    		mMusticastLock.release();
-    	}
+		closeJmDns();
 
 		doUnbindService();
 
@@ -439,6 +424,8 @@ public final class CaptureActivity extends SherlockActivity implements
 					mPsValidation = new EsrValidation();
 				}
 				resetStatusView();
+
+				closeJmDns();
 
 				invalidateOptionsMenu();
 			} else {
@@ -574,11 +561,11 @@ public final class CaptureActivity extends SherlockActivity implements
 	}
 
 	private void showIPAddresses() {
-//		mStatusViewBottomRight.setText(getResources().getString(
-//				R.string.status_view_ip_address,
-//				mEsrSenderService.getLocalIpAddress()));
+		// mStatusViewBottomRight.setText(getResources().getString(
+		// R.string.status_view_ip_address,
+		// mEsrSenderService.getLocalIpAddress()));
 		mStatusViewBottomRight.setText(getResources().getString(
-						R.string.status_stream_mode_active));
+				R.string.status_stream_mode_active));
 		mStatusViewBottomRight.setVisibility(View.VISIBLE);
 	}
 
@@ -660,7 +647,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
 		if (this.mServiceIsBound && this.mEsrSenderService != null
 				&& this.mEsrSenderService.isConnectedLocal()) {
-			boolean sent = this.mEsrSenderService.sendToListeners(psResult
+			boolean sent = this.mEsrSenderService.sendToListener(psResult
 					.getCompleteCode());
 
 			showDialogAndRestartScan(sent ? R.string.msg_coderow_sent
@@ -990,19 +977,46 @@ public final class CaptureActivity extends SherlockActivity implements
 	}
 
 	private void setUpJmDNS(int port) {
-		android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) getSystemService(android.content.Context.WIFI_SERVICE);
-		mMusticastLock = wifi.createMulticastLock("LockForServiceRegister");
-		mMusticastLock.setReferenceCounted(true);
-		mMusticastLock.acquire();
-		
-		try {
-			mJmDns = JmDNS.create();
-			mServiceInfo = ServiceInfo.create(SERVICE_TYPE,
-					"ESRScanner", port, "ESRScanner of " + android.os.Build.MODEL);
-			mJmDns.registerService(mServiceInfo);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
+		if (mJmDns == null) {
+			android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) getSystemService(android.content.Context.WIFI_SERVICE);
+			mMusticastLock = wifi.createMulticastLock("LockForServiceRegister");
+			mMusticastLock.setReferenceCounted(true);
+			mMusticastLock.acquire();
+
+			try {
+				mJmDns = JmDNS.create(mEsrSenderService.getLocalInterface(), "ESRScanner");
+				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, "ESRScanner",
+						port, "ESRScanner of " + android.os.Build.MODEL);
+				mJmDns.registerService(mServiceInfo);
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
 		}
+	}
+
+	private void closeJmDns() {
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				if (mJmDns != null) {
+					mJmDns.unregisterAllServices();
+
+					try {
+						mJmDns.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					mJmDns = null;
+				}
+
+				if (mMusticastLock != null && mMusticastLock.isHeld()) {
+					mMusticastLock.release();
+				}
+			}
+		}).start();
 	}
 }

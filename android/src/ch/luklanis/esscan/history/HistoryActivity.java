@@ -319,7 +319,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 
 				if (boundService != null && boundService.isConnectedLocal()) {
 					boolean sent = this.boundService
-							.sendToListeners(completeCode);
+							.sendToListener(completeCode);
 
 					if (sent) {
 						String msg = getResources().getString(
