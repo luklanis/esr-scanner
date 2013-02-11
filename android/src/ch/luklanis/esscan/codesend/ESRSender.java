@@ -226,28 +226,13 @@ public class ESRSender extends Service {
 
 	public String getLocalIpAddress() {
 
-		String adresses = "";
-
-		try {
-			for (Enumeration<NetworkInterface> en = NetworkInterface
-					.getNetworkInterfaces(); en.hasMoreElements();) {
-				NetworkInterface intf = en.nextElement();
-				for (Enumeration<InetAddress> enumIpAddr = intf
-						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-					InetAddress inetAddress = enumIpAddr.nextElement();
-					if (!inetAddress.isLoopbackAddress()
-							&& inetAddress.getAddress().length == 4) {
-						adresses += String.format("\n%s: %s",
-								intf.getDisplayName(),
-								inetAddress.getHostAddress());
-					}
-				}
-			}
-		} catch (SocketException ex) {
-			Log.e(TAG, ex.toString());
+		InetAddress inetAddress = getLocalInterface();
+		
+		if (inetAddress != null) {
+			return inetAddress.getHostAddress();
 		}
 
-		return adresses;
+		return "";
 	}
 
 	public boolean sendToListener(String message) {
