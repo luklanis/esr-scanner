@@ -37,6 +37,8 @@ public class ESRSender extends Service {
 	}
 
 	private static final String TAG = ESRSender.class.getName();
+	private static final Object sLockObject = new Object();
+	
 	private static Thread sSendDataThread = null;
 
 	private final AtomicBoolean mStopServer = new AtomicBoolean(false);
@@ -62,35 +64,41 @@ public class ESRSender extends Service {
 					try {
 						client = server.accept();
 					} catch (InterruptedIOException e) {
-						if(mStopServer.get()) {
+						if (mStopServer.get()) {
+							synchronized (sLockObject) {
+								sSendDataThread = null;
+							}
 							return;
 						}
 					}
+					
+					if (mStopServer.get()) {
+						synchronized (sLockObject) {
+							sSendDataThread = null;
+						}
+						return;
+					}
 
-					mDataQueue.clear();
-					
-					os = new DataOutputStream(client.getOutputStream());
+					// mDataQueue.clear();
+
+					os = null;
 					String data;
-					
+
 					mHasClient.set(true);
 
-					while (!mStopServer.get()) {
-						try {
-							while (client.isBound()) {
-								data = mDataQueue.poll(1, TimeUnit.SECONDS);
+					try {
+						data = mDataQueue.poll(4500, TimeUnit.MILLISECONDS);
 
-								if (data != null) {
-									os.writeUTF(data);
-								}
-							}
-
-						} catch (Exception e) {
-							e.printStackTrace();
-							break;
+						if (data != null) {
+							os = new DataOutputStream(client.getOutputStream());
+							os.writeUTF(data);
+							os.close();
+							os = null;
 						}
+
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					
-					mHasClient.set(false);
 
 					if (os != null) {
 						os.close();
@@ -123,10 +131,6 @@ public class ESRSender extends Service {
 
 		super.onStartCommand(intent, flags, startId);
 
-		if (sSendDataThread != null) {
-			return START_NOT_STICKY;
-		}
-
 		this.startServer();
 
 		return START_NOT_STICKY;
@@ -135,26 +139,26 @@ public class ESRSender extends Service {
 	@Override
 	public void onDestroy() {
 		stopServer();
-		
+
 		super.onDestroy();
 	}
 
 	@Override
 	public boolean onUnbind(Intent intent) {
 
-//		Log.i(TAG, "Set up alarm manager");
-//
-//		Intent alarmIntent = new Intent(this, StopServiceReceiver.class);
-//		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
-//				alarmIntent, 0);
-//
-//		Calendar calendar = Calendar.getInstance();
-//		calendar.add(Calendar.MINUTE, 5);
-//
-//		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-//		am.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
-//				pendingIntent);
-		
+		// Log.i(TAG, "Set up alarm manager");
+		//
+		// Intent alarmIntent = new Intent(this, StopServiceReceiver.class);
+		// PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+		// alarmIntent, 0);
+		//
+		// Calendar calendar = Calendar.getInstance();
+		// calendar.add(Calendar.MINUTE, 5);
+		//
+		// AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+		// am.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+		// pendingIntent);
+
 		stopServer();
 
 		return true;
@@ -163,14 +167,14 @@ public class ESRSender extends Service {
 	@Override
 	public void onRebind(Intent intent) {
 		startServer();
-//		Log.i(TAG, "Cancel alarm manager");
-//
-//		Intent alarmIntent = new Intent(this, StopServiceReceiver.class);
-//		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
-//				alarmIntent, 0);
-//
-//		AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-//		am.cancel(pendingIntent);
+		// Log.i(TAG, "Cancel alarm manager");
+		//
+		// Intent alarmIntent = new Intent(this, StopServiceReceiver.class);
+		// PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+		// alarmIntent, 0);
+		//
+		// AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
+		// am.cancel(pendingIntent);
 	}
 
 	public boolean isConnectedLocal() {
@@ -203,7 +207,7 @@ public class ESRSender extends Service {
 	}
 
 	public InetAddress getLocalInterface() {
-		
+
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface
 					.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -227,7 +231,7 @@ public class ESRSender extends Service {
 	public String getLocalIpAddress() {
 
 		InetAddress inetAddress = getLocalInterface();
-		
+
 		if (inetAddress != null) {
 			return inetAddress.getHostAddress();
 		}
@@ -251,14 +255,16 @@ public class ESRSender extends Service {
 
 		if (isConnectedLocal()) {
 			mStopServer.set(false);
-			
-			if (sSendDataThread != null) {
-				return;
+
+			synchronized (sLockObject) {
+				if (sSendDataThread != null) {
+					return;
+				}
+
+				sSendDataThread = new Thread(mSendDataRunnable);
+				sSendDataThread.setName("sSendDataThread");
+				sSendDataThread.start();
 			}
-			
-			sSendDataThread = new Thread(mSendDataRunnable);
-			sSendDataThread.setName("sSendDataThread");
-			sSendDataThread.start();
 		}
 	}
 
