@@ -32,7 +32,6 @@ import ch.luklanis.esscan.HelpActivity;
 import ch.luklanis.esscan.OcrResult;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.history.HistoryActivity;
-import ch.luklanis.esscan.history.HistoryItem;
 import ch.luklanis.esscan.history.HistoryManager;
 import ch.luklanis.esscan.language.LanguageCodeHelper;
 import ch.luklanis.esscan.paymentslip.EsIbanValidation;

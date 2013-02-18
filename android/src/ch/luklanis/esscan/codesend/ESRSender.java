@@ -3,22 +3,17 @@ package ch.luklanis.esscan.codesend;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -37,11 +32,9 @@ public class ESRSender extends Service {
 	}
 
 	private static final String TAG = ESRSender.class.getName();
-	private static final Object sLockObject = new Object();
-	
-	private static Thread sSendDataThread = null;
 
 	private final AtomicBoolean mStopServer = new AtomicBoolean(false);
+	private final AtomicBoolean mServerStopped = new AtomicBoolean(true);
 	private final AtomicBoolean mHasClient = new AtomicBoolean(false);
 	private final AtomicInteger mServerPort = new AtomicInteger(0);
 
@@ -52,6 +45,8 @@ public class ESRSender extends Service {
 		@Override
 		public void run() {
 			try {
+				mServerStopped.set(false);
+
 				ServerSocket server = new ServerSocket(mServerPort.get());
 				server.setSoTimeout(300000);
 
@@ -65,17 +60,11 @@ public class ESRSender extends Service {
 						client = server.accept();
 					} catch (InterruptedIOException e) {
 						if (mStopServer.get()) {
-							synchronized (sLockObject) {
-								sSendDataThread = null;
-							}
 							return;
 						}
 					}
-					
+
 					if (mStopServer.get()) {
-						synchronized (sLockObject) {
-							sSendDataThread = null;
-						}
 						return;
 					}
 
@@ -113,8 +102,9 @@ public class ESRSender extends Service {
 					server.close();
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} finally {
+				mServerStopped.set(true);
 			}
 		}
 	};
@@ -256,15 +246,13 @@ public class ESRSender extends Service {
 		if (isConnectedLocal()) {
 			mStopServer.set(false);
 
-			synchronized (sLockObject) {
-				if (sSendDataThread != null) {
-					return;
-				}
-
-				sSendDataThread = new Thread(mSendDataRunnable);
-				sSendDataThread.setName("sSendDataThread");
-				sSendDataThread.start();
+			if (!mServerStopped.get()) {
+				return;
 			}
+
+			Thread sendDataThread = new Thread(mSendDataRunnable);
+			sendDataThread.setName("sendDataThread");
+			sendDataThread.start();
 		}
 	}
 
