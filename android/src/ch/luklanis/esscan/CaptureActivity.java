@@ -63,9 +63,11 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -73,6 +75,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -670,6 +674,23 @@ public final class CaptureActivity extends SherlockActivity implements
 			return;
 		}
 
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
+			EsrResult esrResult = (EsrResult) psResult;
+			String toCopy = prefs.getInt(PreferencesActivity.KEY_COPY_PART, 0) == 0 ? esrResult
+					.getCompleteCode() : esrResult.getReference();
+
+			ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+			clipboardManager.setText(toCopy);
+
+			if (clipboardManager.hasText()) {
+				setOKAlert(R.string.msg_copied);
+			}
+
+			return;
+		}
+
 		Intent intent = new Intent(this, HistoryActivity.class);
 		intent.setAction(HistoryActivity.ACTION_SHOW_RESULT);
 		intent.putExtra(HistoryActivity.EXTRA_CODE_ROW,
@@ -985,7 +1006,8 @@ public final class CaptureActivity extends SherlockActivity implements
 			mMusticastLock.acquire();
 
 			try {
-				mJmDns = JmDNS.create(mEsrSenderService.getLocalInterface(), "ESRScanner");
+				mJmDns = JmDNS.create(mEsrSenderService.getLocalInterface(),
+						"ESRScanner");
 				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, "ESRScanner",
 						port, "ESRScanner of " + android.os.Build.MODEL);
 				mJmDns.registerService(mServiceInfo);
@@ -998,7 +1020,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private void closeJmDns() {
 		new Thread(new Runnable() {
-			
+
 			@Override
 			public void run() {
 				if (mJmDns != null) {

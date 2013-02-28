@@ -15,6 +15,11 @@
  limitations under the License.
  -->
 <resources>
+	<string-array name="copy_part">
+		<item>code row</item>
+		<item>reference number</item>
+	</string-array>
+	
 	<!-- The elements in this array must match to the iso6393 array. -->
 	<string-array name="language_names">
 		<item>payment slip</item>

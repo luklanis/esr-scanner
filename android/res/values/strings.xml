@@ -107,6 +107,10 @@
     <string name="preferences_backup_summary">Tab to create backup of database and preferences on external storage.</string>
     <string name="preferences_restore_title">Restore</string>
     <string name="preferences_restore_summary">Tab to restore a previous backup. Existing data will be overwritten.</string>
+    <string name="preferences_only_copy_title">Copy scan result to clipboard</string>
+    <string name="preferences_only_copy_summary">If checked, the result wouldn\'t be saved in history.\n
+        This option is inactive if payment slip stream mode is enabled.</string>
+    <string name="preferences_copy_part_title">Scan result part to copy</string>
     <string name="help_button_done">Done</string>
     <string name="help_button_back">Back</string>
     <string name="status_view_ip_address">IP Address(es):%s</string>

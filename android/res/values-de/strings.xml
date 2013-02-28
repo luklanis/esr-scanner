@@ -107,6 +107,10 @@
     <string name="preferences_backup_summary">Klicken um eine Kopie der Datenbank und den Einstellungen auf dem externen Speicher zu erstellen.</string>
     <string name="preferences_restore_title">Wiederherstellen</string>
     <string name="preferences_restore_summary">Klicken um die Datenbank und Einstellungen von einer zuvor erstellten Kopie wieder herzustellen. Alle Daten werden überschrieben.</string>
+    <string name="preferences_only_copy_title">Kopiere Ergebnis in Zwischenablage</string>
+    <string name="preferences_only_copy_summary">Wenn aktiviert, wird das Ergebnis nicht gespeichert.\n
+        Sie wird aber inaktiv bei eingeschaltetem Beleglesermodus.</string>
+    <string name="preferences_copy_part_title">Zu kopierender Ergebnisteil</string>
     <string name="help_button_done">Schliessen</string>
     <string name="help_button_back">Zurück</string>
     <string name="status_view_ip_address">IP Adresse(n):%s</string>
