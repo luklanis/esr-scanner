@@ -60,6 +60,7 @@
     <string name="msg_database_saved">Daten erfolgreich gesichert!</string>
     <string name="msg_database_restored">Daten erfolgreich wiederhergestellt!</string>
     <string name="msg_copied">Erfolgreich kopiert!</string>
+    <string name="msg_not_copied">Leider konnte das Ergebnis nich in die Zwischenablage kopiert werden!</string>
     <string name="msg_nothing_to_export">Alle Zahlungen wurden schon mal exportiert.</string>
     <string name="msg_amount_not_valid">Betrag ist ungültig.</string>
     <string name="msg_no_email_client">Keine Email App gefunden</string>

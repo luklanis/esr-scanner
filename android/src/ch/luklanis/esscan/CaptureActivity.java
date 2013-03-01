@@ -666,28 +666,34 @@ public final class CaptureActivity extends SherlockActivity implements
 			return;
 		}
 
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
+			String toCopy = "";
+			if (!psResult.getType().equals(EsResult.PS_TYPE_NAME)) {
+				toCopy = psResult.getCompleteCode();
+			} else {
+				EsrResult esrResult = (EsrResult) psResult;
+				toCopy = prefs
+						.getString(PreferencesActivity.KEY_COPY_PART, "0")
+						.equals("0") ? esrResult.getCompleteCode() : esrResult
+						.getReference();
+			}
+
+			ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+			clipboardManager.setText(toCopy);
+
+			showDialogAndRestartScan(clipboardManager.hasText() ? R.string.msg_copied
+					: R.string.msg_not_copied);
+
+			return;
+		}
+
 		if (psResult.getType().equals(EsResult.PS_TYPE_NAME)) {
 
 			showDialogAndRestartScan(R.string.msg_red_result_view_not_available);
 
 			mHistoryManager.addHistoryItem(psResult);
-			return;
-		}
-
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
-		if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
-			EsrResult esrResult = (EsrResult) psResult;
-			String toCopy = prefs.getInt(PreferencesActivity.KEY_COPY_PART, 0) == 0 ? esrResult
-					.getCompleteCode() : esrResult.getReference();
-
-			ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-			clipboardManager.setText(toCopy);
-
-			if (clipboardManager.hasText()) {
-				setOKAlert(R.string.msg_copied);
-			}
-
 			return;
 		}
 
