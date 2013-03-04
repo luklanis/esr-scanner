@@ -1,38 +1,32 @@
-/*
- * Copyright (C) 2008 ZXing authors
- * Copyright 2011 Robert Theis
- * Copyright 2012 Lukas Landis
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * 
  */
+package ch.luklanis.esscan.ime;
 
-package ch.luklanis.esscan;
+import java.io.File;
+import java.io.IOException;
 
-import ch.luklanis.esscan.BeepManager;
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
 
-import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
-import ch.luklanis.esscan.camera.CameraManager;
-import ch.luklanis.esscan.codesend.ESRSender;
+import ch.luklanis.esscan.BeepManager;
+import ch.luklanis.esscan.CaptureActivity;
+import ch.luklanis.esscan.CaptureActivityHandler;
+import ch.luklanis.esscan.FinishListener;
 import ch.luklanis.esscan.HelpActivity;
+import ch.luklanis.esscan.IBase;
+import ch.luklanis.esscan.OcrInitAsyncTask;
 import ch.luklanis.esscan.OcrResult;
+import ch.luklanis.esscan.OcrResultText;
 import ch.luklanis.esscan.PreferencesActivity;
-import ch.luklanis.esscan.history.HistoryActivity;
-import ch.luklanis.esscan.history.HistoryManager;
+import ch.luklanis.esscan.R;
+import ch.luklanis.esscan.ViewfinderView;
+import ch.luklanis.esscan.camera.CameraManager;
 import ch.luklanis.esscan.language.LanguageCodeHelper;
 import ch.luklanis.esscan.paymentslip.EsIbanValidation;
 import ch.luklanis.esscan.paymentslip.EsResult;
@@ -40,10 +34,8 @@ import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
 import ch.luklanis.esscan.paymentslip.PsValidation;
-
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-//import android.content.ClipData;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -55,45 +47,37 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager.MulticastLock;
+import android.inputmethodservice.ExtractEditText;
+import android.inputmethodservice.InputMethodService;
+import android.inputmethodservice.KeyboardView;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.text.ClipboardManager;
+import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.io.File;
-import java.io.IOException;
-
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceInfo;
 
 /**
- * This activity opens the camera and does the actual scanning on a background
- * thread. It draws a viewfinder to help the user place the barcode correctly,
- * shows feedback as the image processing is happening, and then overlays the
- * results when a scan is successful.
+ * @author llandis
  * 
- * The code for this class was adapted from the ZXing project:
- * http://code.google.com/p/zxing/
  */
-public final class CaptureActivity extends SherlockActivity implements
-		SurfaceHolder.Callback, IBase {
+public class ScannerIME extends InputMethodService implements
+		KeyboardView.OnKeyboardActionListener, SurfaceHolder.Callback, IBase {
 
 	private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -110,13 +94,6 @@ public final class CaptureActivity extends SherlockActivity implements
 	private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE;
 	private static final String CHARACTER_WHITELIST = "0123456789>+";
 
-	private static final String SERVICE_TYPE = "_esr._tcp.local.";
-
-	private static JmDNS mJmDns = null;
-	private static ServiceInfo mServiceInfo;
-
-	private static MulticastLock mMusticastLock;
-
 	private CameraManager mCameraManager;
 	private CaptureActivityHandler mCaptureActivityHandler;
 	private ViewfinderView mViewfinderView;
@@ -124,122 +101,57 @@ public final class CaptureActivity extends SherlockActivity implements
 	private SurfaceHolder mSurfaceHolder;
 	private TextView mStatusViewBottomLeft;
 	private boolean mHasSurface;
-	private BeepManager mBeepManager;
 	private TessBaseAPI mBaseApi; // Java interface for the Tesseract OCR engine
 	private String mSourceLanguageReadable; // Language name, for example,
-											// "English"
+	// "English"
 
 	private SharedPreferences mSharedPreferences;
 	private OnSharedPreferenceChangeListener mOnSharedPreferenceChangeListener;
-	private ProgressDialog mInitOcrProgressDialog; // for initOcr - language
-													// download & unzip
-	private HistoryManager mHistoryManager;
-
+	
 	private PsValidation mPsValidation;
 
 	private int mLastValidationStep;
 
 	private boolean mShowOcrResult;
-	private boolean mEnableStreamMode;
-
-	private boolean mServiceIsBound;
 
 	private TextView mStatusViewBottomRight;
 
-	private Intent mServiceIntent;
+	private RelativeLayout mInputView;
 
-	private NetworkReceiver mNetworkReceiver;
+	private BeepManager mBeepManager;
 
-	private ESRSender mEsrSenderService;
-
-	private ServiceConnection mServiceConnection = new ServiceConnection() {
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			mEsrSenderService = ((ESRSender.LocalBinder) service).getService();
-
-			if (mEsrSenderService.isConnectedLocal()) {
-				showIPAddresses();
-				new Thread(new Runnable() {
-					public void run() {
-						setUpJmDNS(mEsrSenderService.getServerPort());
-					}
-				}).start();
-
-				invalidateOptionsMenu();
-			} else {
-				mEnableStreamMode = false;
-				mSharedPreferences
-						.edit()
-						.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-								mEnableStreamMode).apply();
-
-				mEsrSenderService.stopServer();
-
-				setOKAlert(R.string.msg_stream_mode_not_available);
-			}
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			// This is called when the connection with the service has been
-			// unexpectedly disconnected -- that is, its process crashed.
-			// Because it is running in our same process, we should never
-			// see this happen.
-			mEnableStreamMode = false;
-			mSharedPreferences
-					.edit()
-					.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-							mEnableStreamMode).apply();
-
-			setOKAlert(R.string.msg_stream_mode_not_available);
-
-			clearIPAddresses();
-		}
-	};
+	private ExtractEditText mExtractEditText;
 
 	@Override
-	public void onCreate(Bundle icicle) {
-		requestWindowFeature(com.actionbarsherlock.view.Window.FEATURE_ACTION_BAR_OVERLAY);
-		super.onCreate(icicle);
+	public void onStartInputView(EditorInfo info, boolean restarting) {
+		super.onStartInputView(info, restarting);
+		
+		updateFullscreenMode();
 
-		Window window = getWindow();
-		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		// requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		mStatusViewBottomRight = (TextView) mInputView
+				.findViewById(R.id.status_view_bottom_right);
+		
+		if ((info.inputType & InputType.TYPE_MASK_CLASS) != InputType.TYPE_CLASS_TEXT) {
+			mStatusViewBottomRight.setText("Invalid input type for this IME");
+			return;
+		}
 
-		setContentView(R.layout.capture);
+		mSurfaceView = (SurfaceView) mInputView.findViewById(R.id.preview_view);
+		mCameraManager = new CameraManager(mSurfaceView);
 
-		mShowOcrResult = false;
+		mViewfinderView = (ViewfinderView) mInputView
+				.findViewById(R.id.viewfinder_view);
+		
+		mViewfinderView.setCameraManager(mCameraManager);
 
-		mHasSurface = false;
-		mHistoryManager = new HistoryManager(this);
-		mHistoryManager.trimHistory();
-
-		mBeepManager = new BeepManager(this);
+		mStatusViewBottomLeft = (TextView) mInputView
+				.findViewById(R.id.status_view_bottom_left);
 
 		mSharedPreferences = PreferenceManager
 				.getDefaultSharedPreferences(this);
 
-		// Registers BroadcastReceiver to track network connection changes.
-		IntentFilter filter = new IntentFilter(
-				ConnectivityManager.CONNECTIVITY_ACTION);
-		mNetworkReceiver = new NetworkReceiver();
-		this.registerReceiver(mNetworkReceiver, filter);
-	}
+		mBeepManager = new BeepManager(this);
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		
-		mSurfaceView = (SurfaceView) findViewById(R.id.preview_view);
-		mCameraManager = new CameraManager(mSurfaceView);
-
-		mViewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
-		mViewfinderView.setCameraManager(mCameraManager);
-
-		mStatusViewBottomLeft = (TextView) findViewById(R.id.status_view_bottom_left);
-
-		mStatusViewBottomRight = (TextView) findViewById(R.id.status_view_bottom_right);
 		mStatusViewBottomRight.setVisibility(View.GONE);
 
 		mPsValidation = new EsrValidation();
@@ -279,18 +191,6 @@ public final class CaptureActivity extends SherlockActivity implements
 			mSurfaceHolder.addCallback(this);
 			mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		}
-
-		mEnableStreamMode = this.mSharedPreferences.getBoolean(
-				PreferencesActivity.KEY_ENABLE_STREAM_MODE, false);
-
-		if (mEnableStreamMode) {
-			mServiceIntent = new Intent(this, ESRSender.class);
-			startService(mServiceIntent);
-
-			doBindService();
-		}
-
-		checkAndRunFirstLaunch();
 	}
 
 	@Override
@@ -311,7 +211,7 @@ public final class CaptureActivity extends SherlockActivity implements
 	}
 
 	@Override
-	protected void onPause() {
+	public void onFinishInputView(boolean finishingInput) {
 		if (mCaptureActivityHandler != null) {
 			mCaptureActivityHandler.quitSynchronously();
 			mCaptureActivityHandler = null;
@@ -322,30 +222,27 @@ public final class CaptureActivity extends SherlockActivity implements
 		mCameraManager.closeDriver();
 
 		if (!mHasSurface) {
-			SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
+			SurfaceView surfaceView = (SurfaceView) mInputView
+					.findViewById(R.id.preview_view);
 			SurfaceHolder surfaceHolder = surfaceView.getHolder();
 			surfaceHolder.removeCallback(this);
 		}
-
-		closeJmDns();
-
-		doUnbindService();
-
-		super.onPause();
+		
+		super.onFinishInputView(finishingInput);
 	}
 
 	@Override
-	protected void onDestroy() {
+	public void onFinishInput() {
+		super.onFinishInput();
+	}
+
+	@Override
+	public void onDestroy() {
 		super.onDestroy();
 
 		if (mBaseApi != null) {
 			mBaseApi.end();
 			mBaseApi = null;
-		}
-
-		// Unregisters BroadcastReceiver when app is destroyed.
-		if (mNetworkReceiver != null) {
-			this.unregisterReceiver(mNetworkReceiver);
 		}
 	}
 
@@ -359,10 +256,9 @@ public final class CaptureActivity extends SherlockActivity implements
 				resetStatusView();
 				return true;
 			}
-			setResult(RESULT_CANCELED);
-			finish();
-			return true;
-			// Use volume up/down to turn on light
+
+			break;
+		// Use volume up/down to turn on light
 		case KeyEvent.KEYCODE_VOLUME_DOWN:
 			mCameraManager.setTorch(false);
 			return true;
@@ -372,106 +268,6 @@ public final class CaptureActivity extends SherlockActivity implements
 		}
 
 		return super.onKeyDown(keyCode, event);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getSupportMenuInflater();
-		inflater.inflate(R.menu.capture_menu, menu);
-
-		MenuItem psSwitch = menu.findItem(R.id.menu_switch_ps);
-		MenuItem showHistory = menu.findItem(R.id.menu_history);
-
-		if (mEnableStreamMode) {
-			psSwitch.setVisible(true);
-			showHistory.setVisible(false);
-		} else {
-			psSwitch.setVisible(false);
-			showHistory.setVisible(true);
-		}
-
-		return true;
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		Intent intent;
-		switch (item.getItemId()) {
-		case R.id.menu_switch_ps: {
-			if (this.mPsValidation.getSpokenType().equals(
-					EsrResult.PS_TYPE_NAME)) {
-				this.mPsValidation = new EsIbanValidation();
-			} else {
-				this.mPsValidation = new EsrValidation();
-			}
-			resetStatusView();
-			break;
-		}
-		case R.id.menu_switch_mode: {
-			// seperate if to exclude complete statement in compiled code
-			if (mEnableStreamMode) {
-				mEnableStreamMode = false;
-				mSharedPreferences
-						.edit()
-						.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-								mEnableStreamMode).apply();
-
-				doUnbindService();
-
-				if (mEsrSenderService != null) {
-					mEsrSenderService.stopServer();
-				}
-
-				clearIPAddresses();
-				if (mPsValidation.getSpokenType().equals(EsResult.PS_TYPE_NAME)) {
-					mPsValidation = new EsrValidation();
-				}
-				resetStatusView();
-
-				closeJmDns();
-
-				invalidateOptionsMenu();
-			} else {
-				mEnableStreamMode = true;
-				mSharedPreferences
-						.edit()
-						.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-								mEnableStreamMode).apply();
-
-				mServiceIntent = new Intent(getApplicationContext(),
-						ESRSender.class);
-				startService(mServiceIntent);
-
-				doBindService();
-			}
-			break;
-		}
-		case R.id.menu_history: {
-			intent = new Intent(this, HistoryActivity.class);
-			startActivity(intent);
-			break;
-		}
-		case R.id.menu_settings: {
-			intent = new Intent(this, PreferencesActivity.class);
-			startActivity(intent);
-			break;
-		}
-		case R.id.menu_help: {
-			intent = new Intent(this, HelpActivity.class);
-			intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY,
-					HelpActivity.DEFAULT_PAGE);
-			startActivity(intent);
-			break;
-		}
-		case R.id.menu_about: {
-			intent = new Intent(this, HelpActivity.class);
-			intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY,
-					HelpActivity.ABOUT_PAGE);
-			startActivity(intent);
-			break;
-		}
-		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	public Handler getHandler() {
@@ -484,20 +280,6 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	public PsValidation getValidation() {
 		return mPsValidation;
-	}
-
-	private void doBindService() {
-		if (!mServiceIsBound) {
-			bindService(mServiceIntent, mServiceConnection, 0);
-			mServiceIsBound = true;
-		}
-	}
-
-	private void doUnbindService() {
-		if (mServiceIsBound) {
-			unbindService(mServiceConnection);
-			mServiceIsBound = false;
-		}
 	}
 
 	/**
@@ -563,22 +345,6 @@ public final class CaptureActivity extends SherlockActivity implements
 		}
 	}
 
-	private void showIPAddresses() {
-		// mStatusViewBottomRight.setText(getResources().getString(
-		// R.string.status_view_ip_address,
-		// mEsrSenderService.getLocalIpAddress()));
-		mStatusViewBottomRight.setText(getResources().getString(
-				R.string.status_stream_mode_active,
-				mEsrSenderService.getLocalIpAddress(),
-				mEsrSenderService.getServerPort()));
-		mStatusViewBottomRight.setVisibility(View.VISIBLE);
-	}
-
-	private void clearIPAddresses() {
-		mStatusViewBottomRight.setText("");
-		mStatusViewBottomRight.setVisibility(View.GONE);
-	}
-
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		mHasSurface = false;
 	}
@@ -630,17 +396,9 @@ public final class CaptureActivity extends SherlockActivity implements
 	 */
 	private void initOcrEngine(File storageRoot, String languageCode,
 			String languageName) {
-		// Set up the dialog box for the thermometer-style download progress
-		// indicator
-		if (mInitOcrProgressDialog != null) {
-			mInitOcrProgressDialog.dismiss();
-		}
-		mInitOcrProgressDialog = new ProgressDialog(this);
-
 		// Start AsyncTask to install language data and init OCR
-		new OcrInitAsyncTask(this, new TessBaseAPI(), mInitOcrProgressDialog,
-				languageCode, languageName, OCR_ENGINE_MODE)
-				.execute(storageRoot.toString());
+		new OcrInitAsyncTask(this, new TessBaseAPI(), null, languageCode,
+				languageName, OCR_ENGINE_MODE).execute(storageRoot.toString());
 	}
 
 	public void showResult(PsResult psResult) {
@@ -649,69 +407,12 @@ public final class CaptureActivity extends SherlockActivity implements
 	}
 
 	public void showResult(PsResult psResult, boolean fromHistory) {
+		InputConnection inputConnection = getCurrentInputConnection();
+		inputConnection.commitText(psResult.getCompleteCode(), 1);
 
-		if (this.mServiceIsBound && this.mEsrSenderService != null
-				&& this.mEsrSenderService.isConnectedLocal()) {
-			boolean sent = this.mEsrSenderService.sendToListener(psResult
-					.getCompleteCode());
-
-			showDialogAndRestartScan(sent ? R.string.msg_coderow_sent
-					: R.string.msg_coderow_not_sent);
-
-			// historyManager.addHistoryItem(psResult);
-			return;
-		}
-
-		if (fromHistory) {
-			return;
-		}
-
-		if (psResult.getType().equals(EsResult.PS_TYPE_NAME)) {
-
-			showDialogAndRestartScan(R.string.msg_red_result_view_not_available);
-
-			mHistoryManager.addHistoryItem(psResult);
-			return;
-		}
-
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
-		if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
-			EsrResult esrResult = (EsrResult) psResult;
-			String toCopy = prefs.getString(PreferencesActivity.KEY_COPY_PART, "0").equals("0") ? esrResult
-					.getCompleteCode() : esrResult.getReference();
-
-			ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-			clipboardManager.setText(toCopy);
-
-			showDialogAndRestartScan(clipboardManager.hasText() ? R.string.msg_copied
-					: R.string.msg_coderow_not_sent);
-
-			return;
-		}
-
-		Intent intent = new Intent(this, HistoryActivity.class);
-		intent.setAction(HistoryActivity.ACTION_SHOW_RESULT);
-		intent.putExtra(HistoryActivity.EXTRA_CODE_ROW,
-				psResult.getCompleteCode());
-		startActivity(intent);
-	}
-
-	private void showDialogAndRestartScan(int resourceId) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(
-				CaptureActivity.this);
-		builder.setMessage(resourceId);
-		builder.setPositiveButton(R.string.button_ok,
-				new DialogInterface.OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						mPsValidation.gotoBeginning(false);
-						mLastValidationStep = mPsValidation.getCurrentStep();
-						restartPreviewAfterDelay(0L);
-					}
-				});
-		builder.show();
+		mPsValidation.gotoBeginning(false);
+		mLastValidationStep = mPsValidation.getCurrentStep();
+		restartPreviewAfterDelay(2000L);
 	}
 
 	/**
@@ -778,8 +479,9 @@ public final class CaptureActivity extends SherlockActivity implements
 	 */
 	private void resetStatusView() {
 
-		View orangeStatusView = findViewById(R.id.status_view_top_orange);
-		View redStatusView = findViewById(R.id.status_view_top_red);
+		View orangeStatusView = mInputView
+				.findViewById(R.id.status_view_top_orange);
+		View redStatusView = mInputView.findViewById(R.id.status_view_top_red);
 
 		if (this.mPsValidation.getSpokenType().equals(EsrResult.PS_TYPE_NAME)) {
 			redStatusView.setVisibility(View.GONE);
@@ -810,13 +512,19 @@ public final class CaptureActivity extends SherlockActivity implements
 		TextView statusView3;
 
 		if (this.mPsValidation.getSpokenType().equals(EsrResult.PS_TYPE_NAME)) {
-			statusView1 = (TextView) findViewById(R.id.status_view_1_orange);
-			statusView2 = (TextView) findViewById(R.id.status_view_2_orange);
-			statusView3 = (TextView) findViewById(R.id.status_view_3_orange);
+			statusView1 = (TextView) mInputView
+					.findViewById(R.id.status_view_1_orange);
+			statusView2 = (TextView) mInputView
+					.findViewById(R.id.status_view_2_orange);
+			statusView3 = (TextView) mInputView
+					.findViewById(R.id.status_view_3_orange);
 		} else {
-			statusView1 = (TextView) findViewById(R.id.status_view_1_red);
-			statusView2 = (TextView) findViewById(R.id.status_view_2_red);
-			statusView3 = (TextView) findViewById(R.id.status_view_3_red);
+			statusView1 = (TextView) mInputView
+					.findViewById(R.id.status_view_1_red);
+			statusView2 = (TextView) mInputView
+					.findViewById(R.id.status_view_2_red);
+			statusView3 = (TextView) mInputView
+					.findViewById(R.id.status_view_3_red);
 		}
 
 		statusView1.setBackgroundResource(0);
@@ -940,13 +648,7 @@ public final class CaptureActivity extends SherlockActivity implements
 	 *            The error message to be displayed
 	 */
 	public void showErrorMessage(String title, String message) {
-		new AlertDialog.Builder(this).setTitle(title).setMessage(message)
-				.setOnCancelListener(new FinishListener(this))
-				.setPositiveButton("Done", new FinishListener(this)).show();
-	}
-
-	private void setOKAlert(int id) {
-		setOKAlert(CaptureActivity.this, id);
+		mStatusViewBottomRight.setText(message);
 	}
 
 	private void setOKAlert(Context context, int id) {
@@ -956,94 +658,85 @@ public final class CaptureActivity extends SherlockActivity implements
 		builder.show();
 	}
 
-	// From
-	// http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
-	public class NetworkReceiver extends BroadcastReceiver {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			ConnectivityManager conn = (ConnectivityManager) context
-					.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo networkInfo = conn.getActiveNetworkInfo();
-
-			if (networkInfo == null
-					|| networkInfo.getType() != ConnectivityManager.TYPE_WIFI) {
-				if (mEnableStreamMode) {
-					mEnableStreamMode = false;
-					mSharedPreferences
-							.edit()
-							.putBoolean(
-									PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-									mEnableStreamMode).apply();
-
-					if (mEsrSenderService != null) {
-						mEsrSenderService.stopServer();
-					}
-
-					setOKAlert(R.string.msg_stream_mode_not_available);
-
-					clearIPAddresses();
-					if (mPsValidation.getSpokenType().equals(
-							EsResult.PS_TYPE_NAME)) {
-						mPsValidation = new EsrValidation();
-					}
-					resetStatusView();
-				}
-			}
-		}
-	}
-
 	public void setBaseApi(TessBaseAPI baseApi) {
 		this.mBaseApi = baseApi;
 	}
 
-	private void setUpJmDNS(int port) {
-		if (mJmDns == null) {
-			android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) getSystemService(android.content.Context.WIFI_SERVICE);
-			mMusticastLock = wifi.createMulticastLock("LockForServiceRegister");
-			mMusticastLock.setReferenceCounted(true);
-			mMusticastLock.acquire();
+	/**
+	 * Called by the framework when your view for creating input needs to be
+	 * generated. This will be called the first time your input method is
+	 * displayed, and every time it needs to be re-created such as due to a
+	 * configuration change.
+	 */
+	@Override
+	public View onCreateInputView() {
+		mInputView = (RelativeLayout) getLayoutInflater().inflate(
+				R.layout.input, null);
 
-			try {
-				mJmDns = JmDNS.create(mEsrSenderService.getLocalInterface(),
-						"ESRScanner");
-				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, "ESRScanner",
-						port, "ESRScanner of " + android.os.Build.MODEL);
-				mJmDns.registerService(mServiceInfo);
-			} catch (IOException e) {
-				e.printStackTrace();
-				return;
-			}
-		}
+		mExtractEditText = new ExtractEditText(this);
+		mExtractEditText.setId(android.R.id.inputExtractEditText);
+		setExtractView(mExtractEditText);
+		setExtractViewShown(true);
+		
+		return mInputView;
 	}
 
-	private void closeJmDns() {
-		new Thread(new Runnable() {
+	@Override
+	public void onKey(int primaryCode, int[] keyCodes) {
+		// TODO Auto-generated method stub
 
-			@Override
-			public void run() {
-				if (mJmDns != null) {
-					mJmDns.unregisterAllServices();
+	}
 
-					try {
-						mJmDns.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+	@Override
+	public void onPress(int primaryCode) {
+		// TODO Auto-generated method stub
 
-					mJmDns = null;
-				}
+	}
 
-				if (mMusticastLock != null && mMusticastLock.isHeld()) {
-					mMusticastLock.release();
-				}
-			}
-		}).start();
+	@Override
+	public void onRelease(int primaryCode) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void onText(CharSequence text) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void swipeDown() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void swipeLeft() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void swipeRight() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void swipeUp() {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public Context getContext() {
 		return this;
 	}
+
+	@Override
+	public boolean onEvaluateFullscreenMode() {
+		return true;
+	}
+
 }

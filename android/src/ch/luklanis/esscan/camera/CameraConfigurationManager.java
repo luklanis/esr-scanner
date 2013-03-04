@@ -18,7 +18,6 @@
 package ch.luklanis.esscan.camera;
 
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -27,11 +26,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 //import android.view.Display;
 import android.view.Display;
-import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 
-import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.camera.exposure.ExposureInterface;
 import ch.luklanis.esscan.camera.exposure.ExposureManager;
@@ -50,14 +48,14 @@ final class CameraConfigurationManager {
 	private static final int MIN_PREVIEW_PIXELS = 320 * 240; // small screen
 	//  private static final int MAX_PREVIEW_PIXELS = 800 * 480; // large/HD screen
 
-	private final Activity activity;
+	private final View view;
 	private Point previewResolution;
 	private Point cameraResolution;
 	private int heightDiff;
 	private final ExposureInterface exposure;
 
-	CameraConfigurationManager(Activity activity) {
-		this.activity = activity;
+	CameraConfigurationManager(View view) {
+		this.view = view;
 		exposure = new ExposureManager().build();
 	}
 
@@ -66,11 +64,10 @@ final class CameraConfigurationManager {
 	 */
 	void initFromCameraParameters(Camera camera) {
 		Camera.Parameters parameters = camera.getParameters();
-		WindowManager manager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+		WindowManager manager = (WindowManager) view.getContext().getSystemService(Context.WINDOW_SERVICE);
 
-		SurfaceView previewView = (SurfaceView) activity.findViewById(R.id.preview_view);
-		int previewWidth = previewView.getWidth();
-		int previewHeight = previewView.getHeight();
+		int previewWidth = view.getWidth();
+		int previewHeight = view.getHeight();
 
 		Display display = manager.getDefaultDisplay();
 		int screenWidth = display.getWidth();
@@ -101,9 +98,9 @@ final class CameraConfigurationManager {
 
 		cameraResolution = findBestPreviewSizeValue(parameters, screenResolution, false);
 
-		LayoutParams params = previewView.getLayoutParams();
+		LayoutParams params = view.getLayoutParams();
 		params.height = screenHeight;
-		previewView.setLayoutParams(params);
+		view.setLayoutParams(params);
 
 		previewHeight = screenHeight;
 
@@ -127,7 +124,7 @@ final class CameraConfigurationManager {
 			return;
 		}
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
 
 		initializeTorch(parameters, prefs);
 
@@ -171,7 +168,7 @@ final class CameraConfigurationManager {
 		Camera.Parameters parameters = camera.getParameters();
 		doSetTorch(parameters, newSetting);
 		camera.setParameters(parameters);
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
 		boolean currentSetting = prefs.getBoolean(PreferencesActivity.KEY_ENABLE_TORCH, false);
 		if (currentSetting != newSetting) {
 			SharedPreferences.Editor editor = prefs.edit();

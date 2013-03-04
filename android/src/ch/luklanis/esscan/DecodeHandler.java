@@ -35,17 +35,13 @@ import android.os.Message;
  */
 final class DecodeHandler extends Handler {
 
-	private final CaptureActivity activity;
+	private final IBase base;
 	private boolean running = true;
 	private final TessBaseAPI baseApi;
-	private BeepManager beepManager;
 
-	DecodeHandler(CaptureActivity activity, TessBaseAPI baseApi) {
-		this.activity = activity;
+	DecodeHandler(IBase base, TessBaseAPI baseApi) {
+		this.base = base;
 		this.baseApi = baseApi;
-
-		beepManager = new BeepManager(activity);
-		beepManager.updatePrefs();
 	}
 
 	@Override
@@ -73,8 +69,8 @@ final class DecodeHandler extends Handler {
 	 */
 	private void ocrContinuousDecode(byte[] data, int width, int height) {
 		// Asyncrhonously launch the OCR process
-		PlanarYUVLuminanceSource source = activity.getCameraManager().buildLuminanceSource(data, width, height);
-		new OcrRecognizeAsyncTask(activity, baseApi, source.renderCroppedGreyscaleBitmap()).execute();
+		PlanarYUVLuminanceSource source = base.getCameraManager().buildLuminanceSource(data, width, height);
+		new OcrRecognizeAsyncTask(base, baseApi, source.renderCroppedGreyscaleBitmap()).execute();
 	}
 }
 

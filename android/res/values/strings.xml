@@ -18,6 +18,8 @@
 <resources>
 
     <string name="app_name">ESR Scanner</string>
+    <string name="subtype_esr_label">ESR Scanner IME</string>
+    <string name="scanner_ime_label">ESR Scanner IME</string>
     <string name="address_dialog_title">Choose an address</string>
     <string name="address_new">Enter a new address</string>
     <string name="button_cancel">Cancel</string>
