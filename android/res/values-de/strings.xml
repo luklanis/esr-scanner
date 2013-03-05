@@ -74,6 +74,8 @@
     <string name="msg_red_result_view_not_available">Für rote Einzahlungsscheine können keine Details angezeigt werden!</string>
     <string name="msg_confirm_delete_title">Lösche Zahlung</string>
     <string name="msg_confirm_delete_message">Soll die Zahlung gelöscht werden?</string>
+    <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
+    <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
     <string name="result_account">Konto</string>
     <string name="result_address">Empfänger</string>
     <string name="result_reference_number">Referenznummer</string>

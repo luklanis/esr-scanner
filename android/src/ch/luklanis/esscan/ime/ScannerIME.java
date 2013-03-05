@@ -59,6 +59,7 @@ import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -126,15 +127,11 @@ public class ScannerIME extends InputMethodService implements
 	public void onStartInputView(EditorInfo info, boolean restarting) {
 		super.onStartInputView(info, restarting);
 		
-		updateFullscreenMode();
-
-		mStatusViewBottomRight = (TextView) mInputView
-				.findViewById(R.id.status_view_bottom_right);
-		
-		if ((info.inputType & InputType.TYPE_MASK_CLASS) != InputType.TYPE_CLASS_TEXT) {
-			mStatusViewBottomRight.setText("Invalid input type for this IME");
+		if (mInputView == null) {
 			return;
 		}
+		
+		updateFullscreenMode();
 
 		mSurfaceView = (SurfaceView) mInputView.findViewById(R.id.preview_view);
 		mCameraManager = new CameraManager(mSurfaceView);
@@ -152,7 +149,15 @@ public class ScannerIME extends InputMethodService implements
 
 		mBeepManager = new BeepManager(this);
 
+
+		mStatusViewBottomRight = (TextView) mInputView
+				.findViewById(R.id.status_view_bottom_right);
 		mStatusViewBottomRight.setVisibility(View.GONE);
+		
+		if ((info.inputType & InputType.TYPE_MASK_CLASS) != InputType.TYPE_CLASS_TEXT) {
+			mStatusViewBottomRight.setText(getResources().getString(R.string.msg_unsupported_field));
+			mStatusViewBottomRight.setVisibility(View.VISIBLE);
+		}
 
 		mPsValidation = new EsrValidation();
 		this.mLastValidationStep = mPsValidation.getCurrentStep();
@@ -212,6 +217,10 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public void onFinishInputView(boolean finishingInput) {
+		if (mInputView == null) {
+			return;
+		}
+		
 		if (mCaptureActivityHandler != null) {
 			mCaptureActivityHandler.quitSynchronously();
 			mCaptureActivityHandler = null;
@@ -409,10 +418,12 @@ public class ScannerIME extends InputMethodService implements
 	public void showResult(PsResult psResult, boolean fromHistory) {
 		InputConnection inputConnection = getCurrentInputConnection();
 		inputConnection.commitText(psResult.getCompleteCode(), 1);
+		
+		this.hideWindow();
 
-		mPsValidation.gotoBeginning(false);
-		mLastValidationStep = mPsValidation.getCurrentStep();
-		restartPreviewAfterDelay(2000L);
+//		mPsValidation.gotoBeginning(false);
+//		mLastValidationStep = mPsValidation.getCurrentStep();
+//		restartPreviewAfterDelay(2000L);
 	}
 
 	/**
@@ -670,6 +681,19 @@ public class ScannerIME extends InputMethodService implements
 	 */
 	@Override
 	public View onCreateInputView() {
+
+		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+
+		int screenWidth = display.getWidth();
+		int screenHeight = display.getHeight();
+		
+		if (screenWidth < screenHeight) {
+			mInputView = null;
+			TextView textView = new TextView(this);
+			textView.setText(getResources().getString(R.string.msg_unsupported_orientation));
+			return textView;
+		}
+		
 		mInputView = (RelativeLayout) getLayoutInflater().inflate(
 				R.layout.input, null);
 

@@ -17,7 +17,6 @@
 
 package ch.luklanis.esscan.camera;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
@@ -37,25 +36,28 @@ import ch.luklanis.esscan.camera.exposure.ExposureManager;
 import java.util.Collection;
 
 /**
- * A class which deals with reading, parsing, and setting the camera parameters which are used to
- * configure the camera hardware.
+ * A class which deals with reading, parsing, and setting the camera parameters
+ * which are used to configure the camera hardware.
  * 
- * The code for this class was adapted from the ZXing project: http://code.google.com/p/zxing
+ * The code for this class was adapted from the ZXing project:
+ * http://code.google.com/p/zxing
  */
 final class CameraConfigurationManager {
 
 	private static final String TAG = "CameraConfiguration";
 	private static final int MIN_PREVIEW_PIXELS = 320 * 240; // small screen
-	//  private static final int MAX_PREVIEW_PIXELS = 800 * 480; // large/HD screen
+	// private static final int MAX_PREVIEW_PIXELS = 800 * 480; // large/HD
+	// screen
+	private static final Point sScreenResolution = new Point();
 
-	private final View view;
+	private final View mPreviewView;
 	private Point previewResolution;
 	private Point cameraResolution;
-	private int heightDiff;
+	private int mHeightDiff;
 	private final ExposureInterface exposure;
 
 	CameraConfigurationManager(View view) {
-		this.view = view;
+		this.mPreviewView = view;
 		exposure = new ExposureManager().build();
 	}
 
@@ -64,43 +66,55 @@ final class CameraConfigurationManager {
 	 */
 	void initFromCameraParameters(Camera camera) {
 		Camera.Parameters parameters = camera.getParameters();
-		WindowManager manager = (WindowManager) view.getContext().getSystemService(Context.WINDOW_SERVICE);
 
-		int previewWidth = view.getWidth();
-		int previewHeight = view.getHeight();
+		int previewWidth = mPreviewView.getWidth();
+		int previewHeight = mPreviewView.getHeight();
 
-		Display display = manager.getDefaultDisplay();
+		Display display = ((WindowManager) mPreviewView.getContext()
+				.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+
 		int screenWidth = display.getWidth();
 		int screenHeight = display.getHeight();
+		
+		// uncomment when removing support for API < 13
+//		display.getSize(sScreenResolution);
+//		int screenWidth = sScreenResolution.x;
+//		int screenHeight = sScreenResolution.y;
 
-		// We're landscape-only, and have apparently seen issues with display thinking it's portrait 
-		// when waking from sleep. If it's not landscape, assume it's mistaken and reverse them:
+		// We're landscape-only, and have apparently seen issues with display
+		// thinking it's portrait
+		// when waking from sleep. If it's not landscape, assume it's mistaken
+		// and reverse them:
 		if (screenWidth < screenHeight) {
 			int temp = screenWidth;
 			screenWidth = screenHeight;
 			screenHeight = temp;
+//			sScreenResolution.set(screenWidth, screenHeight);
 		}
+		
+		sScreenResolution.set(screenWidth, screenHeight);
 
 		// Camera surface has the same height as the screen. Because of
-		// the Notification- and ActionBar preview's height is less than screen's
+		// the Notification- and ActionBar preview's height is less than
+		// screen's
 		// so we had to take notice of it in offset calculation
-		this.heightDiff = screenHeight - previewHeight;
+		this.mHeightDiff = screenHeight - previewHeight;
 
 		if (previewWidth < previewHeight) {
-			Log.i(TAG, "Display reports portrait orientation; assuming this is incorrect");
+			Log.i(TAG,
+					"Display reports portrait orientation; assuming this is incorrect");
 			previewWidth = screenWidth;
 
-			this.heightDiff = screenWidth - previewHeight;
+			this.mHeightDiff = screenWidth - previewHeight;
 			previewHeight = (screenHeight - (screenWidth - previewHeight));
 		}
 
-		Point screenResolution = new Point(screenWidth, screenHeight);
+		cameraResolution = findBestPreviewSizeValue(parameters,
+				sScreenResolution, false);
 
-		cameraResolution = findBestPreviewSizeValue(parameters, screenResolution, false);
-
-		LayoutParams params = view.getLayoutParams();
+		LayoutParams params = mPreviewView.getLayoutParams();
 		params.height = screenHeight;
-		view.setLayoutParams(params);
+		mPreviewView.setLayoutParams(params);
 
 		previewHeight = screenHeight;
 
@@ -120,23 +134,30 @@ final class CameraConfigurationManager {
 		Camera.Parameters parameters = camera.getParameters();
 
 		if (parameters == null) {
-			Log.w(TAG, "Device error: no camera parameters are available. Proceeding without configuration.");
+			Log.w(TAG,
+					"Device error: no camera parameters are available. Proceeding without configuration.");
 			return;
 		}
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(mPreviewView.getContext());
 
 		initializeTorch(parameters, prefs);
 
 		String focusMode = null;
 		if (!prefs.getBoolean(PreferencesActivity.KEY_ONLY_MACRO_FOCUS, false)) {
-			if (prefs.getBoolean(PreferencesActivity.KEY_NO_CONTINUES_AUTO_FOCUS, true)) {
-				focusMode = findSettableValue(parameters.getSupportedFocusModes(),
+			if (prefs.getBoolean(
+					PreferencesActivity.KEY_NO_CONTINUES_AUTO_FOCUS, true)) {
+				focusMode = findSettableValue(
+						parameters.getSupportedFocusModes(),
 						Camera.Parameters.FOCUS_MODE_AUTO);
 			} else {
-				focusMode = findSettableValue(parameters.getSupportedFocusModes(),
-						"continuous-picture", // Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE in 4.0+
-						"continuous-video",   // Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO in 4.0+
+				focusMode = findSettableValue(
+						parameters.getSupportedFocusModes(),
+						"continuous-picture", // Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
+												// in 4.0+
+						"continuous-video", // Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO
+											// in 4.0+
 						Camera.Parameters.FOCUS_MODE_AUTO);
 			}
 		}
@@ -144,8 +165,8 @@ final class CameraConfigurationManager {
 		// Maybe selected auto-focus but not available, so fall through here:
 		if (focusMode == null) {
 			focusMode = findSettableValue(parameters.getSupportedFocusModes(),
-					Camera.Parameters.FOCUS_MODE_MACRO,
-					"edof"); // Camera.Parameters.FOCUS_MODE_EDOF in 2.2+
+					Camera.Parameters.FOCUS_MODE_MACRO, "edof"); // Camera.Parameters.FOCUS_MODE_EDOF
+																	// in 2.2+
 		}
 
 		if (focusMode != null) {
@@ -168,8 +189,10 @@ final class CameraConfigurationManager {
 		Camera.Parameters parameters = camera.getParameters();
 		doSetTorch(parameters, newSetting);
 		camera.setParameters(parameters);
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
-		boolean currentSetting = prefs.getBoolean(PreferencesActivity.KEY_ENABLE_TORCH, false);
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(mPreviewView.getContext());
+		boolean currentSetting = prefs.getBoolean(
+				PreferencesActivity.KEY_ENABLE_TORCH, false);
 		if (currentSetting != newSetting) {
 			SharedPreferences.Editor editor = prefs.edit();
 			editor.putBoolean(PreferencesActivity.KEY_ENABLE_TORCH, newSetting);
@@ -178,11 +201,13 @@ final class CameraConfigurationManager {
 	}
 
 	int getHeightDiff() {
-		return this.heightDiff;
+		return this.mHeightDiff;
 	}
 
-	public void initializeTorch(Camera.Parameters parameters, SharedPreferences prefs) {
-		boolean currentSetting = prefs.getBoolean(PreferencesActivity.KEY_ENABLE_TORCH, false);
+	public void initializeTorch(Camera.Parameters parameters,
+			SharedPreferences prefs) {
+		boolean currentSetting = prefs.getBoolean(
+				PreferencesActivity.KEY_ENABLE_TORCH, false);
 		doSetTorch(parameters, currentSetting);
 	}
 
@@ -204,18 +229,22 @@ final class CameraConfigurationManager {
 	}
 
 	private static Point findBestPreviewSizeValue(Camera.Parameters parameters,
-			Point screenResolution,
-			boolean portrait) {
+			Point screenResolution, boolean portrait) {
 		Point bestSize = null;
 		int diff = Integer.MAX_VALUE;
-		for (Camera.Size supportedPreviewSize : parameters.getSupportedPreviewSizes()) {
-			int pixels = supportedPreviewSize.height * supportedPreviewSize.width;
+		for (Camera.Size supportedPreviewSize : parameters
+				.getSupportedPreviewSizes()) {
+			int pixels = supportedPreviewSize.height
+					* supportedPreviewSize.width;
 			if (pixels < MIN_PREVIEW_PIXELS) {
 				continue;
 			}
-			int supportedWidth = portrait ? supportedPreviewSize.height : supportedPreviewSize.width;
-			int supportedHeight = portrait ? supportedPreviewSize.width : supportedPreviewSize.height;
-			int newDiff = Math.abs(screenResolution.x * supportedHeight - supportedWidth * screenResolution.y);
+			int supportedWidth = portrait ? supportedPreviewSize.height
+					: supportedPreviewSize.width;
+			int supportedHeight = portrait ? supportedPreviewSize.width
+					: supportedPreviewSize.height;
+			int newDiff = Math.abs(screenResolution.x * supportedHeight
+					- supportedWidth * screenResolution.y);
 			if (newDiff == 0) {
 				bestSize = new Point(supportedWidth, supportedHeight);
 				break;

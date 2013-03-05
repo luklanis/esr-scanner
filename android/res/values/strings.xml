@@ -76,6 +76,8 @@
     <string name="msg_red_result_view_not_available">No details for red payment slips!</string>
     <string name="msg_confirm_delete_title">Delete payment</string>
     <string name="msg_confirm_delete_message">You are about to delete the payment, OK to proceed?</string>
+    <string name="msg_unsupported_field">The selected input doesn\'t support the needed characters!</string>
+    <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
     <string name="result_account">Account</string>
     <string name="result_address">Recipient</string>
     <string name="result_reference_number">Reference Number</string>

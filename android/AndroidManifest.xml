@@ -18,8 +18,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="ch.luklanis.esscan"
     android:installLocation="auto"
-    android:versionCode="27"
-    android:versionName="0.7.8" >
+    android:versionCode="28"
+    android:versionName="0.8.0" >
 
     <uses-sdk
         android:minSdkVersion="10"
@@ -97,7 +97,10 @@
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
             </intent-filter>
-            <meta-data android:name="android.view.im" android:resource="@xml/method" />
+
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/method" />
         </service>
     </application>
 

@@ -50,26 +50,26 @@ public final class CameraManager {
 	public static final double FRAME_WIDTH_INCHES = 3.74;
 	public static final double FRAME_HEIGHT_INCHES = 0.23;
 
-	private final View view;
-	private final CameraConfigurationManager configManager;
-	private Camera camera;
+	private final View mPreviewView;
+	private final CameraConfigurationManager mConfigManager;
+	private Camera mCamera;
 	private AutoFocusManager autoFocusManager;
-	private Rect framingRect;
+	private Rect mFramingRect;
 	private Rect framingRectInPreview;
 	private boolean initialized;
-	private boolean previewing;
+	private boolean mPreviewing;
 	private boolean reverseImage;
 
 	/**
 	 * Preview frames are delivered here, which we pass on to the registered handler. Make sure to
 	 * clear the handler so it will only receive one message.
 	 */
-	private final PreviewCallback previewCallback;
+	private final PreviewCallback mPreviewCallback;
 
-	public CameraManager(View context) {
-		this.view = context;
-		this.configManager = new CameraConfigurationManager(context);
-		previewCallback = new PreviewCallback(configManager);
+	public CameraManager(View previewView) {
+		this.mPreviewView = previewView;
+		this.mConfigManager = new CameraConfigurationManager(previewView);
+		mPreviewCallback = new PreviewCallback(mConfigManager);
 	}
 
 	/**
@@ -79,24 +79,24 @@ public final class CameraManager {
 	 * @throws IOException Indicates the camera driver failed to open.
 	 */
 	public void openDriver(SurfaceHolder holder) throws IOException {
-		Camera theCamera = camera;
+		Camera theCamera = mCamera;
 		if (theCamera == null) {
 			theCamera = new OpenCameraManager().build().open();
 			if (theCamera == null) {
 				throw new IOException();
 			}
-			camera = theCamera;
+			mCamera = theCamera;
 		}
-		camera.setPreviewDisplay(holder);
+		mCamera.setPreviewDisplay(holder);
 
 		if (!initialized) {
 			initialized = true;
-			configManager.initFromCameraParameters(theCamera);
+			mConfigManager.initFromCameraParameters(theCamera);
 		}
 
-		configManager.setDesiredCameraParameters(theCamera);
+		mConfigManager.setDesiredCameraParameters(theCamera);
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPreviewView.getContext());
 
 		reverseImage = prefs.getBoolean(PreferencesActivity.KEY_REVERSE_IMAGE, false);
 	}
@@ -105,13 +105,13 @@ public final class CameraManager {
 	 * Closes the camera driver if still in use.
 	 */
 	public void closeDriver() {
-		if (camera != null) {
-			camera.release();
-			camera = null;
+		if (mCamera != null) {
+			mCamera.release();
+			mCamera = null;
 
 			// Make sure to clear these each time we close the camera, so that any scanning rect
 			// requested by intent is forgotten.
-			framingRect = null;
+			mFramingRect = null;
 			framingRectInPreview = null;
 		}
 	}
@@ -120,11 +120,11 @@ public final class CameraManager {
 	 * Asks the camera hardware to begin drawing preview frames to the screen.
 	 */
 	public void startPreview() {
-		Camera theCamera = camera;
-		if (theCamera != null && !previewing) {
+		Camera theCamera = mCamera;
+		if (theCamera != null && !mPreviewing) {
 			theCamera.startPreview();
-			previewing = true;
-			autoFocusManager = new AutoFocusManager(view.getContext(), camera);
+			mPreviewing = true;
+			autoFocusManager = new AutoFocusManager(mPreviewView.getContext(), mCamera);
 		}
 	}
 
@@ -136,14 +136,14 @@ public final class CameraManager {
 			autoFocusManager.stop();
 			autoFocusManager = null;
 		}
-		if (camera != null && previewing) {
-			camera.setOneShotPreviewCallback(null);
-			previewCallback.setHandler(null, 0);
-			camera.stopPreview();
+		if (mCamera != null && mPreviewing) {
+			mCamera.setOneShotPreviewCallback(null);
+			mPreviewCallback.setHandler(null, 0);
+			mCamera.stopPreview();
 
-			this.configManager.setTorch(camera, false);
+			this.mConfigManager.setTorch(mCamera, false);
 
-			previewing = false;
+			mPreviewing = false;
 		}
 	}
 
@@ -151,11 +151,11 @@ public final class CameraManager {
 	 * Convenience method for {@link com.google.zxing.client.android.CaptureActivity}
 	 */
 	public synchronized void setTorch(boolean newSetting) {
-		if (camera != null) {
+		if (mCamera != null) {
 			if (autoFocusManager != null) {
 				autoFocusManager.stop();
 			}
-			configManager.setTorch(camera, newSetting);
+			mConfigManager.setTorch(mCamera, newSetting);
 			if (autoFocusManager != null) {
 				autoFocusManager.start();
 			}
@@ -171,10 +171,10 @@ public final class CameraManager {
 	 * @param message The what field of the message to be sent.
 	 */
 	public void requestOcrDecode(Handler handler, int message) {
-		Camera theCamera = camera;
-		if (theCamera != null && previewing) {			
-			previewCallback.setHandler(handler, message);
-			theCamera.setOneShotPreviewCallback(previewCallback);
+		Camera theCamera = mCamera;
+		if (theCamera != null && mPreviewing) {			
+			mPreviewCallback.setHandler(handler, message);
+			theCamera.setOneShotPreviewCallback(mPreviewCallback);
 		}
 	}
 
@@ -186,15 +186,15 @@ public final class CameraManager {
 	 * @return The rectangle to draw on screen in window coordinates.
 	 */
 	public Rect getFramingRect() {
-		if (framingRect == null) {
-			if (camera == null) {
+		if (mFramingRect == null) {
+			if (mCamera == null) {
 				return null;
 			}
 
-			Point previewResolution = configManager.getPreviewResolution();
+			Point previewResolution = mConfigManager.getPreviewResolution();
 
 			DisplayMetrics metrics = new DisplayMetrics();
-			((WindowManager) view.getContext().getSystemService(Context.WINDOW_SERVICE))
+			((WindowManager) mPreviewView.getContext().getSystemService(Context.WINDOW_SERVICE))
 					.getDefaultDisplay().getMetrics(metrics);
 
 			int width = (int) (metrics.xdpi * FRAME_WIDTH_INCHES);
@@ -212,9 +212,9 @@ public final class CameraManager {
 			int leftOffset = (previewResolution.x - width) / 2;
 			int topOffset = ((previewResolution.y - height) / 2);
 
-			framingRect = new Rect(leftOffset, topOffset, leftOffset + width, topOffset + height);
+			mFramingRect = new Rect(leftOffset, topOffset, leftOffset + width, topOffset + height);
 		}
-		return framingRect;
+		return mFramingRect;
 	}
 
 	/**
@@ -233,8 +233,8 @@ public final class CameraManager {
 
 			rect.offset(0, getFramingTopOffset());
 
-			Point cameraResolution = configManager.getCameraResolution();
-			Point screenResolution = configManager.getPreviewResolution();
+			Point cameraResolution = mConfigManager.getCameraResolution();
+			Point screenResolution = mConfigManager.getPreviewResolution();
 
 			float scaleX = (float)cameraResolution.x / (float)screenResolution.x;
 			float scaleY = (float)cameraResolution.y / (float)screenResolution.y;
@@ -268,7 +268,7 @@ public final class CameraManager {
 	}
 
 	public int getFramingTopOffset() {
-		return configManager.getHeightDiff() / 2;
+		return mConfigManager.getHeightDiff() / 2;
 	}
 
 }
