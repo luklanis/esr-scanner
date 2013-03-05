@@ -33,14 +33,14 @@ import android.util.Log;
  *
  * The code for this class was adapted from the ZXing project: http://code.google.com/p/zxing/
  */
-final class CaptureActivityHandler extends Handler {
+public final class CaptureActivityHandler extends Handler {
 
 	private static final String TAG = CaptureActivityHandler.class.getSimpleName();
 
 	private static final long OCR_INIT_DELAY = 200;
 
 	private static State state;
-	private final CaptureActivity activity;
+	private final IBase base;
 	private final CameraManager cameraManager;
 	private DecodeThread decodeThread;
 
@@ -50,8 +50,8 @@ final class CaptureActivityHandler extends Handler {
 		DONE
 	}
 
-	CaptureActivityHandler(CaptureActivity activity, CameraManager cameraManager) {
-		this.activity = activity;
+	public CaptureActivityHandler(IBase base, CameraManager cameraManager) {
+		this.base = base;
 		this.cameraManager = cameraManager;
 
 		decodeThread = null;
@@ -76,12 +76,12 @@ final class CaptureActivityHandler extends Handler {
 			if (state != State.DONE) {
 				state = State.SUCCESS;
 				try {
-					activity.presentOcrDecodeResult((OcrResult) message.obj);
+					base.presentOcrDecodeResult((OcrResult) message.obj);
 				} catch (NullPointerException e) {
 					// Continue
 				}
 				requestOcrDecodeWhenThreadReady();
-				activity.drawViewfinder();  
+				base.drawViewfinder();  
 			}
 			break;
 		case R.id.decode_failed:
@@ -94,14 +94,14 @@ final class CaptureActivityHandler extends Handler {
 			state = State.DONE;
 			PsResult result = (PsResult) message.obj;
 
-			activity.showResult(result);
+			base.showResult(result);
 			break;
 		}
 	}
 
 	public void startDecode(TessBaseAPI baseApi) {
 		if (this.decodeThread == null) {
-			this.decodeThread = new DecodeThread(this.activity, baseApi);
+			this.decodeThread = new DecodeThread(this.base, baseApi);
 			this.decodeThread.start();
 		}
 	}
@@ -143,7 +143,7 @@ final class CaptureActivityHandler extends Handler {
 			cameraManager.startPreview();
 
 			requestOcrDecodeWhenThreadReady();
-			activity.drawViewfinder();    
+			base.drawViewfinder();    
 		}
 	}
 

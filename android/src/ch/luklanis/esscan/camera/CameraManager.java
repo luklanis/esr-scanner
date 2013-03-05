@@ -18,6 +18,7 @@
 package ch.luklanis.esscan.camera;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -26,6 +27,8 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.view.SurfaceHolder;
+import android.view.View;
+import android.view.WindowManager;
 import ch.luklanis.esscan.PlanarYUVLuminanceSource;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.camera.open.OpenCameraManager;
@@ -47,7 +50,7 @@ public final class CameraManager {
 	public static final double FRAME_WIDTH_INCHES = 3.74;
 	public static final double FRAME_HEIGHT_INCHES = 0.23;
 
-	private final Activity activity;
+	private final View view;
 	private final CameraConfigurationManager configManager;
 	private Camera camera;
 	private AutoFocusManager autoFocusManager;
@@ -63,9 +66,9 @@ public final class CameraManager {
 	 */
 	private final PreviewCallback previewCallback;
 
-	public CameraManager(Activity activity) {
-		this.activity = activity;
-		this.configManager = new CameraConfigurationManager(activity);
+	public CameraManager(View context) {
+		this.view = context;
+		this.configManager = new CameraConfigurationManager(context);
 		previewCallback = new PreviewCallback(configManager);
 	}
 
@@ -93,7 +96,7 @@ public final class CameraManager {
 
 		configManager.setDesiredCameraParameters(theCamera);
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(view.getContext());
 
 		reverseImage = prefs.getBoolean(PreferencesActivity.KEY_REVERSE_IMAGE, false);
 	}
@@ -121,7 +124,7 @@ public final class CameraManager {
 		if (theCamera != null && !previewing) {
 			theCamera.startPreview();
 			previewing = true;
-			autoFocusManager = new AutoFocusManager(activity, camera);
+			autoFocusManager = new AutoFocusManager(view.getContext(), camera);
 		}
 	}
 
@@ -191,7 +194,8 @@ public final class CameraManager {
 			Point previewResolution = configManager.getPreviewResolution();
 
 			DisplayMetrics metrics = new DisplayMetrics();
-			activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+			((WindowManager) view.getContext().getSystemService(Context.WINDOW_SERVICE))
+					.getDefaultDisplay().getMetrics(metrics);
 
 			int width = (int) (metrics.xdpi * FRAME_WIDTH_INCHES);
 			if (width < MIN_FRAME_WIDTH) {

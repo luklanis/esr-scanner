@@ -39,7 +39,7 @@ import android.util.Log;
  */
 final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 
-	private CaptureActivity activity;
+	private IBase base;
 	private TessBaseAPI baseApi;
 	private Bitmap bitmap;
 	private OcrResult ocrResult;
@@ -49,17 +49,17 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 	private long end;
 
 	// Constructor for single-shot mode
-	OcrRecognizeAsyncTask(CaptureActivity activity, TessBaseAPI baseApi, 
+	OcrRecognizeAsyncTask(IBase base, TessBaseAPI baseApi, 
 			ProgressDialog indeterminateDialog, Bitmap bitmap) {
-		this.activity = activity;
+		this.base = base;
 		this.baseApi = baseApi;
 		this.indeterminateDialog = indeterminateDialog;
 		this.bitmap = bitmap;
 	}
 
 	// Constructor for continuous recognition mode
-	OcrRecognizeAsyncTask(CaptureActivity activity, TessBaseAPI baseApi, Bitmap bitmap) {
-		this.activity = activity;
+	OcrRecognizeAsyncTask(IBase base, TessBaseAPI baseApi, Bitmap bitmap) {
+		this.base = base;
 		this.baseApi = baseApi;
 		this.bitmap = bitmap;
 	}
@@ -105,7 +105,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 		List<Rect> textlineBoxes = baseApi.getTextlines().getBoxRects();
 		List<Rect> regionBoxes = baseApi.getRegions().getBoxRects();
 
-		PsValidation validation = activity.getValidation();
+		PsValidation validation = base.getValidation();
 
 		while(validation.validate(textResult)){
 			if(!validation.nextStep()){
@@ -122,8 +122,8 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 	protected void onPostExecute(Boolean result) {
 		super.onPostExecute(result);
 
-		Handler handler = activity.getHandler();
-		PsValidation validation = activity.getValidation();
+		Handler handler = base.getHandler();
+		PsValidation validation = base.getValidation();
 		if (validation.finished() && handler != null) {
 			// Send results for single-shot mode recognition.
 			if (result) {

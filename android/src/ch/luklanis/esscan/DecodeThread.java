@@ -31,13 +31,13 @@ import java.util.concurrent.CountDownLatch;
  */
 final class DecodeThread extends Thread {
 
-  private final CaptureActivity activity;
+  private final IBase base;
   private Handler handler;
   private final CountDownLatch handlerInitLatch;
   private final TessBaseAPI baseApi;
 
-  DecodeThread(CaptureActivity activity, TessBaseAPI baseApi) {
-    this.activity = activity;
+  DecodeThread(IBase base, TessBaseAPI baseApi) {
+    this.base = base;
     this.baseApi = baseApi;
     handlerInitLatch = new CountDownLatch(1);
   }
@@ -54,7 +54,7 @@ final class DecodeThread extends Thread {
   @Override
   public void run() {
     Looper.prepare();
-    handler = new DecodeHandler(activity, baseApi);
+    handler = new DecodeHandler(base, baseApi);
     handlerInitLatch.countDown();
     Looper.loop();
   }

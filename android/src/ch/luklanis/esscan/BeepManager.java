@@ -16,7 +16,6 @@
  */
 package ch.luklanis.esscan;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
@@ -41,27 +40,28 @@ public final class BeepManager {
   private static final long VIBRATE_DURATION = 200L;
 
 
-  private final Activity activity;
+  private final Context context;
   private MediaPlayer mediaPlayer;
   private boolean playBeep;
 
 private boolean vibrate;
 
-  public BeepManager(Activity activity) {
-    this.activity = activity;
+  public BeepManager(Context context) {
+    this.context = context;
     this.mediaPlayer = null;
     updatePrefs();
   }
 
   public void updatePrefs() {
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-    playBeep = shouldBeep(prefs, activity);
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    playBeep = shouldBeep(prefs, context);
     vibrate = prefs.getBoolean(PreferencesActivity.KEY_VIBRATE, false);
     if (playBeep && mediaPlayer == null) {
-      // The volume on STREAM_SYSTEM is not adjustable, and users found it too loud,
-      // so we now play on the music stream.
-      activity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-      mediaPlayer = buildMediaPlayer(activity);
+    	// Uncomment to use BeepManager in input method also
+//      // The volume on STREAM_SYSTEM is not adjustable, and users found it too loud,
+//      // so we now play on the music stream.
+//      activity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+      mediaPlayer = buildMediaPlayer(context);
     }
   }
 
@@ -70,7 +70,7 @@ private boolean vibrate;
       mediaPlayer.start();
     }
     if (vibrate) {
-        Vibrator vibrator = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         vibrator.vibrate(VIBRATE_DURATION);
       }
   }

@@ -47,7 +47,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <application
         android:icon="@drawable/ic_launcher"
@@ -89,10 +89,16 @@
             android:label="Code row send service" >
         </service>
 
-        <receiver
-            android:name=".codesend.StopServiceReceiver"
-            android:process=":remote" >
-        </receiver>
+        <!-- Declares the input method service -->
+        <service
+            android:name=".ime.ScannerIME"
+            android:label="@string/scanner_ime_label"
+            android:permission="android.permission.BIND_INPUT_METHOD" >
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data android:name="android.view.im" android:resource="@xml/method" />
+        </service>
     </application>
 
 </manifest>
