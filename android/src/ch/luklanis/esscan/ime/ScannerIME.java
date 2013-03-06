@@ -47,6 +47,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.inputmethodservice.ExtractEditText;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.KeyboardView;
@@ -217,10 +218,12 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public void onFinishInputView(boolean finishingInput) {
-		if (mInputView == null) {
-			return;
-		}
+		shutdownOcr();
 		
+		super.onFinishInputView(finishingInput);
+	}
+
+	private void shutdownOcr() {
 		if (mCaptureActivityHandler != null) {
 			mCaptureActivityHandler.quitSynchronously();
 			mCaptureActivityHandler = null;
@@ -228,16 +231,17 @@ public class ScannerIME extends InputMethodService implements
 
 		// Stop using the camera, to avoid conflicting with other camera-based
 		// apps
-		mCameraManager.closeDriver();
+		if (mCameraManager != null) {
+			mCameraManager.closeDriver();
+			mCameraManager = null;
+		}
 
-		if (!mHasSurface) {
+		if (!mHasSurface && mInputView != null) {
 			SurfaceView surfaceView = (SurfaceView) mInputView
 					.findViewById(R.id.preview_view);
 			SurfaceHolder surfaceHolder = surfaceView.getHolder();
 			surfaceHolder.removeCallback(this);
 		}
-		
-		super.onFinishInputView(finishingInput);
 	}
 
 	@Override
@@ -257,6 +261,11 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		
+		if (this.mPsValidation == null) {
+			return super.onKeyDown(keyCode, event);
+		}
+		
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK:
 			if (this.mPsValidation.getCurrentStep() > 1) {
@@ -681,6 +690,8 @@ public class ScannerIME extends InputMethodService implements
 	 */
 	@Override
 	public View onCreateInputView() {
+		
+		shutdownOcr();
 
 		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
@@ -691,16 +702,12 @@ public class ScannerIME extends InputMethodService implements
 			mInputView = null;
 			TextView textView = new TextView(this);
 			textView.setText(getResources().getString(R.string.msg_unsupported_orientation));
+			textView.setTextColor(Color.RED);
 			return textView;
 		}
 		
 		mInputView = (RelativeLayout) getLayoutInflater().inflate(
 				R.layout.input, null);
-
-		mExtractEditText = new ExtractEditText(this);
-		mExtractEditText.setId(android.R.id.inputExtractEditText);
-		setExtractView(mExtractEditText);
-		setExtractViewShown(true);
 		
 		return mInputView;
 	}
@@ -760,7 +767,7 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public boolean onEvaluateFullscreenMode() {
-		return true;
+		return false;
 	}
 
 }
