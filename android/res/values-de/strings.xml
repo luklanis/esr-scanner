@@ -80,6 +80,8 @@
     <string name="msg_confirm_delete_message">Soll die Zahlung gelöscht werden?</string>
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
+    <string name="notif_scan_to_clipboard_title">ESR in die Zwischenablage scannen</string>
+    <string name="notif_scan_to_clipboard_summary">Anwählen um einen ESR direkt in die Zwischenablage zu scannen</string>
     <string name="picture">Ein kleines Bild von einem Orangen Einzahlungsschein</string>
     <string name="preferences_only_macro_focus_title">Makrofokus</string>
     <string name="preferences_no_continous_auto_focus_title">Kein fortlaufender Autofokus</string>
@@ -107,9 +109,9 @@
     <string name="preferences_backup_summary">Klicken um eine Kopie der Datenbank und den Einstellungen auf dem externen Speicher zu erstellen.</string>
     <string name="preferences_restore_title">Wiederherstellen</string>
     <string name="preferences_restore_summary">Klicken um die Datenbank und Einstellungen von einer zuvor erstellten Kopie wieder herzustellen. Alle Daten werden überschrieben.</string>
-    <string name="preferences_only_copy_title">Kopiere Ergebnis in Zwischenablage</string>
-    <string name="preferences_only_copy_summary">Wenn aktiviert, wird das Ergebnis nicht gespeichert.\n
-        Sie wird aber inaktiv bei eingeschaltetem Beleglesermodus.</string>
+    <string name="preferences_only_copy_title">Kopiere Ergebnis über Benachrichtigung</string>
+    <string name="preferences_only_copy_summary">Wenn aktiviert, erscheint beim Verlassen des ESRScanners eine Benachrichtigung,
+         über die Scans direkt in die Zwischenablage gelangen.</string>
     <string name="preferences_copy_part_title">Zu kopierender Ergebnisteil</string>
     <string name="result_exported_dta">Payment exported in file</string>
     <string name="result_account">Konto</string>

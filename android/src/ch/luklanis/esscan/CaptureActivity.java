@@ -42,6 +42,8 @@ import ch.luklanis.esscan.paymentslip.PsResult;
 import ch.luklanis.esscan.paymentslip.PsValidation;
 
 import android.app.AlertDialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 //import android.content.ClipData;
 import android.content.BroadcastReceiver;
@@ -55,6 +57,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager.MulticastLock;
@@ -63,6 +66,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
@@ -112,10 +116,16 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private static final String SERVICE_TYPE = "_esr._tcp.local.";
 
+	private static final int NOTIFICATION_ID = 1;
+
+	private static final String COPY_AND_RETURN = "copy_and_return";
+
 	private static JmDNS mJmDns = null;
 	private static ServiceInfo mServiceInfo;
 
 	private static MulticastLock mMusticastLock;
+
+	private static boolean sCopyAndReturn;
 
 	private CameraManager mCameraManager;
 	private CaptureActivityHandler mCaptureActivityHandler;
@@ -230,7 +240,7 @@ public final class CaptureActivity extends SherlockActivity implements
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
+
 		mSurfaceView = (SurfaceView) findViewById(R.id.preview_view);
 		mCameraManager = new CameraManager(mSurfaceView);
 
@@ -290,6 +300,15 @@ public final class CaptureActivity extends SherlockActivity implements
 			doBindService();
 		}
 
+		Intent intent = getIntent();
+
+		if (intent != null && intent.getBooleanExtra(COPY_AND_RETURN, false)) {
+			sCopyAndReturn = true;
+			setIntent(null);
+		} else {
+			sCopyAndReturn = false;
+		}
+
 		checkAndRunFirstLaunch();
 	}
 
@@ -330,6 +349,12 @@ public final class CaptureActivity extends SherlockActivity implements
 		closeJmDns();
 
 		doUnbindService();
+
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
+			CreateCopyNotification();
+		}
 
 		super.onPause();
 	}
@@ -666,19 +691,26 @@ public final class CaptureActivity extends SherlockActivity implements
 			return;
 		}
 
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(this);
-		if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
+		if (sCopyAndReturn) {
 			EsrResult esrResult = (EsrResult) psResult;
-			String toCopy = prefs.getString(PreferencesActivity.KEY_COPY_PART, "0").equals("0") ? esrResult
-					.getCompleteCode() : esrResult.getReference();
+			String toCopy = PreferenceManager.getDefaultSharedPreferences(this)
+					.getString(PreferencesActivity.KEY_COPY_PART, "0")
+					.equals("0") ? esrResult.getCompleteCode() : esrResult
+					.getReference();
 
 			ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 			clipboardManager.setText(toCopy);
 
-			showDialogAndRestartScan(clipboardManager.hasText() ? R.string.msg_copied
-					: R.string.msg_coderow_not_sent);
+			Toast toast = Toast.makeText(
+					getApplicationContext(),
+					getResources().getString(
+							clipboardManager.hasText() ? R.string.msg_copied
+									: R.string.msg_coderow_not_sent),
+					Toast.LENGTH_SHORT);
+			toast.setGravity(Gravity.BOTTOM, 0, 0);
+			toast.show();
 
+			finish();
 			return;
 		}
 
@@ -991,6 +1023,36 @@ public final class CaptureActivity extends SherlockActivity implements
 				}
 			}
 		}
+	}
+
+	private void CreateCopyNotification() {
+		Resources res = getResources();
+
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(
+				this)
+				.setSmallIcon(R.drawable.ic_menu_edit)
+				.setContentTitle(
+						res.getString(R.string.notif_scan_to_clipboard_title))
+				.setContentText(
+						res.getString(R.string.notif_scan_to_clipboard_summary));
+
+		// Creates an Intent for the Activity
+		Intent notifyIntent = new Intent(this, CaptureActivity.class);
+		// Sets the Activity to start in a new, empty task
+		notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+				| Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+		notifyIntent.putExtra(COPY_AND_RETURN, true);
+		// Creates the PendingIntent
+		PendingIntent pendigIntent = PendingIntent.getActivity(this, 0,
+				notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+		// Puts the PendingIntent into the notification builder
+		builder.setContentIntent(pendigIntent);
+
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		// mId allows you to update the notification later on.
+		notificationManager.notify(NOTIFICATION_ID, builder.getNotification());
 	}
 
 	public void setBaseApi(TessBaseAPI baseApi) {

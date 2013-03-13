@@ -80,6 +80,8 @@
     <string name="msg_confirm_delete_message">You are about to delete the payment, OK to proceed?</string>
     <string name="msg_unsupported_field">The selected input doesn\'t support the needed characters!</string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
+    <string name="notif_scan_to_clipboard_title">ESRScanner scan to clipboard</string>
+    <string name="notif_scan_to_clipboard_summary">Tab to scan ESR to clipboard and return</string>
     <string name="picture">A little picture of a orange payment slip</string>
     <string name="preferences_only_macro_focus_title">Macro focus</string>
     <string name="preferences_no_continous_auto_focus_title">No continues auto focus</string>
@@ -107,9 +109,9 @@
     <string name="preferences_backup_summary">Tab to create backup of database and preferences on external storage.</string>
     <string name="preferences_restore_title">Restore</string>
     <string name="preferences_restore_summary">Tab to restore a previous backup. Existing data will be overwritten.</string>
-    <string name="preferences_only_copy_title">Copy scan result to clipboard</string>
-    <string name="preferences_only_copy_summary">If checked, the result wouldn\'t be saved in history.\n
-        This option is inactive if payment slip stream mode is enabled.</string>
+    <string name="preferences_only_copy_title">Copy scan result over notification</string>
+    <string name="preferences_only_copy_summary">If checked, a notification appears when leaving 
+        ESRScanner to scan directly to clipboard.</string>
     <string name="preferences_copy_part_title">Scan result part to copy</string>
     <string name="result_account">Account</string>
     <string name="result_address">Recipient</string>
