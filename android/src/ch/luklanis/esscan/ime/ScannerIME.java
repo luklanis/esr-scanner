@@ -57,20 +57,25 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.text.InputType;
+import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -700,10 +705,34 @@ public class ScannerIME extends InputMethodService implements
 		
 		if (screenWidth < screenHeight) {
 			mInputView = null;
+			LinearLayout layout = new LinearLayout(this);
+			layout.setBackgroundColor(Color.WHITE);
+			layout.setOrientation(LinearLayout.VERTICAL);
+			layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			layout.setGravity(Gravity.BOTTOM);
+			
 			TextView textView = new TextView(this);
 			textView.setText(getResources().getString(R.string.msg_unsupported_orientation));
 			textView.setTextColor(Color.RED);
-			return textView;
+			textView.setPadding(6, 0, 6, 0);
+			textView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			layout.addView(textView, 0);
+			
+			Button button = new Button(this);
+			button.setText(R.string.button_switch_ime);
+			button.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					InputMethodManager im = (InputMethodManager) getContext()
+							.getSystemService(Context.INPUT_METHOD_SERVICE);
+					im.showInputMethodPicker();
+				}
+			});
+			button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			layout.addView(button, 1);
+			
+			return layout;
 		}
 		
 		mInputView = (RelativeLayout) getLayoutInflater().inflate(

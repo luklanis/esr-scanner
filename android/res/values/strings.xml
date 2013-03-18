@@ -29,6 +29,7 @@
     <string name="button_change">Change</string>
     <string name="button_copy_code_row">Copy code row</string>
     <string name="button_send_code_row">Send code row</string>
+    <string name="button_switch_ime">Switch input method</string>
     <string name="detail_title">Details</string>
     <string name="help_button_done">Done</string>
     <string name="help_button_back">Back</string>

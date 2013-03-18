@@ -29,6 +29,7 @@
     <string name="button_change">Andere</string>
     <string name="button_copy_code_row">Codierzeile kopieren</string>
     <string name="button_send_code_row">Codierzeile senden</string>
+    <string name="button_switch_ime">Eingabemethode wechseln</string>
     <string name="detail_title">Details</string>
     <string name="help_button_done">Schliessen</string>
     <string name="help_button_back">Zurück</string>
