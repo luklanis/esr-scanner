@@ -41,6 +41,7 @@ import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
 import ch.luklanis.esscan.paymentslip.PsValidation;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -164,6 +165,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private ServiceConnection mServiceConnection = new ServiceConnection() {
 
+		@SuppressLint("NewApi")
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mEsrSenderService = ((ESRSender.LocalBinder) service).getService();
@@ -354,6 +356,8 @@ public final class CaptureActivity extends SherlockActivity implements
 				.getDefaultSharedPreferences(this);
 		if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
 			CreateCopyNotification();
+		} else {
+			RemoveCopyNotification();
 		}
 
 		super.onPause();
@@ -418,6 +422,7 @@ public final class CaptureActivity extends SherlockActivity implements
 		return true;
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent;
@@ -1053,6 +1058,12 @@ public final class CaptureActivity extends SherlockActivity implements
 		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		// mId allows you to update the notification later on.
 		notificationManager.notify(NOTIFICATION_ID, builder.getNotification());
+	}
+
+	private void RemoveCopyNotification() {
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		// mId allows you to update the notification later on.
+		notificationManager.cancel(NOTIFICATION_ID);
 	}
 
 	public void setBaseApi(TessBaseAPI baseApi) {
