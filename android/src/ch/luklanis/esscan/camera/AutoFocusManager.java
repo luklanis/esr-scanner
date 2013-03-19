@@ -57,19 +57,19 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
         !sharedPrefs.getBoolean(PreferencesActivity.KEY_ONLY_MACRO_FOCUS, false) &&
         FOCUS_MODES_CALLING_AF.contains(currentFocusMode);
     Log.i(TAG, "Current focus mode '" + currentFocusMode + "'; use auto focus? " + useAutoFocus);
-    start();
+    //start();
   }
 
   @Override
   public synchronized void onAutoFocus(boolean success, Camera theCamera) {
-    if (active) {
+    if (active && !success) {
       outstandingTask = new AutoFocusTask();
       taskExec.execute(outstandingTask);
     }
   }
 
-  synchronized void start() {
-    if (useAutoFocus) {
+  public synchronized void start() {
+    //if (useAutoFocus) {
       active = true;
       try {
         camera.autoFocus(this);
@@ -77,18 +77,18 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
         // Have heard RuntimeException reported in Android 4.0.x+; continue?
         Log.w(TAG, "Unexpected exception while focusing", re);
       }
-    }
+    //}
   }
 
   synchronized void stop() {
-    if (useAutoFocus) {
+    //if (useAutoFocus) {
       try {
         camera.cancelAutoFocus();
       } catch (RuntimeException re) {
         // Have heard RuntimeException reported in Android 4.0.x+; continue?
         Log.w(TAG, "Unexpected exception while cancelling focusing", re);
       }
-    }
+    //}
     if (outstandingTask != null) {
       outstandingTask.cancel(true);
       outstandingTask = null;
@@ -99,11 +99,11 @@ final class AutoFocusManager implements Camera.AutoFocusCallback {
   private final class AutoFocusTask extends AsyncTask<Object,Object,Object> {
     @Override
     protected Object doInBackground(Object... voids) {
-      try {
-        Thread.sleep(AUTO_FOCUS_INTERVAL_MS);
-      } catch (InterruptedException e) {
-        // continue
-      }
+//      try {
+//        Thread.sleep(AUTO_FOCUS_INTERVAL_MS);
+//      } catch (InterruptedException e) {
+//        // continue
+//      }
       synchronized (AutoFocusManager.this) {
         if (active) {
           start();

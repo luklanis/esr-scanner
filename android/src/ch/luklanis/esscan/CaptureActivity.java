@@ -74,6 +74,7 @@ import android.text.style.CharacterStyle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -244,6 +245,15 @@ public final class CaptureActivity extends SherlockActivity implements
 		super.onResume();
 
 		mSurfaceView = (SurfaceView) findViewById(R.id.preview_view);
+		
+		mSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				mCameraManager.focus();
+				return true;
+			}
+		});
+		
 		mCameraManager = new CameraManager(mSurfaceView);
 
 		mViewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);

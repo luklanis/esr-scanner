@@ -165,8 +165,7 @@ final class CameraConfigurationManager {
 		// Maybe selected auto-focus but not available, so fall through here:
 		if (focusMode == null) {
 			focusMode = findSettableValue(parameters.getSupportedFocusModes(),
-					Camera.Parameters.FOCUS_MODE_MACRO, "edof"); // Camera.Parameters.FOCUS_MODE_EDOF
-																	// in 2.2+
+					Camera.Parameters.FOCUS_MODE_MACRO, Camera.Parameters.FOCUS_MODE_EDOF);
 		}
 
 		if (focusMode != null) {

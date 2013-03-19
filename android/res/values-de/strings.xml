@@ -81,6 +81,7 @@
     <string name="msg_confirm_delete_message">Soll die Zahlung gelöscht werden?</string>
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
+    <string name="msg_touch_to_focus">Zum Fokusieren bitte Display berühren!</string>
     <string name="notif_scan_to_clipboard_title">ESR in die Zwischenablage scannen</string>
     <string name="notif_scan_to_clipboard_summary">Anwählen um einen ESR direkt in die Zwischenablage zu scannen</string>
     <string name="picture">Ein kleines Bild von einem Orangen Einzahlungsschein</string>

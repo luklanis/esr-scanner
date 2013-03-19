@@ -271,4 +271,9 @@ public final class CameraManager {
 		return mConfigManager.getHeightDiff() / 2;
 	}
 
+	public void focus() {
+		if (autoFocusManager != null) {
+			autoFocusManager.start();
+		}
+	}
 }
