@@ -1088,10 +1088,11 @@ public final class CaptureActivity extends SherlockActivity implements
 			mMusticastLock.acquire();
 
 			try {
+				String name = android.os.Build.MODEL.toLowerCase();
 				mJmDns = JmDNS.create(mEsrSenderService.getLocalInterface(),
-						"ESRScanner");
-				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, "ESRScanner",
-						port, "ESRScanner of " + android.os.Build.MODEL);
+						name);
+				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, name,
+						port, "ESR Scanner of " + android.os.Build.MODEL);
 				mJmDns.registerService(mServiceInfo);
 			} catch (IOException e) {
 				e.printStackTrace();
