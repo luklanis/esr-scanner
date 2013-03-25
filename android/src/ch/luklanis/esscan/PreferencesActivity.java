@@ -83,6 +83,8 @@ OnSharedPreferenceChangeListener {
 	public static final String KEY_BUTTON_BACKUP = "preferences_button_backup";
 	public static final String KEY_BUTTON_RESTORE = "preferences_button_restore";
 	
+	public static final String KEY_SERVER_PORT = "preferences_server_port";
+	
 	
 	private static final String TAG = PreferencesActivity.class.getName();
 

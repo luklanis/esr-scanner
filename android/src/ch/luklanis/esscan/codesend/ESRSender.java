@@ -14,13 +14,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ch.luklanis.esscan.PreferencesActivity;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.IBinder;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class ESRSender extends Service {
@@ -46,11 +51,22 @@ public class ESRSender extends Service {
 		public void run() {
 			try {
 				mServerStopped.set(false);
+				
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
+						ESRSender.this);
+
+				mServerPort.compareAndSet(
+						0,
+						prefs.getInt(
+								PreferencesActivity.KEY_SERVER_PORT, 0));
 
 				ServerSocket server = new ServerSocket(mServerPort.get());
 				server.setSoTimeout(300000);
-
-				mServerPort.compareAndSet(0, server.getLocalPort());
+				
+				if (mServerPort.get() == 0) {
+					mServerPort.set(server.getLocalPort());
+					prefs.edit().putInt(PreferencesActivity.KEY_SERVER_PORT, mServerPort.get()).apply();
+				}
 
 				Socket client = null;
 				DataOutputStream os;
@@ -102,6 +118,13 @@ public class ESRSender extends Service {
 					server.close();
 				}
 			} catch (IOException e) {
+				mServerPort.set(0);
+				PreferenceManager
+						.getDefaultSharedPreferences(ESRSender.this)
+						.edit()
+						.putInt(PreferencesActivity.KEY_SERVER_PORT,
+								mServerPort.get()).apply();
+				
 				e.printStackTrace();
 			} finally {
 				mServerStopped.set(true);
@@ -201,9 +224,11 @@ public class ESRSender extends Service {
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface
 					.getNetworkInterfaces(); en.hasMoreElements();) {
+				
 				NetworkInterface intf = en.nextElement();
 				for (Enumeration<InetAddress> enumIpAddr = intf
 						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+					
 					InetAddress inetAddress = enumIpAddr.nextElement();
 					if (!inetAddress.isLoopbackAddress()
 							&& inetAddress.getAddress().length == 4) {
