@@ -216,7 +216,7 @@ public class ESRSender extends Service {
 			}
 		}
 
-		return false;
+		return getLocalInterface() != null;
 	}
 
 	public InetAddress getLocalInterface() {
@@ -228,10 +228,12 @@ public class ESRSender extends Service {
 				NetworkInterface intf = en.nextElement();
 				for (Enumeration<InetAddress> enumIpAddr = intf
 						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
-					
+
 					InetAddress inetAddress = enumIpAddr.nextElement();
 					if (!inetAddress.isLoopbackAddress()
-							&& inetAddress.getAddress().length == 4) {
+							&& inetAddress.getAddress().length == 4
+							&& inetAddress.isSiteLocalAddress()) {
+
 						return inetAddress;
 					}
 				}
