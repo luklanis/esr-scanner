@@ -96,13 +96,19 @@
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_reverse_image"
-            android:summary="@string/preferences_reverse_image_summary"
-            android:title="@string/preferences_reverse_image_title" />
+            android:title="@string/preferences_reverse_image_title"
+            android:summary="@string/preferences_reverse_image_summary" />
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_show_ocr_result"
             android:title="@string/preferences_show_ocr_result_title" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="preferences_show_scan_result"
+            android:title="@string/preferences_show_scan_result_title"
+            android:summary="@string/preferences_show_scan_result_summary" />
     </PreferenceCategory>
 
     <!-- BACKUP/RESTORE SETTINGS -->

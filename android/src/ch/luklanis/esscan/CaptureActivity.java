@@ -164,6 +164,8 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private ESRSender mEsrSenderService;
 
+	private boolean mShowScanResult;
+
 	private ServiceConnection mServiceConnection = new ServiceConnection() {
 
 		@SuppressLint("NewApi")
@@ -301,9 +303,6 @@ public final class CaptureActivity extends SherlockActivity implements
 			mSurfaceHolder.addCallback(this);
 			mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		}
-
-		mEnableStreamMode = this.mSharedPreferences.getBoolean(
-				PreferencesActivity.KEY_ENABLE_STREAM_MODE, false);
 
 		if (mEnableStreamMode) {
 			mServiceIntent = new Intent(this, ESRSender.class);
@@ -737,6 +736,12 @@ public final class CaptureActivity extends SherlockActivity implements
 			return;
 		}
 
+		if (!mShowScanResult) {
+			mHistoryManager.addHistoryItem(psResult);
+			showDialogAndRestartScan(R.string.msg_coderow_saved);
+			return;
+		}
+
 		Intent intent = new Intent(this, HistoryActivity.class);
 		intent.setAction(HistoryActivity.ACTION_SHOW_RESULT);
 		intent.putExtra(HistoryActivity.EXTRA_CODE_ROW,
@@ -974,6 +979,12 @@ public final class CaptureActivity extends SherlockActivity implements
 
 		mShowOcrResult = mSharedPreferences.getBoolean(
 				PreferencesActivity.KEY_SHOW_OCR_RESULT_PREFERENCE, false);
+
+		mShowScanResult = mSharedPreferences.getBoolean(
+				PreferencesActivity.KEY_SHOW_SCAN_RESULT_PREFERENCE, true);
+
+		mEnableStreamMode = mSharedPreferences.getBoolean(
+				PreferencesActivity.KEY_ENABLE_STREAM_MODE, false);
 
 		mBeepManager.updatePrefs();
 	}
