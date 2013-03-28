@@ -46,6 +46,8 @@ public class ESRSender extends Service {
 	private final ArrayBlockingQueue<String> mDataQueue = new ArrayBlockingQueue<String>(
 			200);
 
+	private static InetAddress hostInterface = null;
+
 	private final Runnable mSendDataRunnable = new Runnable() {
 		@Override
 		public void run() {
@@ -191,55 +193,68 @@ public class ESRSender extends Service {
 	}
 
 	public boolean isConnectedLocal() {
-		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		// NetworkInfo info =
-		// connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		NetworkInfo[] allNetworkInfo = connManager.getAllNetworkInfo();
+		return isConnectedLocal(false);
+	}
 
-		for (int i = 0; i < allNetworkInfo.length; i++) {
-			NetworkInfo info = allNetworkInfo[i];
-			int type = info.getType();
+	public boolean isConnectedLocal(boolean refreshInterface) {
+//		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//		// NetworkInfo info =
+//		// connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+//		NetworkInfo[] allNetworkInfo = connManager.getAllNetworkInfo();
+//
+//		for (int i = 0; i < allNetworkInfo.length; i++) {
+//			NetworkInfo info = allNetworkInfo[i];
+//			int type = info.getType();
+//
+//			if (info.isAvailable()
+//					&& info.isConnected()
+//					// && (type == ConnectivityManager.TYPE_BLUETOOTH
+//					// || type == ConnectivityManager.TYPE_DUMMY
+//					// || type == ConnectivityManager.TYPE_ETHERNET
+//					// || type == ConnectivityManager.TYPE_WIFI)) {
+//					&& type != ConnectivityManager.TYPE_MOBILE
+//					&& type != ConnectivityManager.TYPE_MOBILE_DUN
+//					&& type != ConnectivityManager.TYPE_MOBILE_HIPRI
+//					&& type != ConnectivityManager.TYPE_MOBILE_MMS
+//					&& type != ConnectivityManager.TYPE_MOBILE_SUPL
+//					&& type != ConnectivityManager.TYPE_WIMAX) {
+//				return true;
+//			}
+//		}
 
-			if (info.isAvailable()
-					&& info.isConnected()
-					// && (type == ConnectivityManager.TYPE_BLUETOOTH
-					// || type == ConnectivityManager.TYPE_DUMMY
-					// || type == ConnectivityManager.TYPE_ETHERNET
-					// || type == ConnectivityManager.TYPE_WIFI)) {
-					&& type != ConnectivityManager.TYPE_MOBILE
-					&& type != ConnectivityManager.TYPE_MOBILE_DUN
-					&& type != ConnectivityManager.TYPE_MOBILE_HIPRI
-					&& type != ConnectivityManager.TYPE_MOBILE_MMS
-					&& type != ConnectivityManager.TYPE_MOBILE_SUPL
-					&& type != ConnectivityManager.TYPE_WIMAX) {
-				return true;
-			}
-		}
-
-		return getLocalInterface() != null;
+		return getLocalInterface(refreshInterface) != null;
 	}
 
 	public InetAddress getLocalInterface() {
+		return getLocalInterface(false);
+	}
 
-		try {
-			for (Enumeration<NetworkInterface> en = NetworkInterface
-					.getNetworkInterfaces(); en.hasMoreElements();) {
-				
-				NetworkInterface intf = en.nextElement();
-				for (Enumeration<InetAddress> enumIpAddr = intf
-						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
+	public InetAddress getLocalInterface(boolean refreshInterface) {
+		if (hostInterface == null || refreshInterface) {
+			try {
+				for (Enumeration<NetworkInterface> en = NetworkInterface
+						.getNetworkInterfaces(); en.hasMoreElements();) {
 
-					InetAddress inetAddress = enumIpAddr.nextElement();
-					if (!inetAddress.isLoopbackAddress()
-							&& inetAddress.getAddress().length == 4
-							&& inetAddress.isSiteLocalAddress()) {
+					NetworkInterface intf = en.nextElement();
+					for (Enumeration<InetAddress> enumIpAddr = intf
+							.getInetAddresses(); enumIpAddr.hasMoreElements();) {
 
-						return inetAddress;
+						InetAddress inetAddress = enumIpAddr.nextElement();
+						if (!inetAddress.isLoopbackAddress()
+								&& inetAddress.getAddress().length == 4
+								&& inetAddress.isSiteLocalAddress()
+								&& (inetAddress.getAddress()[0] != 10 || intf
+										.getName().contains("wlan"))) {
+
+							return inetAddress;
+						}
 					}
 				}
+			} catch (SocketException ex) {
+				Log.e(TAG, ex.toString());
 			}
-		} catch (SocketException ex) {
-			Log.e(TAG, ex.toString());
+		} else {
+			return hostInterface;
 		}
 
 		return null;
@@ -270,7 +285,7 @@ public class ESRSender extends Service {
 
 	public void startServer() {
 
-		if (isConnectedLocal()) {
+		if (isConnectedLocal(true)) {
 			mStopServer.set(false);
 
 			if (!mServerStopped.get()) {
