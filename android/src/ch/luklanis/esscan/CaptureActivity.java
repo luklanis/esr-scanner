@@ -173,7 +173,7 @@ public final class CaptureActivity extends SherlockActivity implements
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mEsrSenderService = ((ESRSender.LocalBinder) service).getService();
 
-			if (mEsrSenderService.isConnectedLocal()) {
+			if (ESRSender.isConnectedLocal()) {
 				showIPAddresses();
 				new Thread(new Runnable() {
 					public void run() {
@@ -690,7 +690,7 @@ public final class CaptureActivity extends SherlockActivity implements
 	public void showResult(PsResult psResult, boolean fromHistory) {
 
 		if (this.mServiceIsBound && this.mEsrSenderService != null
-				&& this.mEsrSenderService.isConnectedLocal()) {
+				&& ESRSender.isConnectedLocal()) {
 			boolean sent = this.mEsrSenderService.sendToListener(psResult
 					.getCompleteCode());
 
@@ -1020,12 +1020,8 @@ public final class CaptureActivity extends SherlockActivity implements
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			ConnectivityManager conn = (ConnectivityManager) context
-					.getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo networkInfo = conn.getActiveNetworkInfo();
 
-			if (networkInfo == null
-					|| networkInfo.getType() != ConnectivityManager.TYPE_WIFI) {
+			if (!ESRSender.isConnectedLocal()) {
 				if (mEnableStreamMode) {
 					mEnableStreamMode = false;
 					mSharedPreferences

@@ -16,6 +16,7 @@
 
 package ch.luklanis.esscan.history;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
@@ -317,7 +318,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 
 				int msgId = 0;
 
-				if (boundService != null && boundService.isConnectedLocal()) {
+				if (boundService != null && ESRSender.isConnectedLocal()) {
 					boolean sent = this.boundService
 							.sendToListener(completeCode);
 
@@ -365,6 +366,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		}
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onItemSelected(int oldPosition, int newPosition) {
 

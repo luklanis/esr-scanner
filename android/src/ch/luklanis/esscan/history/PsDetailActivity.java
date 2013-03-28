@@ -159,7 +159,7 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 
 				int msgId = 0;
 
-				if (boundService != null && boundService.isConnectedLocal()) {
+				if (boundService != null && ESRSender.isConnectedLocal()) {
 					boolean sent = this.boundService
 							.sendToListener(completeCode);
 

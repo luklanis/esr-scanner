@@ -192,11 +192,11 @@ public class ESRSender extends Service {
 		// am.cancel(pendingIntent);
 	}
 
-	public boolean isConnectedLocal() {
+	public static boolean isConnectedLocal() {
 		return isConnectedLocal(false);
 	}
 
-	public boolean isConnectedLocal(boolean refreshInterface) {
+	public static boolean isConnectedLocal(boolean refreshInterface) {
 //		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 //		// NetworkInfo info =
 //		// connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -225,11 +225,11 @@ public class ESRSender extends Service {
 		return getLocalInterface(refreshInterface) != null;
 	}
 
-	public InetAddress getLocalInterface() {
+	public static InetAddress getLocalInterface() {
 		return getLocalInterface(false);
 	}
 
-	public InetAddress getLocalInterface(boolean refreshInterface) {
+	public static InetAddress getLocalInterface(boolean refreshInterface) {
 		if (hostInterface == null || refreshInterface) {
 			try {
 				for (Enumeration<NetworkInterface> en = NetworkInterface
@@ -246,18 +246,17 @@ public class ESRSender extends Service {
 								&& (inetAddress.getAddress()[0] != 10 || intf
 										.getName().contains("wlan"))) {
 
-							return inetAddress;
+							hostInterface = inetAddress;
+							return hostInterface;
 						}
 					}
 				}
 			} catch (SocketException ex) {
 				Log.e(TAG, ex.toString());
 			}
-		} else {
-			return hostInterface;
 		}
 
-		return null;
+		return hostInterface;
 	}
 
 	public String getLocalIpAddress() {
