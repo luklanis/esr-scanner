@@ -120,18 +120,33 @@
                 tools:ignore="HardcodedText" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/status_view_bottom_left"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
-            android:background="#0000"
-            android:padding="4dip"
-            android:text=""
-            android:textColor="@color/status_text"
-            android:textSize="14sp"
-            android:visibility="gone" />
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0000"
+                android:padding="4dip"
+                android:text="@string/msg_touch_to_focus"
+                android:textColor="@color/status_text"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/status_view_bottom_left"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0000"
+                android:padding="4dip"
+                android:text=""
+                android:textColor="@color/status_text"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/status_view_bottom_right"

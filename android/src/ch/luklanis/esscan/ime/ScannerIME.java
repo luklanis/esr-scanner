@@ -64,6 +64,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -140,6 +141,15 @@ public class ScannerIME extends InputMethodService implements
 		updateFullscreenMode();
 
 		mSurfaceView = (SurfaceView) mInputView.findViewById(R.id.preview_view);
+		
+		mSurfaceView.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				mCameraManager.focus();
+				return true;
+			}
+		});
+		
 		mCameraManager = new CameraManager(mSurfaceView);
 
 		mViewfinderView = (ViewfinderView) mInputView
