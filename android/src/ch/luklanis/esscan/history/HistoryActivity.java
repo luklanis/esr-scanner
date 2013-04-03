@@ -404,7 +404,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 	public int getPositionToActivate() {
 		PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager()
 				.findFragmentById(R.id.ps_detail_container);
-		if (fragment != null && fragment.isInLayout()) {
+		if (fragment != null) {
 			return fragment.getListPosition();
 		}
 

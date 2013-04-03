@@ -1098,8 +1098,8 @@ public final class CaptureActivity extends SherlockActivity implements
 				String name = android.os.Build.MODEL.toLowerCase();
 				mJmDns = JmDNS.create(mEsrSenderService.getLocalInterface(),
 						name);
-				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, name,
-						port, "ESR Scanner of " + android.os.Build.MODEL);
+				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, name, port,
+						"ESR Scanner of " + android.os.Build.MODEL);
 				mJmDns.registerService(mServiceInfo);
 			} catch (IOException e) {
 				e.printStackTrace();

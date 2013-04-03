@@ -198,6 +198,10 @@ public class PsDetailFragment extends Fragment {
 
 	public int save() {
 
+		if (historyItem == null || historyItem.getResult() == null) {
+			return 0;
+		}
+		
 		String codeRow = historyItem.getResult().getCompleteCode();
 
 		if(PsResult.getCoderowType(codeRow).equals(EsrResult.PS_TYPE_NAME) 
