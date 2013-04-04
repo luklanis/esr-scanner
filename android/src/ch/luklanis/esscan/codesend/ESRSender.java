@@ -53,21 +53,21 @@ public class ESRSender extends Service {
 		public void run() {
 			try {
 				mServerStopped.set(false);
-				
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
-						ESRSender.this);
 
-				mServerPort.compareAndSet(
-						0,
-						prefs.getInt(
-								PreferencesActivity.KEY_SERVER_PORT, 0));
+				SharedPreferences prefs = PreferenceManager
+						.getDefaultSharedPreferences(ESRSender.this);
+
+				mServerPort.compareAndSet(0,
+						prefs.getInt(PreferencesActivity.KEY_SERVER_PORT, 0));
 
 				ServerSocket server = new ServerSocket(mServerPort.get());
 				server.setSoTimeout(300000);
-				
+
 				if (mServerPort.get() == 0) {
 					mServerPort.set(server.getLocalPort());
-					prefs.edit().putInt(PreferencesActivity.KEY_SERVER_PORT, mServerPort.get()).apply();
+					prefs.edit()
+							.putInt(PreferencesActivity.KEY_SERVER_PORT,
+									mServerPort.get()).apply();
 				}
 
 				Socket client = null;
@@ -126,7 +126,7 @@ public class ESRSender extends Service {
 						.edit()
 						.putInt(PreferencesActivity.KEY_SERVER_PORT,
 								mServerPort.get()).apply();
-				
+
 				e.printStackTrace();
 			} finally {
 				mServerStopped.set(true);
@@ -145,6 +145,36 @@ public class ESRSender extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 
 		super.onStartCommand(intent, flags, startId);
+
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(ESRSender.this);
+
+		mServerPort.compareAndSet(0,
+				prefs.getInt(PreferencesActivity.KEY_SERVER_PORT, 0));
+
+		if (mServerPort.get() == 0) {
+			ServerSocket server = null;
+			try {
+				server = new ServerSocket(mServerPort.get());
+
+				if (mServerPort.get() == 0) {
+					mServerPort.set(server.getLocalPort());
+					prefs.edit()
+							.putInt(PreferencesActivity.KEY_SERVER_PORT,
+									mServerPort.get()).apply();
+				}
+			} catch (IOException e) {
+				// do nothing
+			} finally {
+				if (server != null) {
+					try {
+						server.close();
+					} catch (IOException e) {
+						// do nothing
+					}
+				}
+			}
+		}
 
 		this.startServer();
 
@@ -197,30 +227,31 @@ public class ESRSender extends Service {
 	}
 
 	public static boolean isConnectedLocal(boolean refreshInterface) {
-//		ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-//		// NetworkInfo info =
-//		// connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-//		NetworkInfo[] allNetworkInfo = connManager.getAllNetworkInfo();
-//
-//		for (int i = 0; i < allNetworkInfo.length; i++) {
-//			NetworkInfo info = allNetworkInfo[i];
-//			int type = info.getType();
-//
-//			if (info.isAvailable()
-//					&& info.isConnected()
-//					// && (type == ConnectivityManager.TYPE_BLUETOOTH
-//					// || type == ConnectivityManager.TYPE_DUMMY
-//					// || type == ConnectivityManager.TYPE_ETHERNET
-//					// || type == ConnectivityManager.TYPE_WIFI)) {
-//					&& type != ConnectivityManager.TYPE_MOBILE
-//					&& type != ConnectivityManager.TYPE_MOBILE_DUN
-//					&& type != ConnectivityManager.TYPE_MOBILE_HIPRI
-//					&& type != ConnectivityManager.TYPE_MOBILE_MMS
-//					&& type != ConnectivityManager.TYPE_MOBILE_SUPL
-//					&& type != ConnectivityManager.TYPE_WIMAX) {
-//				return true;
-//			}
-//		}
+		// ConnectivityManager connManager = (ConnectivityManager)
+		// getSystemService(Context.CONNECTIVITY_SERVICE);
+		// // NetworkInfo info =
+		// // connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		// NetworkInfo[] allNetworkInfo = connManager.getAllNetworkInfo();
+		//
+		// for (int i = 0; i < allNetworkInfo.length; i++) {
+		// NetworkInfo info = allNetworkInfo[i];
+		// int type = info.getType();
+		//
+		// if (info.isAvailable()
+		// && info.isConnected()
+		// // && (type == ConnectivityManager.TYPE_BLUETOOTH
+		// // || type == ConnectivityManager.TYPE_DUMMY
+		// // || type == ConnectivityManager.TYPE_ETHERNET
+		// // || type == ConnectivityManager.TYPE_WIFI)) {
+		// && type != ConnectivityManager.TYPE_MOBILE
+		// && type != ConnectivityManager.TYPE_MOBILE_DUN
+		// && type != ConnectivityManager.TYPE_MOBILE_HIPRI
+		// && type != ConnectivityManager.TYPE_MOBILE_MMS
+		// && type != ConnectivityManager.TYPE_MOBILE_SUPL
+		// && type != ConnectivityManager.TYPE_WIMAX) {
+		// return true;
+		// }
+		// }
 
 		return getLocalInterface(refreshInterface) != null;
 	}
