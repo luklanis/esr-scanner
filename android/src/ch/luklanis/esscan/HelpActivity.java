@@ -171,6 +171,7 @@ public final class HelpActivity extends SherlockActivity {
 					i.setType("message/rfc822");
 					i.putExtra(Intent.EXTRA_EMAIL, new String[]{mt.getTo()});
 					i.putExtra(Intent.EXTRA_SUBJECT, mt.getSubject());
+					i.putExtra(Intent.EXTRA_TEXT, mt.getBody());
 					context.startActivity(i);
 					view.reload();
 				}
