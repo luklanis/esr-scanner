@@ -174,24 +174,20 @@ public final class CaptureActivity extends SherlockActivity implements
 			mEsrSenderService = ((ESRSender.LocalBinder) service).getService();
 
 			if (ESRSender.isConnectedLocal()) {
-				showIPAddresses();
 				new Thread(new Runnable() {
 					public void run() {
 						setUpJmDNS(mEsrSenderService.getServerPort());
 					}
 				}).start();
 
-				invalidateOptionsMenu();
+				if (mEnableStreamMode) {
+					showIPAddresses();
+					invalidateOptionsMenu();
+				}
 			} else {
-				mEnableStreamMode = false;
-				mSharedPreferences
-						.edit()
-						.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-								mEnableStreamMode).apply();
-
-				mEsrSenderService.stopServer();
-
-				setOKAlert(R.string.msg_stream_mode_not_available);
+				if (mEnableStreamMode) {
+					setOKAlert(R.string.msg_stream_mode_not_available);
+				}
 			}
 		}
 
@@ -201,13 +197,9 @@ public final class CaptureActivity extends SherlockActivity implements
 			// unexpectedly disconnected -- that is, its process crashed.
 			// Because it is running in our same process, we should never
 			// see this happen.
-			mEnableStreamMode = false;
-			mSharedPreferences
-					.edit()
-					.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-							mEnableStreamMode).apply();
-
-			setOKAlert(R.string.msg_stream_mode_not_available);
+			if (mEnableStreamMode) {
+				setOKAlert(R.string.msg_stream_mode_not_available);
+			}
 
 			clearIPAddresses();
 		}
@@ -240,6 +232,9 @@ public final class CaptureActivity extends SherlockActivity implements
 				ConnectivityManager.CONNECTIVITY_ACTION);
 		mNetworkReceiver = new NetworkReceiver();
 		this.registerReceiver(mNetworkReceiver, filter);
+
+		mServiceIntent = new Intent(this, ESRSender.class);
+		startService(mServiceIntent);
 	}
 
 	@Override
@@ -247,7 +242,7 @@ public final class CaptureActivity extends SherlockActivity implements
 		super.onResume();
 
 		mSurfaceView = (SurfaceView) findViewById(R.id.preview_view);
-		
+
 		mSurfaceView.setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
@@ -255,7 +250,7 @@ public final class CaptureActivity extends SherlockActivity implements
 				return true;
 			}
 		});
-		
+
 		mCameraManager = new CameraManager(mSurfaceView);
 
 		mViewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
@@ -304,12 +299,7 @@ public final class CaptureActivity extends SherlockActivity implements
 			mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 		}
 
-		if (mEnableStreamMode) {
-			mServiceIntent = new Intent(this, ESRSender.class);
-			startService(mServiceIntent);
-
-			doBindService();
-		}
+		doBindService();
 
 		Intent intent = getIntent();
 
@@ -357,8 +347,6 @@ public final class CaptureActivity extends SherlockActivity implements
 			surfaceHolder.removeCallback(this);
 		}
 
-		closeJmDns();
-
 		doUnbindService();
 
 		SharedPreferences prefs = PreferenceManager
@@ -370,6 +358,13 @@ public final class CaptureActivity extends SherlockActivity implements
 		}
 
 		super.onPause();
+	}
+
+	@Override
+	protected void onStop() {
+		closeJmDns();
+
+		super.onStop();
 	}
 
 	@Override
@@ -455,19 +450,11 @@ public final class CaptureActivity extends SherlockActivity implements
 						.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
 								mEnableStreamMode).apply();
 
-				doUnbindService();
-
-				if (mEsrSenderService != null) {
-					mEsrSenderService.stopServer();
-				}
-
 				clearIPAddresses();
 				if (mPsValidation.getSpokenType().equals(EsResult.PS_TYPE_NAME)) {
 					mPsValidation = new EsrValidation();
 				}
 				resetStatusView();
-
-				closeJmDns();
 
 				invalidateOptionsMenu();
 			} else {
@@ -477,11 +464,10 @@ public final class CaptureActivity extends SherlockActivity implements
 						.putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
 								mEnableStreamMode).apply();
 
-				mServiceIntent = new Intent(getApplicationContext(),
-						ESRSender.class);
-				startService(mServiceIntent);
-
-				doBindService();
+				if (mEnableStreamMode) {
+					showIPAddresses();
+					invalidateOptionsMenu();
+				}
 			}
 			break;
 		}
@@ -1018,22 +1004,15 @@ public final class CaptureActivity extends SherlockActivity implements
 	// http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
 	public class NetworkReceiver extends BroadcastReceiver {
 
+		@SuppressLint("NewApi")
 		@Override
 		public void onReceive(Context context, Intent intent) {
 
 			if (!ESRSender.isConnectedLocal()) {
+				mEsrSenderService.stopServer();
+				closeJmDns();
+
 				if (mEnableStreamMode) {
-					mEnableStreamMode = false;
-					mSharedPreferences
-							.edit()
-							.putBoolean(
-									PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-									mEnableStreamMode).apply();
-
-					if (mEsrSenderService != null) {
-						mEsrSenderService.stopServer();
-					}
-
 					setOKAlert(R.string.msg_stream_mode_not_available);
 
 					clearIPAddresses();
@@ -1042,6 +1021,22 @@ public final class CaptureActivity extends SherlockActivity implements
 						mPsValidation = new EsrValidation();
 					}
 					resetStatusView();
+					invalidateOptionsMenu();
+				}
+			} else {
+				if (mEsrSenderService != null) {
+					mEsrSenderService.startServer();
+
+					new Thread(new Runnable() {
+						public void run() {
+							setUpJmDNS(mEsrSenderService.getServerPort());
+						}
+					}).start();
+
+					if (mEnableStreamMode) {
+						showIPAddresses();
+						invalidateOptionsMenu();
+					}
 				}
 			}
 		}

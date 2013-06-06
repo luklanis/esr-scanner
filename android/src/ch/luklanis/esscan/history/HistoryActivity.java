@@ -442,8 +442,6 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 
 		if (twoPane) {
 			serviceIntent = new Intent(this, ESRSender.class);
-			startService(serviceIntent);
-
 			doBindService();
 		}
 

@@ -81,8 +81,6 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 		setResult(Activity.RESULT_OK, intent);
 
 		serviceIntent = new Intent(this, ESRSender.class);
-		startService(serviceIntent);
-
 		doBindService();
 	}
 
