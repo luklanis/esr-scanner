@@ -369,7 +369,9 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
+		if (mEsrSenderService != null) {
+			mEsrSenderService.stopServer();
+		}
 
 		if (mBaseApi != null) {
 			mBaseApi.end();
@@ -380,6 +382,8 @@ public final class CaptureActivity extends SherlockActivity implements
 		if (mNetworkReceiver != null) {
 			this.unregisterReceiver(mNetworkReceiver);
 		}
+		
+		super.onDestroy();
 	}
 
 	@Override
@@ -675,9 +679,8 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	public void showResult(PsResult psResult, boolean fromHistory) {
 
-		if (this.mServiceIsBound && this.mEsrSenderService != null
-				&& ESRSender.isConnectedLocal()) {
-			boolean sent = this.mEsrSenderService.sendToListener(psResult
+		if (mEnableStreamMode && mEsrSenderService != null) {
+			boolean sent = mEsrSenderService.sendToListener(psResult
 					.getCompleteCode());
 
 			showDialogAndRestartScan(sent ? R.string.msg_coderow_sent
