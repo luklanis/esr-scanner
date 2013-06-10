@@ -68,7 +68,8 @@ public class EsrValidation extends PsValidation {
 
 			int checkDigit = getCheckDigit(withoutCheckDigit);
 
-			if(checkDigit == digits[digits.length - 1]){
+			if(checkDigit == digits[digits.length - 1] && 
+					additionalStepTest(related)) {
 				completeCode[currentStep] = String.format(STEP_FORMAT[currentStep], related);
 				return true;
 			}
@@ -80,6 +81,24 @@ public class EsrValidation extends PsValidation {
 		}
 		
 		return false;
+	}
+
+	private boolean additionalStepTest(String related) {
+		if (currentStep == 0) {
+			int esrType = Integer.parseInt(related.substring(0, 2));
+
+			switch (esrType) {
+			case 4:
+			case 14:
+			case 31:
+			case 33:
+				return related.length() == 4;
+			default:
+				return related.length() > 4;
+			}
+		}
+		
+		return true;
 	}
 
 	@Override

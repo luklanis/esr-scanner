@@ -172,6 +172,7 @@ public final class CaptureActivity extends SherlockActivity implements
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			mEsrSenderService = ((ESRSender.LocalBinder) service).getService();
+			mEsrSenderService.registerDataSentHandler(getHandler());
 
 			if (ESRSender.isConnectedLocal()) {
 				new Thread(new Runnable() {
@@ -680,13 +681,8 @@ public final class CaptureActivity extends SherlockActivity implements
 	public void showResult(PsResult psResult, boolean fromHistory) {
 
 		if (mEnableStreamMode && mEsrSenderService != null) {
-			boolean sent = mEsrSenderService.sendToListener(psResult
+			mEsrSenderService.sendToListener(psResult
 					.getCompleteCode());
-
-			showDialogAndRestartScan(sent ? R.string.msg_coderow_sent
-					: R.string.msg_coderow_not_sent);
-
-			// historyManager.addHistoryItem(psResult);
 			return;
 		}
 
@@ -738,7 +734,7 @@ public final class CaptureActivity extends SherlockActivity implements
 		startActivity(intent);
 	}
 
-	private void showDialogAndRestartScan(int resourceId) {
+	public void showDialogAndRestartScan(int resourceId) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(
 				CaptureActivity.this);
 		builder.setMessage(resourceId);

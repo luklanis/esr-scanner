@@ -15,7 +15,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.v4.app.NavUtils;
 import android.text.ClipboardManager;
 import android.view.Gravity;
@@ -23,7 +25,8 @@ import android.view.KeyEvent;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class PsDetailActivity extends SherlockFragmentActivity {
+public class PsDetailActivity extends SherlockFragmentActivity implements
+		Handler.Callback {
 
 	private static SherlockFragmentActivity callerActivity;
 
@@ -33,11 +36,14 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 
 	private ESRSender boundService;
 
+	private final Handler mDataSentHandler = new Handler(this);
+
 	private ServiceConnection serviceConnection = new ServiceConnection() {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			boundService = ((ESRSender.LocalBinder) service).getService();
+			boundService.registerDataSentHandler(mDataSentHandler);
 		}
 
 		@Override
@@ -155,28 +161,11 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 				String completeCode = fragment.getHistoryItem().getResult()
 						.getCompleteCode();
 
-				int msgId = 0;
-
 				if (boundService != null && ESRSender.isConnectedLocal()) {
-					boolean sent = this.boundService
-							.sendToListener(completeCode);
-
-					if (sent) {
-						historyManager.updateHistoryItemFileName(
-								completeCode,
-								getResources().getString(
-										R.string.history_item_sent));
-						msgId = R.string.msg_coderow_sent;
-					} else {
-						msgId = R.string.msg_coderow_not_sent;
-					}
+					this.boundService.sendToListener(completeCode);
 				} else if (boundService != null) {
-					msgId = R.string.msg_stream_mode_not_available;
-				}
-
-				if (msgId != 0) {
 					Toast toast = Toast.makeText(getApplicationContext(),
-							msgId, Toast.LENGTH_SHORT);
+							R.string.msg_stream_mode_not_available, Toast.LENGTH_SHORT);
 					toast.setGravity(Gravity.BOTTOM, 0, 0);
 					toast.show();
 				}
@@ -235,5 +224,29 @@ public class PsDetailActivity extends SherlockFragmentActivity {
 						});
 
 		builder.show();
+	}
+
+	@Override
+	public boolean handleMessage(Message message) {
+		int msgId = 0;
+
+		if (message.what == R.id.es_send_succeeded) {
+			historyManager.updateHistoryItemFileName((String) message.obj,
+					getResources().getString(R.string.history_item_sent));
+
+			msgId = R.string.msg_coderow_sent;
+		} else {
+			msgId = R.string.msg_coderow_not_sent;
+		}
+
+		if (msgId != 0) {
+			Toast toast = Toast.makeText(getApplicationContext(), msgId,
+					Toast.LENGTH_SHORT);
+			toast.setGravity(Gravity.BOTTOM, 0, 0);
+			toast.show();
+			return true;
+		}
+
+		return false;
 	}
 }

@@ -22,6 +22,8 @@
   <item type="id" name="decode_failed"/>
   <item type="id" name="decode_succeeded"/>
   <item type="id" name="es_decode_succeeded"/>
+  <item type="id" name="es_send_succeeded"/>
+  <item type="id" name="es_send_failed"/>
   
   <item type="id" name="quit"/>
 </resources>

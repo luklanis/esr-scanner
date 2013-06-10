@@ -29,5 +29,6 @@ public interface IBase {
 	void resumeOcrEngine();
 
 	void showErrorMessage(String string, String string2);
-
+	
+	void showDialogAndRestartScan(int resourceId);
 }

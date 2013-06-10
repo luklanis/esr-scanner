@@ -96,6 +96,12 @@ public final class CaptureActivityHandler extends Handler {
 
 			base.showResult(result);
 			break;
+		case R.id.es_send_succeeded:
+			base.showDialogAndRestartScan(R.string.msg_coderow_sent);
+			break;
+		case R.id.es_send_failed:
+			base.showDialogAndRestartScan(R.string.msg_coderow_not_sent);
+			break;
 		}
 	}
 

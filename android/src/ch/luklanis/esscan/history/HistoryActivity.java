@@ -24,7 +24,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.text.ClipboardManager;
@@ -55,7 +57,7 @@ import com.actionbarsherlock.widget.SearchView;
 import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 
 public final class HistoryActivity extends SherlockFragmentActivity implements
-		HistoryFragment.HistoryCallbacks {
+		HistoryFragment.HistoryCallbacks, Handler.Callback {
 
 	public static final String ACTION_SHOW_RESULT = "action_show_result";
 
@@ -70,7 +72,15 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 	private DTAFileCreator dtaFileCreator;
 	private CheckBox dontShowAgainCheckBox;
 
+	private Handler mDataSentHandler = new Handler(this);
+
 	private int[] tmpPositions;
+
+	private Intent serviceIntent;
+
+	private boolean serviceIsBound;
+
+	private ESRSender boundService;
 
 	final private OnQueryTextListener queryListener = new OnQueryTextListener() {
 
@@ -100,17 +110,12 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		}
 	};
 
-	private Intent serviceIntent;
-
-	private boolean serviceIsBound;
-
-	private ESRSender boundService;
-
 	private ServiceConnection serviceConnection = new ServiceConnection() {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			boundService = ((ESRSender.LocalBinder) service).getService();
+			boundService.registerDataSentHandler(mDataSentHandler);
 		}
 
 		@Override
@@ -316,37 +321,13 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 				String completeCode = fragment.getHistoryItem().getResult()
 						.getCompleteCode();
 
-				int msgId = 0;
-
 				if (boundService != null && ESRSender.isConnectedLocal()) {
-					boolean sent = this.boundService
-							.sendToListener(completeCode);
-
-					if (sent) {
-						String msg = getResources().getString(
-								R.string.history_item_sent);
-						historyManager.updateHistoryItemFileName(completeCode,
-								msg);
-
-						int position = this.historyFragment
-								.getActivatedPosition();
-
-						HistoryItem historyItem = historyManager
-								.buildHistoryItem(position);
-						this.historyFragment.updatePosition(position,
-								historyItem);
-
-						msgId = R.string.msg_coderow_sent;
-					} else {
-						msgId = R.string.msg_coderow_not_sent;
-					}
+					this.boundService.sendToListener(completeCode,
+							this.historyFragment.getActivatedPosition());
 				} else if (boundService != null) {
-					msgId = R.string.msg_stream_mode_not_available;
-				}
-
-				if (msgId != 0) {
 					Toast toast = Toast.makeText(getApplicationContext(),
-							msgId, Toast.LENGTH_SHORT);
+							R.string.msg_stream_mode_not_available,
+							Toast.LENGTH_SHORT);
 					toast.setGravity(Gravity.BOTTOM, 0, 0);
 					toast.show();
 				}
@@ -426,16 +407,6 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		}
 	}
 
-	private void setNewDetails(int position) {
-		Bundle arguments = new Bundle();
-		arguments.putInt(PsDetailFragment.ARG_POSITION, position);
-		PsDetailFragment fragment = new PsDetailFragment();
-		fragment.setArguments(arguments);
-
-		getSupportFragmentManager().beginTransaction()
-				.replace(R.id.ps_detail_container, fragment).commit();
-	}
-
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -477,6 +448,44 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		}
 
 		return super.onKeyDown(keyCode, event);
+	}
+
+	@Override
+	public boolean handleMessage(Message message) {
+		int msgId = 0;
+
+		if (message.what == R.id.es_send_succeeded) {
+			historyManager.updateHistoryItemFileName((String) message.obj,
+					getResources().getString(R.string.history_item_sent));
+
+			HistoryItem historyItem = historyManager
+					.buildHistoryItem(message.arg1);
+			this.historyFragment.updatePosition(message.arg1, historyItem);
+
+			msgId = R.string.msg_coderow_sent;
+		} else {
+			msgId = R.string.msg_coderow_not_sent;
+		}
+
+		if (msgId != 0) {
+			Toast toast = Toast.makeText(getApplicationContext(), msgId,
+					Toast.LENGTH_SHORT);
+			toast.setGravity(Gravity.BOTTOM, 0, 0);
+			toast.show();
+			return true;
+		}
+
+		return false;
+	}
+
+	private void setNewDetails(int position) {
+		Bundle arguments = new Bundle();
+		arguments.putInt(PsDetailFragment.ARG_POSITION, position);
+		PsDetailFragment fragment = new PsDetailFragment();
+		fragment.setArguments(arguments);
+
+		getSupportFragmentManager().beginTransaction()
+				.replace(R.id.ps_detail_container, fragment).commit();
 	}
 
 	private void doBindService() {

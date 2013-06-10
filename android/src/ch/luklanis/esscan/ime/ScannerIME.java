@@ -809,4 +809,8 @@ public class ScannerIME extends InputMethodService implements
 		return false;
 	}
 
+	@Override
+	public void showDialogAndRestartScan(int resourceId) {
+	}
+
 }

@@ -1,5 +1,6 @@
 package ch.luklanis.esscan.codesend;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.luklanis.esscan.PreferencesActivity;
+import ch.luklanis.esscan.R;
 
 import android.app.Service;
 import android.content.Context;
@@ -23,7 +25,9 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -43,6 +47,8 @@ public class ESRSender extends Service implements Runnable {
 
 	private static final String START_SERVER = "START";
 
+	private static final String ACK = "ACK";
+
 	private final AtomicBoolean mStopServer = new AtomicBoolean(false);
 	private final AtomicBoolean mServerStopped = new AtomicBoolean(true);
 	private final AtomicBoolean mHasClient = new AtomicBoolean(false);
@@ -51,11 +57,16 @@ public class ESRSender extends Service implements Runnable {
 	private final ArrayBlockingQueue<String> mDataQueue = new ArrayBlockingQueue<String>(
 			200);
 
+	private final ArrayBlockingQueue<Boolean> mDataSent = new ArrayBlockingQueue<Boolean>(
+			10);
+
 	private static InetAddress hostInterface = null;
 
 	private final Thread mSendDataThread = new Thread(this);
 
 	private final IBinder mBinder = new LocalBinder();
+
+	private Handler mDataSentHandler;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -164,12 +175,52 @@ public class ESRSender extends Service implements Runnable {
 		return "";
 	}
 
-	public boolean sendToListener(String message) {
-		if (mHasClient.get()) {
-			mDataQueue.offer(message);
-		}
+	public void registerDataSentHandler(Handler dataSentCallback) {
+		mDataSentHandler = dataSentCallback;
+	}
 
-		return mHasClient.get();
+	public void sendToListener(String message) {
+		sendToListener(message, -1);
+	}
+
+	public void sendToListener(final String dataToSend, final int position) {
+		mDataSent.clear();
+
+		if (mHasClient.get()) {
+			mDataQueue.offer(dataToSend);
+			Thread t = new Thread() {
+				public void run() {
+					Boolean sent = false;
+
+					try {
+						sent = mDataSent.poll(2, TimeUnit.SECONDS);
+
+						if (sent == null) {
+							sent = false;
+						}
+					} catch (InterruptedException e) {
+					}
+
+					if (mDataSentHandler != null) {
+						Message message = Message.obtain(mDataSentHandler,
+								(sent ? R.id.es_send_succeeded
+										: R.id.es_send_failed));
+						message.arg1 = position;
+						message.obj = dataToSend;
+						message.sendToTarget();
+					}
+				}
+			};
+			t.start();
+		} else {
+			if (mDataSentHandler != null) {
+				Message message = Message.obtain(mDataSentHandler,
+						R.id.es_send_failed);
+				message.arg1 = position;
+				message.obj = dataToSend;
+				message.sendToTarget();
+			}
+		}
 	}
 
 	public void stopServer() {
@@ -222,6 +273,7 @@ public class ESRSender extends Service implements Runnable {
 
 					Socket client = null;
 					DataOutputStream os = null;
+					DataInputStream is = null;
 
 					while (!mStopServer.get()) {
 
@@ -229,7 +281,7 @@ public class ESRSender extends Service implements Runnable {
 						mHasClient.set(true);
 
 						try {
-							data = mDataQueue.poll(5, TimeUnit.SECONDS);
+							data = mDataQueue.poll(30, TimeUnit.SECONDS);
 
 							try {
 								client = server.accept();
@@ -241,21 +293,36 @@ public class ESRSender extends Service implements Runnable {
 								}
 							}
 
-							os = new DataOutputStream(client.getOutputStream());
-
 							if (data != null) {
+								os = new DataOutputStream(
+										client.getOutputStream());
 								os.writeUTF(data);
-							} else {
-								os.writeUTF(KEEP_ALIVE);
+								os.flush();
+
+								is = new DataInputStream(
+										client.getInputStream());
+								String responseLine = is.readUTF();
+								if (responseLine != null
+										&& responseLine.equals(ACK)) {
+									mDataSent.offer(true);
+								} else {
+									mDataSent.offer(false);
+								}
 							}
 
 						} catch (Exception e) {
 							e.printStackTrace();
+							mDataSent.offer(false);
 						}
 
 						if (os != null) {
 							os.close();
 							os = null;
+						}
+
+						if (is != null) {
+							is.close();
+							is = null;
 						}
 
 						if (client != null) {
