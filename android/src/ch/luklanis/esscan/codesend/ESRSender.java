@@ -51,7 +51,6 @@ public class ESRSender extends Service implements Runnable {
 
 	private final AtomicBoolean mStopServer = new AtomicBoolean(false);
 	private final AtomicBoolean mServerStopped = new AtomicBoolean(true);
-	private final AtomicBoolean mHasClient = new AtomicBoolean(false);
 	private final AtomicInteger mServerPort = new AtomicInteger(0);
 
 	private final ArrayBlockingQueue<String> mDataQueue = new ArrayBlockingQueue<String>(
@@ -186,41 +185,31 @@ public class ESRSender extends Service implements Runnable {
 	public void sendToListener(final String dataToSend, final int position) {
 		mDataSent.clear();
 
-		if (mHasClient.get()) {
-			mDataQueue.offer(dataToSend);
-			Thread t = new Thread() {
-				public void run() {
-					Boolean sent = false;
+		mDataQueue.offer(dataToSend);
+		Thread t = new Thread() {
+			public void run() {
+				Boolean sent = false;
 
-					try {
-						sent = mDataSent.poll(2, TimeUnit.SECONDS);
+				try {
+					sent = mDataSent.poll(3, TimeUnit.SECONDS);
 
-						if (sent == null) {
-							sent = false;
-						}
-					} catch (InterruptedException e) {
+					if (sent == null) {
+						sent = false;
 					}
-
-					if (mDataSentHandler != null) {
-						Message message = Message.obtain(mDataSentHandler,
-								(sent ? R.id.es_send_succeeded
-										: R.id.es_send_failed));
-						message.arg1 = position;
-						message.obj = dataToSend;
-						message.sendToTarget();
-					}
+				} catch (InterruptedException e) {
 				}
-			};
-			t.start();
-		} else {
-			if (mDataSentHandler != null) {
-				Message message = Message.obtain(mDataSentHandler,
-						R.id.es_send_failed);
-				message.arg1 = position;
-				message.obj = dataToSend;
-				message.sendToTarget();
+
+				if (mDataSentHandler != null) {
+					Message message = Message.obtain(mDataSentHandler,
+							(sent ? R.id.es_send_succeeded
+									: R.id.es_send_failed));
+					message.arg1 = position;
+					message.obj = dataToSend;
+					message.sendToTarget();
+				}
 			}
-		}
+		};
+		t.start();
 	}
 
 	public void stopServer() {
@@ -262,6 +251,7 @@ public class ESRSender extends Service implements Runnable {
 							PreferencesActivity.KEY_SERVER_PORT, 0));
 
 					server = new ServerSocket(mServerPort.get());
+					server.setSoTimeout(500);
 
 					if (mServerPort.get() == 0) {
 						mServerPort.set(server.getLocalPort());
@@ -278,14 +268,18 @@ public class ESRSender extends Service implements Runnable {
 					while (!mStopServer.get()) {
 
 						String data;
-						mHasClient.set(true);
 
 						try {
 							data = mDataQueue.poll(30, TimeUnit.SECONDS);
 
+							if (data == null) {
+								continue;
+							}
+
 							try {
 								client = server.accept();
-							} catch (IOException e) {
+								client.setSoTimeout(2000);
+							} catch (Exception e) {
 								if (mStopServer.get()) {
 									return;
 								} else {
@@ -293,21 +287,17 @@ public class ESRSender extends Service implements Runnable {
 								}
 							}
 
-							if (data != null) {
-								os = new DataOutputStream(
-										client.getOutputStream());
-								os.writeUTF(data);
-								os.flush();
+							os = new DataOutputStream(client.getOutputStream());
+							os.writeUTF(data);
+							os.flush();
 
-								is = new DataInputStream(
-										client.getInputStream());
-								String responseLine = is.readUTF();
-								if (responseLine != null
-										&& responseLine.equals(ACK)) {
-									mDataSent.offer(true);
-								} else {
-									mDataSent.offer(false);
-								}
+							is = new DataInputStream(client.getInputStream());
+							String responseLine = is.readUTF();
+							if (responseLine != null
+									&& responseLine.equals(ACK)) {
+								mDataSent.offer(true);
+							} else {
+								mDataSent.offer(false);
 							}
 
 						} catch (Exception e) {
