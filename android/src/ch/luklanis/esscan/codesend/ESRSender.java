@@ -3,7 +3,6 @@ package ch.luklanis.esscan.codesend;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
@@ -19,16 +18,12 @@ import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -43,7 +38,6 @@ public class ESRSender extends Service implements Runnable {
 	private static final String TAG = ESRSender.class.getName();
 
 	private static final String STOP_CONNECTION = "STOP";
-	private static final String KEEP_ALIVE = "KA";
 
 	private static final String START_SERVER = "START";
 
@@ -334,8 +328,6 @@ public class ESRSender extends Service implements Runnable {
 						try {
 							server.close();
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
 					}
 
@@ -351,8 +343,6 @@ public class ESRSender extends Service implements Runnable {
 					start = mDataQueue.poll(30, TimeUnit.SECONDS);
 				}
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 	}
