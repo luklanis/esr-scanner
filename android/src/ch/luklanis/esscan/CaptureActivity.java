@@ -160,9 +160,47 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private Intent mServiceIntent;
 
-	private NetworkReceiver mNetworkReceiver;
+	// From
+	// http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
+	private final BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
 
-	private ESRSender mEsrSenderService;
+		@SuppressLint("NewApi")
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (mEsrSenderService == null) {
+				return;
+			}
+
+			if (!ESRSender.isConnectedLocal(true)) {
+				closeJmDns();
+
+				if (mEnableStreamMode) {
+					setOKAlert(R.string.msg_stream_mode_not_available);
+
+					clearIPAddresses();
+					if (mPsValidation.getSpokenType().equals(
+							EsResult.PS_TYPE_NAME)) {
+						mPsValidation = new EsrValidation();
+					}
+					resetStatusView();
+					invalidateOptionsMenu();
+				}
+			} else {
+				new Thread(new Runnable() {
+					public void run() {
+						setUpJmDNS(mEsrSenderService.getServerPort());
+					}
+				}).start();
+
+				if (mEnableStreamMode) {
+					showIPAddresses();
+					invalidateOptionsMenu();
+				}
+			}
+		}
+	};
+
+	private ESRSender mEsrSenderService = null;
 
 	private boolean mShowScanResult;
 
@@ -231,8 +269,7 @@ public final class CaptureActivity extends SherlockActivity implements
 		// Registers BroadcastReceiver to track network connection changes.
 		IntentFilter filter = new IntentFilter(
 				ConnectivityManager.CONNECTIVITY_ACTION);
-		mNetworkReceiver = new NetworkReceiver();
-		this.registerReceiver(mNetworkReceiver, filter);
+		registerReceiver(mNetworkReceiver, filter);
 
 		mServiceIntent = new Intent(this, ESRSender.class);
 		startService(mServiceIntent);
@@ -379,11 +416,11 @@ public final class CaptureActivity extends SherlockActivity implements
 			mBaseApi = null;
 		}
 
-		// Unregisters BroadcastReceiver when app is destroyed.
-		if (mNetworkReceiver != null) {
-			this.unregisterReceiver(mNetworkReceiver);
+		try {
+			unregisterReceiver(mNetworkReceiver);
+		} catch (IllegalArgumentException e) {
 		}
-		
+
 		super.onDestroy();
 	}
 
@@ -681,8 +718,7 @@ public final class CaptureActivity extends SherlockActivity implements
 	public void showResult(PsResult psResult, boolean fromHistory) {
 
 		if (mEnableStreamMode && mEsrSenderService != null) {
-			mEsrSenderService.sendToListener(psResult
-					.getCompleteCode());
+			mEsrSenderService.sendToListener(psResult.getCompleteCode());
 			return;
 		}
 
@@ -997,48 +1033,6 @@ public final class CaptureActivity extends SherlockActivity implements
 		builder.setMessage(id);
 		builder.setPositiveButton(R.string.button_ok, null);
 		builder.show();
-	}
-
-	// From
-	// http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
-	public class NetworkReceiver extends BroadcastReceiver {
-
-		@SuppressLint("NewApi")
-		@Override
-		public void onReceive(Context context, Intent intent) {
-
-			if (!ESRSender.isConnectedLocal()) {
-				mEsrSenderService.stopServer();
-				closeJmDns();
-
-				if (mEnableStreamMode) {
-					setOKAlert(R.string.msg_stream_mode_not_available);
-
-					clearIPAddresses();
-					if (mPsValidation.getSpokenType().equals(
-							EsResult.PS_TYPE_NAME)) {
-						mPsValidation = new EsrValidation();
-					}
-					resetStatusView();
-					invalidateOptionsMenu();
-				}
-			} else {
-				if (mEsrSenderService != null) {
-					mEsrSenderService.startServer();
-
-					new Thread(new Runnable() {
-						public void run() {
-							setUpJmDNS(mEsrSenderService.getServerPort());
-						}
-					}).start();
-
-					if (mEnableStreamMode) {
-						showIPAddresses();
-						invalidateOptionsMenu();
-					}
-				}
-			}
-		}
 	}
 
 	private void CreateCopyNotification() {

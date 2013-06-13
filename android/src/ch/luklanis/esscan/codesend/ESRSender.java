@@ -16,10 +16,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
+import ch.luklanis.esscan.history.HistoryActivity;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -60,6 +65,21 @@ public class ESRSender extends Service implements Runnable {
 	private final IBinder mBinder = new LocalBinder();
 
 	private Handler mDataSentHandler;
+
+	// From
+	// http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
+	private final BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+				if (!ESRSender.isConnectedLocal(true)
+						&& isStopped()) {
+					stopServer();
+				} else if (isStopped()) {
+					startServer();
+				}
+		}
+	};
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -103,6 +123,11 @@ public class ESRSender extends Service implements Runnable {
 			}
 		}
 
+		// Registers BroadcastReceiver to track network connection changes.
+		IntentFilter filter = new IntentFilter(
+				ConnectivityManager.CONNECTIVITY_ACTION);
+		this.registerReceiver(mNetworkReceiver, filter);
+
 		this.startServer();
 
 		return START_NOT_STICKY;
@@ -110,6 +135,11 @@ public class ESRSender extends Service implements Runnable {
 
 	@Override
 	public void onDestroy() {
+
+		try {
+			unregisterReceiver(mNetworkReceiver);
+		} catch (IllegalArgumentException e){}
+		
 		stopServer();
 
 		super.onDestroy();
@@ -128,7 +158,12 @@ public class ESRSender extends Service implements Runnable {
 	}
 
 	public static InetAddress getLocalInterface(boolean refreshInterface) {
-		if (hostInterface == null || refreshInterface) {
+		
+		if (refreshInterface) {
+			hostInterface = null;
+		}
+		
+		if (hostInterface == null) {
 			try {
 				for (Enumeration<NetworkInterface> en = NetworkInterface
 						.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -210,10 +245,14 @@ public class ESRSender extends Service implements Runnable {
 		mStopServer.set(true);
 		mDataQueue.offer(STOP_CONNECTION);
 	}
+	
+	public boolean isStopped() {
+		return mStopServer.get();
+	}
 
 	public void startServer() {
 
-		if (isConnectedLocal(true)) {
+		if (isConnectedLocal(true) && mServerStopped.get()) {
 			mStopServer.set(false);
 
 			if (!mSendDataThread.isAlive()) {

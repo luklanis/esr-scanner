@@ -10,10 +10,14 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -34,7 +38,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 	private Intent serviceIntent;
 	private boolean serviceIsBound;
 
-	private ESRSender boundService;
+	private ESRSender boundService = null;
 
 	private final Handler mDataSentHandler = new Handler(this);
 
@@ -92,7 +96,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 
 	@Override
 	protected void onPause() {
-
+		
 		doUnbindService();
 
 		super.onPause();
