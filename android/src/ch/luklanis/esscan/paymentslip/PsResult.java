@@ -54,6 +54,8 @@ public abstract class PsResult {
 
 	public abstract String getAccount();
 
+	public abstract int getMaxAddressLength();
+
 	@Override
 	public abstract String toString();
 }

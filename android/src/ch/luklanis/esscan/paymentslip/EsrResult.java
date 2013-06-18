@@ -30,6 +30,31 @@ public final class EsrResult extends PsResult{
 		super(completeCode, timestamp);
 	}
 
+	@Override
+	public String getAccount(){
+		String code = completeCode;
+		int indexOfSpace = code.indexOf(' ');
+
+		if(indexOfSpace < 0){
+			return "?";
+		}
+
+		int indentureNumber = Integer.parseInt(code.substring((indexOfSpace + 3), (indexOfSpace + 9)));
+
+		return code.substring((indexOfSpace + 1), (indexOfSpace + 3)) + "-" + String.valueOf(indentureNumber) + "-"
+		+ code.substring((indexOfSpace + 9), (indexOfSpace + 10));
+	}
+
+	@Override
+	public String toString() {
+		return getAccount() + ", " + getCurrency();
+	}
+
+	@Override
+	public int getMaxAddressLength() {
+		return 20;
+	}
+
 	public String getAmount(){
 		String code = completeCode;
 
@@ -60,21 +85,6 @@ public final class EsrResult extends PsResult{
 			return "EUR";
 		default: return "?";
 		}
-	}
-
-	@Override
-	public String getAccount(){
-		String code = completeCode;
-		int indexOfSpace = code.indexOf(' ');
-
-		if(indexOfSpace < 0){
-			return "?";
-		}
-
-		int indentureNumber = Integer.parseInt(code.substring((indexOfSpace + 3), (indexOfSpace + 9)));
-
-		return code.substring((indexOfSpace + 1), (indexOfSpace + 3)) + "-" + String.valueOf(indentureNumber) + "-"
-		+ code.substring((indexOfSpace + 9), (indexOfSpace + 10));
 	}
 
 	public String getAccountUnformated(){
@@ -113,10 +123,5 @@ public final class EsrResult extends PsResult{
 		}
 
 		return referenz_formated;
-	}
-
-	@Override
-	public String toString() {
-		return getAccount() + ", " + getCurrency();
 	}
 }

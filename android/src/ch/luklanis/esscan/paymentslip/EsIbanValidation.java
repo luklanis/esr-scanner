@@ -32,10 +32,8 @@ public class EsIbanValidation extends PsValidation {
 	};
 
 	private static final String[] STEP_FORMAT = {
-		"%s", " %s", "%s"
+		"%s", " %s", "\\n%s"
 	};
-
-	private String[] completeCode;
 
 	public EsIbanValidation() {
 		completeCode = new String[STEP_COUNT];
@@ -68,7 +66,8 @@ public class EsIbanValidation extends PsValidation {
 
 			int checkDigit = getCheckDigit(withoutCheckDigit);
 
-			if(checkDigit == digits[digits.length - 1]){
+			if(checkDigit == digits[digits.length - 1] && 
+					additionalStepTest(related)){
 				completeCode[currentStep] = String.format(STEP_FORMAT[currentStep], related);
 				return true;
 			}
@@ -113,21 +112,6 @@ public class EsIbanValidation extends PsValidation {
 	}
 
 	@Override
-	public String getCompleteCode() {
-		String result = "";
-		int start = (completeCode[completeCode.length - 1]) != null ? 2 : 0;
-		int end = (start == 2) ? completeCode.length : 2;
-
-		for(int i = start; i < end; i++){
-			if(completeCode[i] != null){
-				result += completeCode[i];
-			}
-		}
-
-		return result;
-	}
-
-	@Override
 	public void resetCompleteCode() {
 		if(completeCode == null){
 			return;
@@ -136,19 +120,6 @@ public class EsIbanValidation extends PsValidation {
 		for(int i = 0; i < completeCode.length; i++){
 			completeCode[i] = null;
 		}
-	}
-
-	@Override
-	public boolean nextStep() {
-
-		if ((currentStep == 1) || (currentStep == (getStepCount() - 1))) {
-			finished = true;
-			return false;
-		}
-
-		currentStep++;
-		relatedText = null;
-		return true;
 	}
 
 	@Override
@@ -167,5 +138,14 @@ public class EsIbanValidation extends PsValidation {
 	@Override
 	public String getSpokenType() {
 		return EsResult.PS_TYPE_NAME;
+	}
+
+	@Override
+	protected boolean additionalStepTest(String related) {
+		if (currentStep == 2 && related.equals(completeCode[1])) {
+			return false;
+		}
+		
+		return true;
 	}
 }

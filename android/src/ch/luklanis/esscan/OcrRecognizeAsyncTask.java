@@ -18,8 +18,10 @@ package ch.luklanis.esscan;
 import java.util.List;
 
 import ch.luklanis.esscan.R;
+import ch.luklanis.esscan.paymentslip.EsIbanValidation;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
+import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
 import ch.luklanis.esscan.paymentslip.PsValidation;
 
@@ -34,8 +36,8 @@ import android.os.Message;
 import android.util.Log;
 
 /**
- * Class to send OCR requests to the OCR engine in a separate thread and appropriately send a
- * success/failure message.
+ * Class to send OCR requests to the OCR engine in a separate thread and
+ * appropriately send a success/failure message.
  */
 final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 
@@ -49,7 +51,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 	private long end;
 
 	// Constructor for single-shot mode
-	OcrRecognizeAsyncTask(IBase base, TessBaseAPI baseApi, 
+	OcrRecognizeAsyncTask(IBase base, TessBaseAPI baseApi,
 			ProgressDialog indeterminateDialog, Bitmap bitmap) {
 		this.base = base;
 		this.baseApi = baseApi;
@@ -66,14 +68,15 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 
 	@Override
 	protected Boolean doInBackground(String... arg0) {
-		String textResult = null;   
+		String textResult = null;
 		int[] wordConfidences = null;
 		int overallConf = -1;
 		start = System.currentTimeMillis();
 		end = start;
 
 		try {
-			// Log.i("OcrRecognizeAsyncTask", "converted to bitmap. doing setImage()...");
+			// Log.i("OcrRecognizeAsyncTask",
+			// "converted to bitmap. doing setImage()...");
 			baseApi.setImage(bitmap);
 
 			// Log.i("OcrRecognizeAsyncTask", "setImage() completed");
@@ -83,7 +86,9 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 			overallConf = baseApi.meanConfidence();
 			end = System.currentTimeMillis();
 		} catch (RuntimeException e) {
-			Log.e("OcrRecognizeAsyncTask", "Caught RuntimeException in request to Tesseract. Setting state to CONTINUOUS_STOPPED.", e);
+			Log.e("OcrRecognizeAsyncTask",
+					"Caught RuntimeException in request to Tesseract. Setting state to CONTINUOUS_STOPPED.",
+					e);
 
 			try {
 				baseApi.clear();
@@ -97,7 +102,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 		if (textResult == null || textResult.equals("")) {
 			ocrResultFailure = new OcrResultFailure(end - start);
 			return false;
-		}  
+		}
 
 		// Get bounding boxes for characters and words
 		List<Rect> wordBoxes = baseApi.getWords().getBoxRects();
@@ -107,14 +112,34 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 
 		PsValidation validation = base.getValidation();
 
-		while(validation.validate(textResult)){
-			if(!validation.nextStep()){
+		while (validation.validate(textResult)) {
+			if (!validation.nextStep()) {
 				break;
 			}
 		}
 
-		ocrResult = new OcrResult(bitmap, textResult, wordConfidences, overallConf, characterBoxes, 
-				textlineBoxes, wordBoxes, regionBoxes, (end - start));
+		if (validation.getCurrentStep() == 0) {
+			validation = (validation.getSpokenType().equals(
+					EsrResult.PS_TYPE_NAME) ? new EsIbanValidation()
+					: new EsrValidation());
+
+			while (validation.validate(textResult)) {
+				if (!validation.nextStep()) {
+					break;
+				}
+			}
+
+			if (validation.getCurrentStep() > 0) {
+				Handler handler = base.getHandler();
+				Message message = Message.obtain(handler,
+						R.id.es_change_ps_type, validation);
+				message.sendToTarget();
+			}
+		}
+
+		ocrResult = new OcrResult(bitmap, textResult, wordConfidences,
+				overallConf, characterBoxes, textlineBoxes, wordBoxes,
+				regionBoxes, (end - start));
 		return true;
 	}
 
@@ -128,22 +153,25 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 			// Send results for single-shot mode recognition.
 			if (result) {
 				String completeCode = validation.getCompleteCode();
-				PsResult esrResult = validation.getSpokenType().equals(EsrResult.PS_TYPE_NAME) ? 
-						new EsrResult(completeCode) : new EsResult(completeCode);
+				PsResult psResult = validation.getSpokenType().equals(
+						EsrResult.PS_TYPE_NAME) ? new EsrResult(completeCode)
+						: new EsResult(completeCode);
 
-				Message message = Message.obtain(handler, R.id.es_decode_succeeded, esrResult);
+				Message message = Message.obtain(handler,
+						R.id.es_decode_succeeded, psResult);
 				message.sendToTarget();
-			} 
+			}
 
-			if(indeterminateDialog != null){
+			if (indeterminateDialog != null) {
 				indeterminateDialog.dismiss();
 			}
-		} else  if (handler != null) {
+		} else if (handler != null) {
 			// Send results for continuous mode recognition.
 			if (result) {
 				try {
 					// Send the result to CaptureActivityHandler
-					Message message = Message.obtain(handler, R.id.decode_succeeded, ocrResult);
+					Message message = Message.obtain(handler,
+							R.id.decode_succeeded, ocrResult);
 					message.sendToTarget();
 				} catch (NullPointerException e) {
 					// continue
@@ -151,7 +179,8 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 			} else {
 				bitmap.recycle();
 				try {
-					Message message = Message.obtain(handler, R.id.decode_failed, ocrResultFailure);
+					Message message = Message.obtain(handler,
+							R.id.decode_failed, ocrResultFailure);
 					message.sendToTarget();
 				} catch (NullPointerException e) {
 					// continue

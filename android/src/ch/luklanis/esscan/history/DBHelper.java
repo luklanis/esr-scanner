@@ -32,7 +32,7 @@ import android.content.Context;
 public final class DBHelper extends SQLiteOpenHelper {
 
 	public static final String DB_NAME = "esrscan.db";
-	private static final int DB_VERSION = 7;
+	private static final int DB_VERSION = 8;
 	static final String ID_COL = "id";
 
 	static final String HISTORY_TABLE_NAME = "history";
@@ -40,6 +40,7 @@ public final class DBHelper extends SQLiteOpenHelper {
 	static final String HISTORY_TIMESTAMP_COL = "timestamp";
 	static final String HISTORY_ADDRESS_ID_COL = "address_id";
 	static final String HISTORY_AMOUNT_COL = "amount";
+	static final String HISTORY_REASON_COL = "reason";
 	static final String HISTORY_FILE_NAME_COL = "file";
 
 	static final String ADDRESS_TABLE_NAME = "address";
@@ -53,6 +54,7 @@ public final class DBHelper extends SQLiteOpenHelper {
 			HISTORY_TIMESTAMP_COL + " INTEGER, " +
 			HISTORY_ADDRESS_ID_COL + " INTEGER, " +
 			HISTORY_AMOUNT_COL + " TEXT, " +
+			HISTORY_REASON_COL + " TEXT, " +
 			HISTORY_FILE_NAME_COL + " TEXT)";
 
 	static final String CREATE_ADDRESSS_TABLE = "CREATE TABLE " + ADDRESS_TABLE_NAME + " (" +
@@ -74,7 +76,7 @@ public final class DBHelper extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-		if (newVersion == 7) {
+		if (oldVersion < 7 && newVersion >= 7) {
 			sqLiteDatabase.execSQL("ALTER TABLE " + HISTORY_TABLE_NAME + " RENAME TO history_old");
 			sqLiteDatabase.execSQL(CREATE_HISTORY_TABLE);
 			sqLiteDatabase.execSQL("INSERT INTO " + HISTORY_TABLE_NAME + " (" +
@@ -117,6 +119,29 @@ public final class DBHelper extends SQLiteOpenHelper {
 					sqLiteDatabase.update(HISTORY_TABLE_NAME, values, DBHelper.ID_COL + '=' + cursor.getString(0), null);
 				}
 			}
+			
+			sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
+		} else if (oldVersion < 8 && newVersion >= 8) {
+			sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
+			
+			sqLiteDatabase.execSQL("ALTER TABLE " + HISTORY_TABLE_NAME + " RENAME TO history_old");
+			sqLiteDatabase.execSQL(CREATE_HISTORY_TABLE);
+			sqLiteDatabase.execSQL("INSERT INTO " + HISTORY_TABLE_NAME + " (" +
+					HISTORY_CODE_ROW_COL + ", " +
+					HISTORY_TIMESTAMP_COL + ", " +
+					HISTORY_ADDRESS_ID_COL + ", " +
+					HISTORY_AMOUNT_COL + ", " +
+					HISTORY_REASON_COL + ", " +
+					HISTORY_FILE_NAME_COL + ") " +
+					"SELECT " +
+					HISTORY_CODE_ROW_COL + ", " +
+					HISTORY_TIMESTAMP_COL + ", " +
+					HISTORY_ADDRESS_ID_COL + ", " +
+					HISTORY_AMOUNT_COL + ", " +
+					"NULL, " +
+					HISTORY_FILE_NAME_COL + " FROM history_old");
+			
+			sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
 		} else {
 			sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + HISTORY_TABLE_NAME);
 			sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ADDRESS_TABLE_NAME);

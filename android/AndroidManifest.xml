@@ -19,7 +19,7 @@
     package="ch.luklanis.esscan"
     android:installLocation="auto"
     android:versionCode="33"
-    android:versionName="0.8.5" >
+    android:versionName="0.8.6" >
 
     <uses-sdk
         android:minSdkVersion="10"

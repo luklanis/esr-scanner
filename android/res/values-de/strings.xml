@@ -59,7 +59,8 @@
     <string name="menu_switch_stream_mode">Belegleser</string>
     <string name="msg_sure">Bist du sicher?</string>
     <string name="msg_unmount_usb">Entschuldige, die SD Karte ist nicht erreichbar</string>
-    <string name="msg_address_line_to_long">Das DTA Format erlaubt nur 20 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
+    <string name="msg_address_line_to_long_20">Das DTA Format erlaubt nur 20 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
+    <string name="msg_address_line_to_long_24">Das DTA Format erlaubt nur 24 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
     <string name="msg_saved">Erfolgreich gespeichert!</string>
     <string name="msg_dta_saved">DTA Datei gespeichert unter %s</string>
     <string name="msg_database_saved">Daten erfolgreich gesichert!</string>
@@ -77,9 +78,9 @@
     <string name="msg_coderow_saved">Codierzeile wurde gespeichert!</string>
     <string name="msg_coderow_sent">Codierzeile wurde gesendet!</string>
     <string name="msg_coderow_not_sent">Codierzeile senden nicht möglich. ESR Receiver ist nicht verbunden!</string>
-    <string name="msg_red_result_view_not_available">Für rote Einzahlungsscheine können keine Details angezeigt werden!</string>
     <string name="msg_confirm_delete_title">Lösche Zahlung</string>
     <string name="msg_confirm_delete_message">Soll die Zahlung gelöscht werden?</string>
+    <string name="msg_reason_line_to_long">Das DTA Format erlaubt nur 28 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
     <string name="msg_touch_to_focus">Zum Fokusieren bitte Display berühren!</string>
@@ -119,11 +120,12 @@
     <string name="preferences_show_scan_result_summary">Wenn diese Option deaktiviert ist, bleibt der ESR Scanner im scan mode und verliert nicht den Fokus. 
         Aber bitte überprüfen Sie die Zahlung noch, bevor Sie sie in Auftrag geben!</string>
     <string name="preferences_show_scan_result_title">Verlauf nach jedem Scan öffnen</string>
-    <string name="result_exported_dta">Payment exported in file</string>
     <string name="result_account">Konto</string>
     <string name="result_address">Empfänger</string>
-    <string name="result_reference_number">Referenznummer</string>
     <string name="result_amount_not_set">0.00</string>
+    <string name="result_exported_dta">Payment exported in file</string>
+    <string name="result_reference_number">Referenznummer</string>
+    <string name="result_reason">Verwendungszweck</string>
     <string name="scanner_ime_label">ESR Scanner IME</string>
     <string name="status_view_ip_address">IP Adresse(n):%s</string>
     <string name="status_stream_mode_active" formatted="false">Beleglesermodus aktiv an\n%s:%d</string>

@@ -39,6 +39,8 @@ public abstract class PsValidation {
 	
 	protected String relatedText;
 	protected boolean finished;
+    
+	protected String[] completeCode;
 	
 	public PsValidation() {
 		gotoBeginning(true);
@@ -98,15 +100,27 @@ public abstract class PsValidation {
 		return digits;
 	}
 
+	public String getCompleteCode() {
+		String result = "";
+		
+		for(int i = 0; i < completeCode.length; i++){
+			if(completeCode[i] != null){
+				result += completeCode[i];
+			}
+		}
+		
+		return result;
+	}
+
 	public abstract boolean validate(String text);
 	
 	public abstract String getRelatedText();	
 	
 	public abstract String getRelatedText(String text);
 	
-	public abstract String getCompleteCode();
-	
 	public abstract void resetCompleteCode();	
 	
 	public abstract String getSpokenType();	
+	
+	protected abstract boolean additionalStepTest(String related);
 }

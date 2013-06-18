@@ -59,7 +59,8 @@
     <string name="menu_switch_stream_mode">Stream mode</string>
     <string name="msg_sure">Are you sure?</string>
     <string name="msg_unmount_usb">Sorry, the SD card is not accessible.</string>
-    <string name="msg_address_line_to_long">The DTA file only allows 20 signs per line and 4 lines. It will cut on export.</string>
+    <string name="msg_address_line_to_long_20">The DTA file only allows 20 signs per line and 4 lines. It will cut on export.</string>
+    <string name="msg_address_line_to_long_24">The DTA file only allows 24 signs per line and 4 lines. It will cut on export.</string>
     <string name="msg_saved">Successfully saved</string>
     <string name="msg_dta_saved">DTA file saved in %s</string>
     <string name="msg_database_saved">Backup successfully saved!</string>
@@ -77,9 +78,9 @@
     <string name="msg_coderow_saved">Code row saved!</string>
     <string name="msg_coderow_sent">Code row sent!</string>
     <string name="msg_coderow_not_sent">Unable to send code row. ESR Receiver is not connected!</string>
-    <string name="msg_red_result_view_not_available">No details for red payment slips!</string>
     <string name="msg_confirm_delete_title">Delete payment</string>
     <string name="msg_confirm_delete_message">You are about to delete the payment, OK to proceed?</string>
+    <string name="msg_reason_line_to_long">The DTA file only allows 28 signs per line and 4 lines. It will cut on export.</string>
     <string name="msg_unsupported_field">The selected input doesn\'t support the needed characters!</string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
     <string name="msg_touch_to_focus">Touch somewhere to focus!</string>
@@ -121,9 +122,10 @@
     <string name="preferences_show_scan_result_title">Open history after each scan</string>
     <string name="result_account">Account</string>
     <string name="result_address">Recipient</string>
-    <string name="result_reference_number">Reference Number</string>
     <string name="result_amount_not_set">0.00</string>
     <string name="result_exported_dta">Payment exported in file</string>
+    <string name="result_reference_number">Reference Number</string>
+    <string name="result_reason">Reason</string>
     <string name="scanner_ime_label">ESR Scanner IME</string>
     <string name="status_view_ip_address">IP Address(es):%s</string>
     <string name="status_stream_mode_active" formatted="false">Payment slip stream mode active on\n%s:%d</string>

@@ -57,6 +57,7 @@ public final class HistoryManager {
 		DBHelper.HISTORY_TIMESTAMP_COL,
 		DBHelper.HISTORY_ADDRESS_ID_COL,
 		DBHelper.HISTORY_AMOUNT_COL,
+		DBHelper.HISTORY_REASON_COL,
 		DBHelper.HISTORY_FILE_NAME_COL
 	};
 
@@ -71,6 +72,7 @@ public final class HistoryManager {
 			"hi." + DBHelper.HISTORY_TIMESTAMP_COL + ", " +
 			"hi." + DBHelper.HISTORY_ADDRESS_ID_COL + ", " +
 			"hi." + DBHelper.HISTORY_AMOUNT_COL + ", " +
+			"hi." + DBHelper.HISTORY_REASON_COL + ", " +
 			"hi." + DBHelper.HISTORY_FILE_NAME_COL + ", " +
 			"ad." + DBHelper.ADDRESS_ADDRESS_COL + " " +
 			"FROM " + DBHelper.HISTORY_TABLE_NAME + " AS hi " +
@@ -84,6 +86,7 @@ public final class HistoryManager {
 			"hi." + DBHelper.HISTORY_TIMESTAMP_COL + ", " +
 			"hi." + DBHelper.HISTORY_ADDRESS_ID_COL + ", " +
 			"hi." + DBHelper.HISTORY_AMOUNT_COL + ", " +
+			"hi." + DBHelper.HISTORY_REASON_COL + ", " +
 			"hi." + DBHelper.HISTORY_FILE_NAME_COL + ", " +
 			"ad." + DBHelper.ADDRESS_ADDRESS_COL + " " +
 			"FROM " + DBHelper.HISTORY_TABLE_NAME + " AS hi " +
@@ -96,6 +99,7 @@ public final class HistoryManager {
 			"hi." + DBHelper.HISTORY_TIMESTAMP_COL + ", " +
 			"hi." + DBHelper.HISTORY_ADDRESS_ID_COL + ", " +
 			"hi." + DBHelper.HISTORY_AMOUNT_COL + ", " +
+			"hi." + DBHelper.HISTORY_REASON_COL + ", " +
 			"hi." + DBHelper.HISTORY_FILE_NAME_COL + ", " +
 			"ad." + DBHelper.ADDRESS_ADDRESS_COL + " " +
 			"FROM " + DBHelper.HISTORY_TABLE_NAME + " AS hi " +
@@ -158,20 +162,21 @@ public final class HistoryManager {
 				long timestamp = cursor.getLong(1);
 				int addressNumber = cursor.getInt(2);
 				String amount = cursor.getString(3);
-				String dtaFile = cursor.getString(4);
+				String reason = cursor.getString(4);
+				String dtaFile = cursor.getString(5);
 
 				PsResult result;
 				if (PsResult.getCoderowType(code_row).equals(EsrResult.PS_TYPE_NAME)) {
 					result = new EsrResult(code_row, timestamp);
 				} else {
-					result = new EsResult(code_row, timestamp);
+					result = new EsResult(code_row, reason, timestamp);
 				}
 				
 				HistoryItem item = new HistoryItem(result, amount, addressNumber, dtaFile); 
 
 				if(addressNumber != -1)
 				{
-					item.setAddress(cursor.getString(5));
+					item.setAddress(cursor.getString(6));
 				}
 				items.add(item);
 			}
@@ -194,13 +199,14 @@ public final class HistoryManager {
 				long timestamp = cursor.getLong(1);
 				int addressId = cursor.getInt(2);
 				String amount = cursor.getString(3);
-				String dtaFile = cursor.getString(4);
+				String reason = cursor.getString(4);
+				String dtaFile = cursor.getString(5);
 
 				PsResult result;
 				if (PsResult.getCoderowType(text).equals(EsrResult.PS_TYPE_NAME)) {
 					result = new EsrResult(text, timestamp);
 				} else {
-					result = new EsResult(text, timestamp);
+					result = new EsResult(text, reason, timestamp);
 				}
 				
 				HistoryItem item = new HistoryItem(result, amount, addressId, dtaFile); 
@@ -263,7 +269,7 @@ public final class HistoryManager {
 
 				if(addressId != -1)
 				{
-					item.setAddress(cursor.getString(5));
+					item.setAddress(cursor.getString(6));
 				}
 
 				ContentValues values = new ContentValues();
@@ -328,12 +334,16 @@ public final class HistoryManager {
 		updateHistoryItem(ID_HISTORY_AMOUNT_COL_PROJECTION, DBHelper.HISTORY_AMOUNT_COL, code_row, itemAmount);
 	}
 
+	public void updateHistoryItemReason(String code_row, String itemReason) {
+		updateHistoryItem(ID_HISTORY_AMOUNT_COL_PROJECTION, DBHelper.HISTORY_REASON_COL, code_row, itemReason);
+	}
+
 	public void updateHistoryItemFileName(String code_row, String itemFileName) {
 		updateHistoryItem(ID_HISTORY_FILE_NAME_COL_PROJECTION, DBHelper.HISTORY_FILE_NAME_COL, code_row, itemFileName);
 	}
 
 	private void updateHistoryItem(String[] projection, String col_name, String code_row, String item) {
-		// As we're going to do an update only we don't need need to worry
+		// As we're going to do an update only we don't need to worry
 		// about the preferences; if the item wasn't saved it won't be updated
 		SQLiteOpenHelper helper = new DBHelper(activity);
 		SQLiteDatabase db = null;    

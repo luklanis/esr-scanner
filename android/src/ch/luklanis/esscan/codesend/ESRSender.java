@@ -72,12 +72,11 @@ public class ESRSender extends Service implements Runnable {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-				if (!ESRSender.isConnectedLocal(true)
-						&& isStopped()) {
-					stopServer();
-				} else if (isStopped()) {
-					startServer();
-				}
+			if (!ESRSender.isConnectedLocal(true) && isStopped()) {
+				stopServer();
+			} else if (isStopped()) {
+				startServer();
+			}
 		}
 	};
 
@@ -138,8 +137,9 @@ public class ESRSender extends Service implements Runnable {
 
 		try {
 			unregisterReceiver(mNetworkReceiver);
-		} catch (IllegalArgumentException e){}
-		
+		} catch (IllegalArgumentException e) {
+		}
+
 		stopServer();
 
 		super.onDestroy();
@@ -158,11 +158,11 @@ public class ESRSender extends Service implements Runnable {
 	}
 
 	public static InetAddress getLocalInterface(boolean refreshInterface) {
-		
+
 		if (refreshInterface) {
 			hostInterface = null;
 		}
-		
+
 		if (hostInterface == null) {
 			try {
 				for (Enumeration<NetworkInterface> en = NetworkInterface
@@ -245,7 +245,7 @@ public class ESRSender extends Service implements Runnable {
 		mStopServer.set(true);
 		mDataQueue.offer(STOP_CONNECTION);
 	}
-	
+
 	public boolean isStopped() {
 		return mStopServer.get();
 	}
@@ -255,6 +255,10 @@ public class ESRSender extends Service implements Runnable {
 		if (isConnectedLocal(true) && mServerStopped.get()) {
 			mStopServer.set(false);
 
+//			if (mSendDataThread.getState() == Thread.State.TERMINATED) {
+//				mSendDataThread = new Thread(this);
+//				mSendDataThread.setName("sendDataThread");
+//			}
 			if (!mSendDataThread.isAlive()) {
 				mSendDataThread.start();
 			} else {
@@ -291,7 +295,8 @@ public class ESRSender extends Service implements Runnable {
 						prefs.edit()
 								.putInt(PreferencesActivity.KEY_SERVER_PORT,
 										mServerPort.get()).apply();
-						// TODO show message to user somehow with the new port
+						// TODO show message to user somehow with the new
+						// port
 					}
 
 					Socket client = null;
@@ -314,7 +319,7 @@ public class ESRSender extends Service implements Runnable {
 								client.setSoTimeout(2000);
 							} catch (Exception e) {
 								if (mStopServer.get()) {
-									return;
+									continue;
 								} else {
 									throw e;
 								}

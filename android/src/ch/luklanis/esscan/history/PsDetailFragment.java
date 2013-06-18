@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
+import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.PsResult;
 import android.app.Activity;
@@ -120,11 +121,13 @@ public class PsDetailFragment extends Fragment {
 		TextView accountTextView = (TextView) rootView.findViewById(R.id.result_account);
 		accountTextView.setText(psResult.getAccount());
 
+		EditText reasonEditText = (EditText) rootView.findViewById(R.id.result_reason);
+
+		EditText amountEditText = (EditText) rootView.findViewById(R.id.result_amount_edit);
+		TextView amountTextView = (TextView) rootView.findViewById(R.id.result_amount);
+
 		if (psResult instanceof EsrResult) {
 			EsrResult result = (EsrResult)psResult;
-
-			EditText amountEditText = (EditText) rootView.findViewById(R.id.result_amount_edit);
-			TextView amountTextView = (TextView) rootView.findViewById(R.id.result_amount);
 
 			String amountFromCode = result.getAmount(); 
 			if(amountFromCode != ""){
@@ -150,6 +153,27 @@ public class PsDetailFragment extends Fragment {
 
 			TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
 			referenceTextView.setText(result.getReference());
+		} else if (psResult instanceof EsResult) {
+			EsResult result = (EsResult)psResult;
+
+			TextView currencyTextView = (TextView) rootView.findViewById(R.id.result_currency);
+			currencyTextView.setText("CHF");
+			
+			amountTextView.setVisibility(View.GONE);
+			amountEditText.setVisibility(View.VISIBLE);
+			String amountManuel = historyItem.getAmount();
+			if(amountManuel == null || amountManuel == "" || amountManuel.length() == 0){
+				amountEditText.setText(R.string.result_amount_not_set);
+				amountEditText.selectAll();
+			}
+			else{
+				amountEditText.setText(amountManuel);
+			}
+
+			TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
+			referenceTextView.setText(result.getReference());
+			
+			reasonEditText.setText(result.getReason());
 		}
 
 		String dtaFilename = historyItem.getDTAFilename();
@@ -204,8 +228,8 @@ public class PsDetailFragment extends Fragment {
 		
 		String codeRow = historyItem.getResult().getCompleteCode();
 
-		if(PsResult.getCoderowType(codeRow).equals(EsrResult.PS_TYPE_NAME) 
-				&& TextUtils.isEmpty((new EsrResult(codeRow)).getAmount())) {
+		if(PsResult.getCoderowType(codeRow).equals(EsResult.PS_TYPE_NAME) 
+				|| TextUtils.isEmpty((new EsrResult(codeRow)).getAmount())) {
 			EditText amountEditText = (EditText) getView().findViewById(R.id.result_amount_edit);
 			String newAmount = amountEditText.getText().toString().replace(',', '.');
 			try {
@@ -234,12 +258,12 @@ public class PsDetailFragment extends Fragment {
 			}
 		}
 
-		int status = 0;
+		int addressStatus = 0;
 		EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
 		String address = addressEditText.getText().toString();
 		if(address.length() > 0){
 
-			status = DTAFileCreator.validateAddress(address);
+			addressStatus = DTAFileCreator.validateAddress(address, historyItem.getResult());
 
 			if (historyItem.getAddressId() == -1) {
 				String account = historyItem.getResult().getAccount();
@@ -251,7 +275,16 @@ public class PsDetailFragment extends Fragment {
 			}
 		}
 
-		return status;
+		int reasonStatus = 0;
+		EditText reasonEditText = (EditText) getView().findViewById(R.id.result_reason);
+		String reason = reasonEditText.getText().toString();
+		if(reason.length() > 0){
+			reasonStatus = DTAFileCreator.validateReason(reason);
+
+			historyManager.updateHistoryItemReason(historyItem.getResult().getCompleteCode(), reason);
+		}
+
+		return (addressStatus != 0 ? addressStatus : reasonStatus);
 	}
 
 	private void showAddressDialog(View view) {

@@ -541,6 +541,12 @@ public final class CaptureActivity extends SherlockActivity implements
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void setValidation(PsValidation validation) {
+		this.mPsValidation = validation;
+		resetStatusView();
+	}
+
 	public Handler getHandler() {
 		return mCaptureActivityHandler;
 	}
@@ -712,17 +718,9 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	public void showResult(PsResult psResult) {
 		mBeepManager.playBeepSoundAndVibrate();
-		showResult(psResult, false);
-	}
-
-	public void showResult(PsResult psResult, boolean fromHistory) {
 
 		if (mEnableStreamMode && mEsrSenderService != null) {
 			mEsrSenderService.sendToListener(psResult.getCompleteCode());
-			return;
-		}
-
-		if (fromHistory) {
 			return;
 		}
 
@@ -746,14 +744,6 @@ public final class CaptureActivity extends SherlockActivity implements
 			toast.show();
 
 			finish();
-			return;
-		}
-
-		if (psResult.getType().equals(EsResult.PS_TYPE_NAME)) {
-
-			showDialogAndRestartScan(R.string.msg_red_result_view_not_available);
-
-			mHistoryManager.addHistoryItem(psResult);
 			return;
 		}
 

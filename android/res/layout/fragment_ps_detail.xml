@@ -52,19 +52,6 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
-            style="@style/marginNewSection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/result_account"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <TextView
-            android:id="@+id/result_account"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
-
-        <TextView
             android:id="@+id/result_currency"
             style="@style/marginNewSection"
             android:layout_width="wrap_content"
@@ -89,6 +76,19 @@
             style="@style/marginNewSection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/result_account"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/result_account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            style="@style/marginNewSection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/result_reference_number"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -96,6 +96,22 @@
             android:id="@+id/result_reference_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            style="@style/marginNewSection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/result_reason"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/result_reason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine|textCapWords"
+            android:nextFocusLeft="@id/result_amount_edit"
+            android:nextFocusUp="@id/result_amount_edit"
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView

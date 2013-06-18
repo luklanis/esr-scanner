@@ -35,8 +35,6 @@ public class EsrValidation extends PsValidation {
     	"%s", "%s", " %s"
     };
     
-    private String[] completeCode;
-    
     public EsrValidation() {
 		completeCode = new String[STEP_COUNT];
 	}
@@ -83,7 +81,7 @@ public class EsrValidation extends PsValidation {
 		return false;
 	}
 
-	private boolean additionalStepTest(String related) {
+	protected boolean additionalStepTest(String related) {
 		if (currentStep == 0) {
 			int esrType = Integer.parseInt(related.substring(0, 2));
 
@@ -129,19 +127,6 @@ public class EsrValidation extends PsValidation {
 		}
 		
 		return relatedText;
-	}
-
-	@Override
-	public String getCompleteCode() {
-		String result = "";
-		
-		for(int i = 0; i < completeCode.length; i++){
-			if(completeCode[i] != null){
-				result += completeCode[i];
-			}
-		}
-		
-		return result;
 	}
 
 	@Override

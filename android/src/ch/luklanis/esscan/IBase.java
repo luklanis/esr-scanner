@@ -31,4 +31,6 @@ public interface IBase {
 	void showErrorMessage(String string, String string2);
 	
 	void showDialogAndRestartScan(int resourceId);
+
+	void setValidation(PsValidation validation);
 }

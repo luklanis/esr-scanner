@@ -21,17 +21,36 @@ package ch.luklanis.esscan.paymentslip;
 public final class EsResult extends PsResult{
 
 	public static final String PS_TYPE_NAME = "red";
+	
+	private String reason;
 
 	public EsResult(String completeCode) {
 		super(completeCode);
+		reason = "";
 	}
 	
 	public EsResult(String completeCode, long timestamp) {
 		super(completeCode, timestamp);
+		reason = "";
+	}
+	
+	public EsResult(String completeCode, String reason, long timestamp) {
+		super(completeCode, timestamp);
+		this.reason = reason;
 	}
 
-	@Override
-	public String getAccount(){
+	public String getReference(){
+		String code = completeCode;
+		int indexOfPlus = code.indexOf('+');
+
+		if(indexOfPlus < 0){
+			return "?";
+		}
+
+		return code.substring(0, indexOfPlus);
+	}
+
+	public String getClearing(){
 		String code = completeCode;
 		int indexOfSpace = code.indexOf(' ');
 
@@ -39,14 +58,39 @@ public final class EsResult extends PsResult{
 			return "?";
 		}
 
-		int indentureNumber = Integer.parseInt(code.substring((indexOfSpace + 3), (indexOfSpace + 9)));
+		return code.substring((indexOfSpace + 1), (indexOfSpace + 10));
+	}
+	
+	public String getReason() {
+		return reason;
+	}
+	
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
 
-		return code.substring((indexOfSpace + 1), (indexOfSpace + 3)) + "-" + String.valueOf(indentureNumber) + "-"
-		+ code.substring((indexOfSpace + 9), (indexOfSpace + 10));
+	@Override
+	public String getAccount(){
+		String code = completeCode;
+		int indexOfNewLine = code.indexOf('\n');
+
+		if(indexOfNewLine < 0){
+			return "?";
+		}
+
+		int indentureNumber = Integer.parseInt(code.substring((indexOfNewLine + 3), (indexOfNewLine + 9)));
+
+		return code.substring((indexOfNewLine + 1), (indexOfNewLine + 3)) + "-" + String.valueOf(indentureNumber) + "-"
+		+ code.substring(indexOfNewLine + 9, indexOfNewLine + 10);
 	}
 
 	@Override
 	public String toString() {
 		return PS_TYPE_NAME + " payment slip," + (completeCode.indexOf("+") > 0 ? " first" : " second") + " code row";
+	}
+
+	@Override
+	public int getMaxAddressLength() {
+		return 24;
 	}
 }

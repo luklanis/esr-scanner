@@ -22,6 +22,7 @@ import ch.luklanis.esscan.CaptureActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.camera.CameraManager;
 import ch.luklanis.esscan.paymentslip.PsResult;
+import ch.luklanis.esscan.paymentslip.PsValidation;
 import ch.luklanis.esscan.OcrResult;
 
 import android.os.Handler;
@@ -95,6 +96,12 @@ public final class CaptureActivityHandler extends Handler {
 			PsResult result = (PsResult) message.obj;
 
 			base.showResult(result);
+			break;
+		case R.id.es_change_ps_type:
+			state = State.DONE;
+			PsValidation validation = (PsValidation) message.obj;
+
+			base.setValidation(validation);
 			break;
 		case R.id.es_send_succeeded:
 			base.showDialogAndRestartScan(R.string.msg_coderow_sent);
