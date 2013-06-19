@@ -213,7 +213,7 @@ public final class HistoryManager {
 
 				if(addressId != -1)
 				{
-					item.setAddress(cursor.getString(5));
+					item.setAddress(cursor.getString(6));
 				}
 
 				return item;

@@ -98,10 +98,7 @@ public final class CaptureActivityHandler extends Handler {
 			base.showResult(result);
 			break;
 		case R.id.es_change_ps_type:
-			state = State.DONE;
-			PsValidation validation = (PsValidation) message.obj;
-
-			base.setValidation(validation);
+			base.setValidation((PsValidation) message.obj);
 			break;
 		case R.id.es_send_succeeded:
 			base.showDialogAndRestartScan(R.string.msg_coderow_sent);

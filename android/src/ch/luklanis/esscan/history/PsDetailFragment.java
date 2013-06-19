@@ -121,6 +121,7 @@ public class PsDetailFragment extends Fragment {
 		TextView accountTextView = (TextView) rootView.findViewById(R.id.result_account);
 		accountTextView.setText(psResult.getAccount());
 
+		TextView reasonTextView = (TextView) rootView.findViewById(R.id.result_reason_text);
 		EditText reasonEditText = (EditText) rootView.findViewById(R.id.result_reason);
 
 		EditText amountEditText = (EditText) rootView.findViewById(R.id.result_amount_edit);
@@ -153,6 +154,9 @@ public class PsDetailFragment extends Fragment {
 
 			TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
 			referenceTextView.setText(result.getReference());
+			
+			reasonTextView.setVisibility(View.GONE);
+			reasonEditText.setVisibility(View.GONE);
 		} else if (psResult instanceof EsResult) {
 			EsResult result = (EsResult)psResult;
 
@@ -172,6 +176,9 @@ public class PsDetailFragment extends Fragment {
 
 			TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
 			referenceTextView.setText(result.getReference());
+
+			reasonTextView.setVisibility(View.VISIBLE);
+			reasonEditText.setVisibility(View.VISIBLE);
 			
 			reasonEditText.setText(result.getReason());
 		}

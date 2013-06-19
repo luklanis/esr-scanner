@@ -67,6 +67,7 @@ public final class EsrResult extends PsResult{
 		return String.valueOf(beforePoint) + "." + code.substring(10, 12);
 	}
 
+	@Override
 	public String getCurrency(){
 		String code = completeCode;
 		int esrType = Integer.parseInt(code.substring(0, 2));

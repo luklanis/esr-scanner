@@ -457,11 +457,13 @@ public final class CaptureActivity extends SherlockActivity implements
 		MenuItem psSwitch = menu.findItem(R.id.menu_switch_ps);
 		MenuItem showHistory = menu.findItem(R.id.menu_history);
 
+		psSwitch.setVisible(false);
+		
 		if (mEnableStreamMode) {
-			psSwitch.setVisible(true);
+			//psSwitch.setVisible(true);
 			showHistory.setVisible(false);
 		} else {
-			psSwitch.setVisible(false);
+			//psSwitch.setVisible(false);
 			showHistory.setVisible(true);
 		}
 
@@ -720,7 +722,14 @@ public final class CaptureActivity extends SherlockActivity implements
 		mBeepManager.playBeepSoundAndVibrate();
 
 		if (mEnableStreamMode && mEsrSenderService != null) {
-			mEsrSenderService.sendToListener(psResult.getCompleteCode());
+			String completeCode = psResult.getCompleteCode();
+			int indexOfNewline = completeCode.indexOf('\n');
+			if (indexOfNewline < 0) {
+				mEsrSenderService.sendToListener(completeCode);
+			} else {
+				mEsrSenderService.sendToListener(completeCode.substring(0,
+						indexOfNewline));
+			}
 			return;
 		}
 

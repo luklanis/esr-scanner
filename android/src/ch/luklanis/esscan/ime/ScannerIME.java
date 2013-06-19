@@ -115,7 +115,7 @@ public class ScannerIME extends InputMethodService implements
 
 	private SharedPreferences mSharedPreferences;
 	private OnSharedPreferenceChangeListener mOnSharedPreferenceChangeListener;
-	
+
 	private PsValidation mPsValidation;
 
 	private int mLastValidationStep;
@@ -133,15 +133,15 @@ public class ScannerIME extends InputMethodService implements
 	@Override
 	public void onStartInputView(EditorInfo info, boolean restarting) {
 		super.onStartInputView(info, restarting);
-		
+
 		if (mInputView == null) {
 			return;
 		}
-		
+
 		updateFullscreenMode();
 
 		mSurfaceView = (SurfaceView) mInputView.findViewById(R.id.preview_view);
-		
+
 		mSurfaceView.setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
@@ -149,12 +149,12 @@ public class ScannerIME extends InputMethodService implements
 				return true;
 			}
 		});
-		
+
 		mCameraManager = new CameraManager(mSurfaceView);
 
 		mViewfinderView = (ViewfinderView) mInputView
 				.findViewById(R.id.viewfinder_view);
-		
+
 		mViewfinderView.setCameraManager(mCameraManager);
 
 		mStatusViewBottomLeft = (TextView) mInputView
@@ -165,13 +165,13 @@ public class ScannerIME extends InputMethodService implements
 
 		mBeepManager = new BeepManager(this);
 
-
 		mStatusViewBottomRight = (TextView) mInputView
 				.findViewById(R.id.status_view_bottom_right);
 		mStatusViewBottomRight.setVisibility(View.GONE);
-		
+
 		if ((info.inputType & InputType.TYPE_MASK_CLASS) != InputType.TYPE_CLASS_TEXT) {
-			mStatusViewBottomRight.setText(getResources().getString(R.string.msg_unsupported_field));
+			mStatusViewBottomRight.setText(getResources().getString(
+					R.string.msg_unsupported_field));
 			mStatusViewBottomRight.setVisibility(View.VISIBLE);
 		}
 
@@ -234,7 +234,7 @@ public class ScannerIME extends InputMethodService implements
 	@Override
 	public void onFinishInputView(boolean finishingInput) {
 		shutdownOcr();
-		
+
 		super.onFinishInputView(finishingInput);
 	}
 
@@ -276,11 +276,11 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		
+
 		if (this.mPsValidation == null) {
 			return super.onKeyDown(keyCode, event);
 		}
-		
+
 		switch (keyCode) {
 		case KeyEvent.KEYCODE_BACK:
 			if (this.mPsValidation.getCurrentStep() > 1) {
@@ -436,18 +436,19 @@ public class ScannerIME extends InputMethodService implements
 
 	public void showResult(PsResult psResult) {
 		mBeepManager.playBeepSoundAndVibrate();
-		showResult(psResult, false);
-	}
 
-	public void showResult(PsResult psResult, boolean fromHistory) {
 		InputConnection inputConnection = getCurrentInputConnection();
-		inputConnection.commitText(psResult.getCompleteCode(), 1);
-		
-		this.hideWindow();
 
-//		mPsValidation.gotoBeginning(false);
-//		mLastValidationStep = mPsValidation.getCurrentStep();
-//		restartPreviewAfterDelay(2000L);
+		String completeCode = psResult.getCompleteCode();
+		int indexOfNewline = completeCode.indexOf('\n');
+		if (indexOfNewline < 0) {
+			inputConnection.commitText(completeCode, 1);
+		} else {
+			inputConnection.commitText(
+					completeCode.substring(0, indexOfNewline), 1);
+		}
+
+		this.hideWindow();
 	}
 
 	/**
@@ -705,29 +706,33 @@ public class ScannerIME extends InputMethodService implements
 	 */
 	@Override
 	public View onCreateInputView() {
-		
+
 		shutdownOcr();
 
-		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
+				.getDefaultDisplay();
 
 		int screenWidth = display.getWidth();
 		int screenHeight = display.getHeight();
-		
+
 		if (screenWidth < screenHeight) {
 			mInputView = null;
 			LinearLayout layout = new LinearLayout(this);
 			layout.setBackgroundColor(Color.WHITE);
 			layout.setOrientation(LinearLayout.VERTICAL);
-			layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
+					LayoutParams.WRAP_CONTENT));
 			layout.setGravity(Gravity.BOTTOM);
-			
+
 			TextView textView = new TextView(this);
-			textView.setText(getResources().getString(R.string.msg_unsupported_orientation));
+			textView.setText(getResources().getString(
+					R.string.msg_unsupported_orientation));
 			textView.setTextColor(Color.RED);
 			textView.setPadding(6, 0, 6, 0);
-			textView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			textView.setLayoutParams(new LayoutParams(
+					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 			layout.addView(textView, 0);
-			
+
 			Button button = new Button(this);
 			button.setText(R.string.button_switch_ime);
 			button.setOnClickListener(new View.OnClickListener() {
@@ -739,15 +744,16 @@ public class ScannerIME extends InputMethodService implements
 					im.showInputMethodPicker();
 				}
 			});
-			button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+			button.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
+					LayoutParams.WRAP_CONTENT));
 			layout.addView(button, 1);
-			
+
 			return layout;
 		}
-		
+
 		mInputView = (RelativeLayout) getLayoutInflater().inflate(
 				R.layout.input, null);
-		
+
 		return mInputView;
 	}
 
@@ -789,13 +795,10 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public void swipeRight() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void swipeUp() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -811,6 +814,12 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public void showDialogAndRestartScan(int resourceId) {
+	}
+
+	@Override
+	public void setValidation(PsValidation validation) {
+		this.mPsValidation = validation;
+		resetStatusView();
 	}
 
 }

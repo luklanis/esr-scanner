@@ -39,6 +39,36 @@ public final class EsResult extends PsResult{
 		this.reason = reason;
 	}
 
+	@Override
+	public String getAccount(){
+		String code = completeCode;
+		int indexOfNewLine = code.indexOf('\n');
+
+		if(indexOfNewLine < 0){
+			return "?";
+		}
+
+		int indentureNumber = Integer.parseInt(code.substring((indexOfNewLine + 3), (indexOfNewLine + 9)));
+
+		return code.substring((indexOfNewLine + 1), (indexOfNewLine + 3)) + "-" + String.valueOf(indentureNumber) + "-"
+		+ code.substring(indexOfNewLine + 9, indexOfNewLine + 10);
+	}
+
+	@Override
+	public String toString() {
+		return getAccount() + ", " + getCurrency();
+	}
+
+	@Override
+	public int getMaxAddressLength() {
+		return 24;
+	}
+
+	@Override
+	public String getCurrency() {
+		return "CHF";
+	}
+
 	public String getReference(){
 		String code = completeCode;
 		int indexOfPlus = code.indexOf('+');
@@ -67,30 +97,5 @@ public final class EsResult extends PsResult{
 	
 	public void setReason(String reason) {
 		this.reason = reason;
-	}
-
-	@Override
-	public String getAccount(){
-		String code = completeCode;
-		int indexOfNewLine = code.indexOf('\n');
-
-		if(indexOfNewLine < 0){
-			return "?";
-		}
-
-		int indentureNumber = Integer.parseInt(code.substring((indexOfNewLine + 3), (indexOfNewLine + 9)));
-
-		return code.substring((indexOfNewLine + 1), (indexOfNewLine + 3)) + "-" + String.valueOf(indentureNumber) + "-"
-		+ code.substring(indexOfNewLine + 9, indexOfNewLine + 10);
-	}
-
-	@Override
-	public String toString() {
-		return PS_TYPE_NAME + " payment slip," + (completeCode.indexOf("+") > 0 ? " first" : " second") + " code row";
-	}
-
-	@Override
-	public int getMaxAddressLength() {
-		return 24;
 	}
 }

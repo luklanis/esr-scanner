@@ -85,7 +85,7 @@ public class DTAFileCreator {
 			return "";
 		}
 
-		String clearing = String
+		String ownClearing = String
 				.valueOf((Integer.parseInt(iban.substring(4, 9))));
 
 		List<HistoryItem> filteredHistoryItem = new ArrayList<HistoryItem>();
@@ -111,27 +111,26 @@ public class DTAFileCreator {
 			PsResult psResult = null;
 			HistoryItem historyItem = filteredHistoryItem.get(i);
 
-			String currency;
 			String referenzNumber;
 			String[] reason = null;
 			String account = "";
+			String clearing = "";
 
 			if (filteredHistoryItem.get(i).getResult().getType()
 					.equals(EsrResult.PS_TYPE_NAME)) {
-				EsrResult esrResult = new EsrResult(filteredHistoryItem.get(i)
-						.getResult().getCompleteCode());
+				EsrResult esrResult = (EsrResult)filteredHistoryItem.get(i)
+						.getResult();
 				referenzNumber = esrResult.getReference().replaceAll(
 						SPACE_PATTERN, "");
 				psResult = esrResult;
-				currency = esrResult.getCurrency();
 				reason = new String[0];
 				account = esrResult.getAccountUnformated();
 			} else {
-				EsResult esResult = new EsResult(filteredHistoryItem.get(i)
-						.getResult().getCompleteCode());
+				EsResult esResult = (EsResult)filteredHistoryItem.get(i)
+						.getResult();
 				referenzNumber = esResult.getReference();
+				clearing = esResult.getClearing();
 				psResult = esResult;
-				currency = "CHF";
 
 				String reasonInOneLine = esResult.getReason();
 				reason = reasonInOneLine != null ? reasonInOneLine
@@ -149,17 +148,16 @@ public class DTAFileCreator {
 
 			totalAmount += Float.parseFloat(amount);
 
-			// HEADER for ESR
+			// HEADER for ESR/ES
 			dtaText.append("01") // Segment number
 					.append(getExecutionDateFormated()) // desired execution
 														// date
-					.append(spacePaddedEnd("", 12)) // Clearing number of the
-													// target bank (not needed
-													// for ESR payments)
+					.append(spacePaddedEnd(clearing, 12)) // Clearing number of the
+													// target bank (on ESR = ""; on ES = "07...")
 					.append(padded("", '0', 5, true)) // Sequenz number (has to
 														// be 5 x 0)
 					.append(nullToEmpty(today)) // creation date
-					.append(spacePaddedEnd(clearing, 7)) // own clearing number
+					.append(spacePaddedEnd(ownClearing, 7)) // own clearing number
 					.append(padded("", 'X', 5, true)) // identification number
 					.append(paddedSequenz); // sequenz number
 
@@ -171,7 +169,7 @@ public class DTAFileCreator {
 				dtaText.append("82700");
 			}
 
-			// ESR
+			// ESR/ES
 			dtaText.append(padded("", 'X', 5, true))
 					// identification number (again)
 					.append("WZ0000")
@@ -181,8 +179,8 @@ public class DTAFileCreator {
 					.append(spacePaddedEnd(iban, 24))
 					// own IBAN
 					.append(spacePaddedEnd("", 6))
-					// Valuta (Blanks in ESR)
-					.append(currency)
+					// Valuta (Blanks in ESR and ES)
+					.append(psResult.getCurrency())
 					.append(spacePaddedEnd(amount.replace('.', ','), 12))
 					.append(spacePaddedEnd("", 14))
 					// Reserve
@@ -208,7 +206,7 @@ public class DTAFileCreator {
 			if (psResult.getType().equals(EsrResult.PS_TYPE_NAME)) {
 				dtaText.append(padded(account, '0', 9, false)); // Account
 			} else {
-				dtaText.append(padded(referenzNumber, '0', 9, false));
+				dtaText.append(padded(referenzNumber, '0', 27, false));
 			}
 
 			String addressTemp = "";
@@ -226,9 +224,10 @@ public class DTAFileCreator {
 				addressTemp += spacePaddedEnd(address[3], lineLength);
 			}
 
-			dtaText.append(spacePaddedEnd(addressTemp, 80));
+			dtaText.append(spacePaddedEnd(addressTemp, 4 * lineLength));
 
 			if (psResult.getType().equals(EsrResult.PS_TYPE_NAME)) {
+				// ESR only (has a referenz number)
 
 				if (account.length() > 5) {
 					dtaText.append(padded(referenzNumber, '0', 27, false)); // Referenz
@@ -249,6 +248,8 @@ public class DTAFileCreator {
 										// not supported)
 						.append(spacePaddedEnd("", 5)); // Reserve
 			} else {
+				// ES only has a segment 04 with a payment reason as text
+				// 05 seems to be not needed for iban payments
 				dtaText.append("04"); // Begin Segment 04
 
 				String reasonTemp = "";

@@ -55,6 +55,8 @@ public abstract class PsResult {
 	public abstract String getAccount();
 
 	public abstract int getMaxAddressLength();
+	
+	public abstract String getCurrency();
 
 	@Override
 	public abstract String toString();

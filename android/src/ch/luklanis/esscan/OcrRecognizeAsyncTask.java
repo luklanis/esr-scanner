@@ -39,7 +39,8 @@ import android.util.Log;
  * Class to send OCR requests to the OCR engine in a separate thread and
  * appropriately send a success/failure message.
  */
-final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
+final class OcrRecognizeAsyncTask extends
+		AsyncTask<String, String, PsValidation> {
 
 	private IBase base;
 	private TessBaseAPI baseApi;
@@ -67,7 +68,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 	}
 
 	@Override
-	protected Boolean doInBackground(String... arg0) {
+	protected PsValidation doInBackground(String... arg0) {
 		String textResult = null;
 		int[] wordConfidences = null;
 		int overallConf = -1;
@@ -95,13 +96,13 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 			} catch (NullPointerException e1) {
 				// Continue
 			}
-			return false;
+			return null;
 		}
 
 		// Check for failure to recognize text
 		if (textResult == null || textResult.equals("")) {
 			ocrResultFailure = new OcrResultFailure(end - start);
-			return false;
+			return null;
 		}
 
 		// Get bounding boxes for characters and words
@@ -118,7 +119,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 			}
 		}
 
-		if (validation.getCurrentStep() == 0) {
+		if (validation.getCurrentStep() == 1) {
 			validation = (validation.getSpokenType().equals(
 					EsrResult.PS_TYPE_NAME) ? new EsIbanValidation()
 					: new EsrValidation());
@@ -129,7 +130,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 				}
 			}
 
-			if (validation.getCurrentStep() > 0) {
+			if (validation.getCurrentStep() > 1) {
 				Handler handler = base.getHandler();
 				Message message = Message.obtain(handler,
 						R.id.es_change_ps_type, validation);
@@ -140,18 +141,20 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 		ocrResult = new OcrResult(bitmap, textResult, wordConfidences,
 				overallConf, characterBoxes, textlineBoxes, wordBoxes,
 				regionBoxes, (end - start));
-		return true;
+
+		return validation;
 	}
 
 	@Override
-	protected void onPostExecute(Boolean result) {
-		super.onPostExecute(result);
+	protected void onPostExecute(PsValidation validation) {
+		super.onPostExecute(validation);
 
 		Handler handler = base.getHandler();
-		PsValidation validation = base.getValidation();
-		if (validation.finished() && handler != null) {
-			// Send results for single-shot mode recognition.
-			if (result) {
+
+		if (validation != null) {
+			if (validation.finished() && handler != null) {
+				// Send results for single-shot mode recognition.
+
 				String completeCode = validation.getCompleteCode();
 				PsResult psResult = validation.getSpokenType().equals(
 						EsrResult.PS_TYPE_NAME) ? new EsrResult(completeCode)
@@ -160,14 +163,12 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 				Message message = Message.obtain(handler,
 						R.id.es_decode_succeeded, psResult);
 				message.sendToTarget();
-			}
 
-			if (indeterminateDialog != null) {
-				indeterminateDialog.dismiss();
-			}
-		} else if (handler != null) {
-			// Send results for continuous mode recognition.
-			if (result) {
+				if (indeterminateDialog != null) {
+					indeterminateDialog.dismiss();
+				}
+			} else if (handler != null) {
+				// Send results for continuous mode recognition.
 				try {
 					// Send the result to CaptureActivityHandler
 					Message message = Message.obtain(handler,
@@ -176,17 +177,18 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, Boolean> {
 				} catch (NullPointerException e) {
 					// continue
 				}
-			} else {
-				bitmap.recycle();
-				try {
-					Message message = Message.obtain(handler,
-							R.id.decode_failed, ocrResultFailure);
-					message.sendToTarget();
-				} catch (NullPointerException e) {
-					// continue
-				}
+			}
+		} else {
+			bitmap.recycle();
+			try {
+				Message message = Message.obtain(handler, R.id.decode_failed,
+						ocrResultFailure);
+				message.sendToTarget();
+			} catch (NullPointerException e) {
+				// continue
 			}
 		}
+		
 		if (baseApi != null) {
 			baseApi.clear();
 		}

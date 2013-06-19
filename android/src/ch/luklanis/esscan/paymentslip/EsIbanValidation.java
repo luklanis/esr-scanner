@@ -32,7 +32,7 @@ public class EsIbanValidation extends PsValidation {
 	};
 
 	private static final String[] STEP_FORMAT = {
-		"%s", " %s", "\\n%s"
+		"%s", " %s", "\n%s"
 	};
 
 	public EsIbanValidation() {

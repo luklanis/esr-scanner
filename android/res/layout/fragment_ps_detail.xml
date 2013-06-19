@@ -99,20 +99,21 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
+            android:id="@+id/result_reason_text"
             style="@style/marginNewSection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/result_reason"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:visibility="gone" />
 
         <EditText
             android:id="@+id/result_reason"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textMultiLine|textCapWords"
-            android:nextFocusLeft="@id/result_amount_edit"
-            android:nextFocusUp="@id/result_amount_edit"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/result_dta_file_text"
