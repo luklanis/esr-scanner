@@ -16,8 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
-import ch.luklanis.esscan.history.HistoryActivity;
-
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;

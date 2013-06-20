@@ -26,7 +26,6 @@ import java.util.zip.ZipInputStream;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -36,8 +35,6 @@ import android.util.Log;
  */
 public final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
 	private static final String TAG = OcrInitAsyncTask.class.getSimpleName();
-
-	private static final long TESSDATA_FILE_LENGTH = 142000;
 
 	private IBase base;
 	private TessBaseAPI baseApi;

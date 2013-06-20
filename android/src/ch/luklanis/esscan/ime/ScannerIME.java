@@ -6,19 +6,11 @@ package ch.luklanis.esscan.ime;
 import java.io.File;
 import java.io.IOException;
 
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceInfo;
-
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 import ch.luklanis.esscan.BeepManager;
 import ch.luklanis.esscan.CaptureActivity;
 import ch.luklanis.esscan.CaptureActivityHandler;
-import ch.luklanis.esscan.FinishListener;
-import ch.luklanis.esscan.HelpActivity;
 import ch.luklanis.esscan.IBase;
 import ch.luklanis.esscan.OcrInitAsyncTask;
 import ch.luklanis.esscan.OcrResult;
@@ -28,36 +20,19 @@ import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.ViewfinderView;
 import ch.luklanis.esscan.camera.CameraManager;
 import ch.luklanis.esscan.language.LanguageCodeHelper;
-import ch.luklanis.esscan.paymentslip.EsIbanValidation;
-import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
 import ch.luklanis.esscan.paymentslip.PsValidation;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.inputmethodservice.ExtractEditText;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.KeyboardView;
-import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.text.InputType;
-import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.util.Log;
@@ -69,13 +44,11 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -127,8 +100,6 @@ public class ScannerIME extends InputMethodService implements
 	private RelativeLayout mInputView;
 
 	private BeepManager mBeepManager;
-
-	private ExtractEditText mExtractEditText;
 
 	@Override
 	public void onStartInputView(EditorInfo info, boolean restarting) {
@@ -386,37 +357,6 @@ public class ScannerIME extends InputMethodService implements
 			int height) {
 	}
 
-	/** Finds the proper location on the SD card where we can save files. */
-	private File getOldTessdataDirectory() {
-		// Log.d(TAG, "getStorageDirectory(): API level is " +
-		// Integer.valueOf(android.os.Build.VERSION.SDK_INT));
-
-		String state = null;
-		try {
-			state = Environment.getExternalStorageState();
-		} catch (RuntimeException e) {
-			Log.e(TAG, "Is the SD card visible?", e);
-			return null;
-		}
-
-		if (Environment.MEDIA_MOUNTED.equals(state)) {
-
-			// We can read and write the media
-			// if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) > 7) {
-			// For Android 2.2 and above
-
-			try {
-				return getExternalFilesDir(null);
-			} catch (NullPointerException e) {
-				// We get an error here if the SD card is visible, but full
-				Log.e(TAG, "External storage is unavailable");
-				return null;
-			}
-		}
-
-		return null;
-	}
-
 	/**
 	 * Requests initialization of the OCR engine with the given parameters.
 	 * 
@@ -591,60 +531,6 @@ public class ScannerIME extends InputMethodService implements
 		mViewfinderView.drawViewfinder();
 	}
 
-	private void DeleteRecursive(File fileOrDirectory) {
-		if (fileOrDirectory.isDirectory())
-			for (File child : fileOrDirectory.listFiles())
-				DeleteRecursive(child);
-
-		fileOrDirectory.delete();
-	}
-
-	/**
-	 * We want the help screen to be shown automatically the first time a new
-	 * version of the app is run. The easiest way to do this is to check
-	 * android:versionCode from the manifest, and compare it to a value stored
-	 * as a preference.
-	 */
-	private boolean checkAndRunFirstLaunch() {
-		try {
-			PackageInfo info = getPackageManager().getPackageInfo(
-					getPackageName(), 0);
-			int currentVersion = info.versionCode;
-			SharedPreferences prefs = PreferenceManager
-					.getDefaultSharedPreferences(this);
-			int lastVersion = prefs.getInt(
-					PreferencesActivity.KEY_HELP_VERSION_SHOWN, 0);
-
-			if (currentVersion > lastVersion) {
-
-				File oldStorage = getOldTessdataDirectory();
-
-				if (oldStorage != null && oldStorage.exists()) {
-					DeleteRecursive(new File(oldStorage.toString()));
-				}
-
-				// Record the last version for which we last displayed the
-				// What's New (Help) page
-				prefs.edit()
-						.putInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN,
-								currentVersion).commit();
-				Intent intent = new Intent(this, HelpActivity.class);
-				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-
-				// Show the default page on a clean install, and the what's new
-				// page on an upgrade.
-				String page = lastVersion == 0 ? HelpActivity.DEFAULT_PAGE
-						: HelpActivity.WHATS_NEW_PAGE;
-				intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY, page);
-				startActivity(intent);
-				return true;
-			}
-		} catch (PackageManager.NameNotFoundException e) {
-			Log.w(TAG, e);
-		}
-		return false;
-	}
-
 	/**
 	 * Returns a string that represents which OCR engine(s) are currently set to
 	 * be run.
@@ -685,13 +571,6 @@ public class ScannerIME extends InputMethodService implements
 	 */
 	public void showErrorMessage(String title, String message) {
 		mStatusViewBottomRight.setText(message);
-	}
-
-	private void setOKAlert(Context context, int id) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setMessage(id);
-		builder.setPositiveButton(R.string.button_ok, null);
-		builder.show();
 	}
 
 	public void setBaseApi(TessBaseAPI baseApi) {
@@ -759,37 +638,31 @@ public class ScannerIME extends InputMethodService implements
 
 	@Override
 	public void onKey(int primaryCode, int[] keyCodes) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void onPress(int primaryCode) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void onRelease(int primaryCode) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void onText(CharSequence text) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void swipeDown() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void swipeLeft() {
-		// TODO Auto-generated method stub
 
 	}
 

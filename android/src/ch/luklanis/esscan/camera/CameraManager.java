@@ -17,7 +17,6 @@
 
 package ch.luklanis.esscan.camera;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;

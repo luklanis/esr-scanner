@@ -31,6 +31,7 @@ import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import ch.luklanis.esscan.history.DBHelper;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -39,7 +40,6 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -89,11 +89,6 @@ OnSharedPreferenceChangeListener {
 	
 	private static final String TAG = PreferencesActivity.class.getName();
 
-	//  private ListPreference listPreferenceSourceLanguage;
-	private EditTextPreference editTextPreferenceCharacterWhitelist;
-
-	private static SharedPreferences sharedPreferences;
-
 	/**
 	 * Set the default preference values.
 	 * 
@@ -109,8 +104,6 @@ OnSharedPreferenceChangeListener {
 		getSupportActionBar().setDisplayShowHomeEnabled(false);
 		
 		addPreferencesFromResource(R.xml.preferences);
-
-		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 		
 		Preference backupButton = (Preference)findPreference(KEY_BUTTON_BACKUP);
 		backupButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -141,6 +134,7 @@ OnSharedPreferenceChangeListener {
 	 * @param key
 	 *            the key of the preference that was changed, added, or removed
 	 */
+	@SuppressLint("DefaultLocale")
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {    
@@ -215,6 +209,8 @@ OnSharedPreferenceChangeListener {
 	private void backupData() {
 		FileChannel src = null;
 		FileChannel dst = null;
+		FileInputStream inputStream = null;
+		FileOutputStream outputStream = null;
 		ObjectOutputStream prefBackup = null;
 
 		try {
@@ -236,8 +232,11 @@ OnSharedPreferenceChangeListener {
 				File backupPrefs = new File(sd, backupPrefsPath);
 
 				if (currentDB.exists()) {
-					src = new FileInputStream(currentDB).getChannel();
-					dst = new FileOutputStream(backupDB).getChannel();
+					inputStream = new FileInputStream(currentDB);
+					outputStream = new FileOutputStream(backupDB);
+					
+					src = inputStream.getChannel();
+					dst = outputStream.getChannel();
 					dst.transferFrom(src, 0, src.size());
 
 					prefBackup = new ObjectOutputStream(new FileOutputStream(backupPrefs));
@@ -259,7 +258,6 @@ OnSharedPreferenceChangeListener {
 					prefBackup.close();
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
 			}
 
 			try {
@@ -267,7 +265,13 @@ OnSharedPreferenceChangeListener {
 					src.close();
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
+			}
+
+			try {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			} catch (IOException ex) {
 			}
 
 			try {
@@ -275,7 +279,13 @@ OnSharedPreferenceChangeListener {
 					dst.close();
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
+			}
+
+			try {
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (IOException ex) {
 			}
 		}
 	}
@@ -284,6 +294,8 @@ OnSharedPreferenceChangeListener {
 		ObjectInputStream input = null;
 		FileChannel src = null;
 		FileChannel dst = null;
+		FileInputStream inputStream = null;
+		FileOutputStream outputStream = null;
 
 		try {
 			File sd = Environment.getExternalStorageDirectory();
@@ -297,8 +309,10 @@ OnSharedPreferenceChangeListener {
 			File backupPrefs = new File(sd, backupPrefsPath);
 
 			if (currentDB.canWrite() && backupDB.exists()) {
-				src = new FileInputStream(backupDB).getChannel();
-				dst = new FileOutputStream(currentDB).getChannel();
+				inputStream = new FileInputStream(backupDB);
+				outputStream = new FileOutputStream(currentDB);
+				src = inputStream.getChannel();
+				dst = outputStream.getChannel();
 				dst.transferFrom(src, 0, src.size());
 
 				input = new ObjectInputStream(new FileInputStream(backupPrefs));
@@ -348,7 +362,13 @@ OnSharedPreferenceChangeListener {
 					src.close();
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
+			}
+
+			try {
+				if (inputStream != null) {
+					inputStream.close();
+				}
+			} catch (IOException ex) {
 			}
 
 			try {
@@ -356,7 +376,13 @@ OnSharedPreferenceChangeListener {
 					dst.close();
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
+			}
+
+			try {
+				if (outputStream != null) {
+					outputStream.close();
+				}
+			} catch (IOException ex) {
 			}
 		}
 	}

@@ -3,21 +3,15 @@ package ch.luklanis.esscan.history;
 import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.ESRSender;
-import ch.luklanis.esscan.paymentslip.PsResult;
-
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -164,6 +158,12 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 			if (fragment != null) {
 				String completeCode = fragment.getHistoryItem().getResult()
 						.getCompleteCode();
+				
+				int indexOfNewline = completeCode.indexOf('\n');
+				if (indexOfNewline > -1) {
+					completeCode = completeCode.substring(0,
+							indexOfNewline);
+				}
 
 				if (boundService != null && ESRSender.isConnectedLocal()) {
 					this.boundService.sendToListener(completeCode);

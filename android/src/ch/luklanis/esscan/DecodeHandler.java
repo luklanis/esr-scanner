@@ -17,10 +17,8 @@
 
 package ch.luklanis.esscan;
 
-import ch.luklanis.esscan.BeepManager;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
-import ch.luklanis.esscan.CaptureActivity;
 import ch.luklanis.esscan.OcrRecognizeAsyncTask;
 import ch.luklanis.esscan.R;
 

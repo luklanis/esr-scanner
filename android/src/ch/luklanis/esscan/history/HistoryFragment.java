@@ -1,9 +1,6 @@
 package ch.luklanis.esscan.history;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-
 import ch.luklanis.esscan.R;
 import android.app.Activity;
 import android.app.AlertDialog;

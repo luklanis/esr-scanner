@@ -60,7 +60,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.os.Environment;
@@ -1083,7 +1082,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
 			try {
 				String name = android.os.Build.MODEL.toLowerCase();
-				mJmDns = JmDNS.create(mEsrSenderService.getLocalInterface(),
+				mJmDns = JmDNS.create(ESRSender.getLocalInterface(),
 						name);
 				mServiceInfo = ServiceInfo.create(SERVICE_TYPE, name, port,
 						"ESR Scanner of " + android.os.Build.MODEL);
@@ -1106,7 +1105,6 @@ public final class CaptureActivity extends SherlockActivity implements
 					try {
 						mJmDns.close();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 

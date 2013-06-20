@@ -1,6 +1,5 @@
 package ch.luklanis.esscan.history;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.os.AsyncTask;

@@ -18,14 +18,10 @@ package ch.luklanis.esscan.history;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -50,7 +46,6 @@ import ch.luklanis.esscan.codesend.ESRSender;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
-import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
 import java.util.List;
@@ -325,6 +320,12 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 			if (fragment != null) {
 				String completeCode = fragment.getHistoryItem().getResult()
 						.getCompleteCode();
+				
+				int indexOfNewline = completeCode.indexOf('\n');
+				if (indexOfNewline > -1) {
+					completeCode = completeCode.substring(0,
+							indexOfNewline);
+				}
 
 				if (boundService != null && ESRSender.isConnectedLocal()) {
 					this.boundService.sendToListener(completeCode,
