@@ -495,12 +495,7 @@ public class DTAFileCreator {
 
 			for (HistoryItem historyItem : historyItems) {
 
-				if (!historyItem.getResult().getType()
-						.equals(EsrResult.PS_TYPE_NAME)) {
-					continue;
-				}
-
-				EsrResult result = new EsrResult(historyItem.getResult()
+				PsResult result = PsResult.getInstance(historyItem.getResult()
 						.getCompleteCode());
 
 				if (result.getCurrency() == "CHF") {

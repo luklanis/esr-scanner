@@ -165,11 +165,10 @@ public final class HistoryManager {
 				String reason = cursor.getString(4);
 				String dtaFile = cursor.getString(5);
 
-				PsResult result;
-				if (PsResult.getCoderowType(code_row).equals(EsrResult.PS_TYPE_NAME)) {
-					result = new EsrResult(code_row, timestamp);
-				} else {
-					result = new EsResult(code_row, reason, timestamp);
+				PsResult result = PsResult.getInstance(code_row, timestamp);
+				
+				if (result instanceof EsResult) {
+					((EsResult)result).setReason(reason);
 				}
 				
 				HistoryItem item = new HistoryItem(result, amount, addressNumber, dtaFile); 
@@ -202,11 +201,10 @@ public final class HistoryManager {
 				String reason = cursor.getString(4);
 				String dtaFile = cursor.getString(5);
 
-				PsResult result;
-				if (PsResult.getCoderowType(text).equals(EsrResult.PS_TYPE_NAME)) {
-					result = new EsrResult(text, timestamp);
-				} else {
-					result = new EsResult(text, reason, timestamp);
+				PsResult result = PsResult.getInstance(text, timestamp);
+				
+				if (result instanceof EsResult) {
+					((EsResult)result).setReason(reason);
 				}
 				
 				HistoryItem item = new HistoryItem(result, amount, addressId, dtaFile); 
@@ -431,14 +429,9 @@ public final class HistoryManager {
 
 			while (cursor.moveToNext()) {
 
-				PsResult result;
 				String code_row = cursor.getString(0);
 				long timestamp = cursor.getLong(1);
-				if (PsResult.getCoderowType(code_row).equals(EsrResult.PS_TYPE_NAME)) {
-					result = new EsrResult(code_row, timestamp);
-				} else {
-					result = new EsResult(code_row, timestamp);
-				}
+				PsResult result = PsResult.getInstance(code_row, timestamp);
 
 				// Add timestamp, formatted
 				historyText.append('"').append(messageHistoryField(

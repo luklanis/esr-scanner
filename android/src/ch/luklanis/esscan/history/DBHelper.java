@@ -104,12 +104,7 @@ public final class DBHelper extends SQLiteOpenHelper {
 				String code_row = cursor.getString(1);
 				int addressNumber = cursor.getInt(2);
 
-				PsResult result;
-				if (PsResult.getCoderowType(code_row).equals(EsrResult.PS_TYPE_NAME)) {
-					result = new EsrResult(code_row);
-				} else {
-					result = new EsResult(code_row);
-				}
+				PsResult result = PsResult.getInstance(code_row);
 
 				if(addressNumber != -1)
 				{

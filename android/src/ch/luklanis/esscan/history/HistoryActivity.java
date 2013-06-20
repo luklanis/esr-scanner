@@ -156,9 +156,7 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		if (intent.getAction() != null
 				&& intent.getAction().equals(ACTION_SHOW_RESULT)) {
 			String codeRow = intent.getStringExtra(EXTRA_CODE_ROW);
-			PsResult psResult = PsResult.getCoderowType(codeRow).equals(
-					EsResult.PS_TYPE_NAME) ? new EsResult(codeRow)
-					: new EsrResult(codeRow);
+			PsResult psResult = PsResult.getInstance(codeRow);
 			this.historyManager.addHistoryItem(psResult);
 
 			if (twoPane) {

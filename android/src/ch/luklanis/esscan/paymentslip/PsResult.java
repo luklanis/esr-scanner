@@ -23,6 +23,20 @@ public abstract class PsResult {
 
 	protected final long timestamp;
 
+	public static PsResult getInstance(String completeCode) {
+		return getInstance(completeCode, 0);
+	}
+
+	public static PsResult getInstance(String completeCode, long timestamp) {
+		if (getCoderowType(completeCode).equals(EsrResult.PS_TYPE_NAME)) {
+			return timestamp == 0 ? new EsrResult(completeCode)
+					: new EsrResult(completeCode, timestamp);
+		} else {
+			return timestamp == 0 ? new EsResult(completeCode) : new EsResult(
+					completeCode, timestamp);
+		}
+	}
+
 	public PsResult(String completeCode) {
 		this.completeCode = completeCode;
 		this.timestamp = System.currentTimeMillis();

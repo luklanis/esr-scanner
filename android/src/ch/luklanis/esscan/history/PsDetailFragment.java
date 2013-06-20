@@ -233,10 +233,10 @@ public class PsDetailFragment extends Fragment {
 			return 0;
 		}
 		
-		String codeRow = historyItem.getResult().getCompleteCode();
+		PsResult result = PsResult.getInstance(historyItem.getResult().getCompleteCode());
 
-		if(PsResult.getCoderowType(codeRow).equals(EsResult.PS_TYPE_NAME) 
-				|| TextUtils.isEmpty((new EsrResult(codeRow)).getAmount())) {
+		if(result instanceof EsResult 
+				|| TextUtils.isEmpty(((EsrResult)result).getAmount())) {
 			EditText amountEditText = (EditText) getView().findViewById(R.id.result_amount_edit);
 			String newAmount = amountEditText.getText().toString().replace(',', '.');
 			try {
