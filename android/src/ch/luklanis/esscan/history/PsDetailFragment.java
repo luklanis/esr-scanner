@@ -48,13 +48,16 @@ public class PsDetailFragment extends Fragment {
 	private final Button.OnClickListener resultCopyListener = new Button.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Activity.CLIPBOARD_SERVICE);
+			ClipboardManager clipboardManager = (ClipboardManager) getActivity()
+					.getSystemService(Activity.CLIPBOARD_SERVICE);
 			clipboardManager.setText(historyItem.getResult().getCompleteCode());
 
-			//        clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult", ocrResultView.getText()));
-			//      if (clipboardManager.hasPrimaryClip()) {
+			// clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult",
+			// ocrResultView.getText()));
+			// if (clipboardManager.hasPrimaryClip()) {
 			if (clipboardManager.hasText()) {
-				Toast toast = Toast.makeText(v.getContext(), R.string.msg_copied, Toast.LENGTH_SHORT);
+				Toast toast = Toast.makeText(v.getContext(),
+						R.string.msg_copied, Toast.LENGTH_SHORT);
 				toast.setGravity(Gravity.BOTTOM, 0, 0);
 				toast.show();
 			}
@@ -64,21 +67,27 @@ public class PsDetailFragment extends Fragment {
 	private final Button.OnClickListener exportAgainListener = new Button.OnClickListener() {
 		@Override
 		public void onClick(View v) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+			AlertDialog.Builder builder = new AlertDialog.Builder(
+					v.getContext());
 			builder.setMessage(R.string.msg_sure);
 			builder.setNeutralButton(R.string.button_cancel, null);
-			builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					historyManager.updateHistoryItemFileName(historyItem.getResult().getCompleteCode(), null);
+			builder.setPositiveButton(R.string.button_ok,
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							historyManager.updateHistoryItemFileName(
+									historyItem.getResult().getCompleteCode(),
+									null);
 
-					ImageButton reexportButton = (ImageButton) getView().findViewById(R.id.button_export_again);
+							ImageButton reexportButton = (ImageButton) getView()
+									.findViewById(R.id.button_export_again);
 
-					TextView dtaFilenameTextView = (TextView) getView().findViewById(R.id.result_dta_file);
-					dtaFilenameTextView.setText("");
-					reexportButton.setVisibility(View.GONE);
-				}
-			});
+							TextView dtaFilenameTextView = (TextView) getView()
+									.findViewById(R.id.result_dta_file);
+							dtaFilenameTextView.setText("");
+							reexportButton.setVisibility(View.GONE);
+						}
+					});
 			builder.show();
 		}
 	};
@@ -106,7 +115,8 @@ public class PsDetailFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-		View rootView = inflater.inflate(R.layout.fragment_ps_detail, container, false);
+		View rootView = inflater.inflate(R.layout.fragment_ps_detail,
+				container, false);
 
 		if (historyItem == null) {
 			return rootView;
@@ -114,115 +124,133 @@ public class PsDetailFragment extends Fragment {
 
 		PsResult psResult = historyItem.getResult();
 
-		ImageView bitmapImageView = (ImageView) rootView.findViewById(R.id.image_view);
-		bitmapImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(),
-				R.drawable.ez_or));
-
-		TextView accountTextView = (TextView) rootView.findViewById(R.id.result_account);
-		accountTextView.setText(psResult.getAccount());
-
-		TextView reasonTextView = (TextView) rootView.findViewById(R.id.result_reason_text);
-		EditText reasonEditText = (EditText) rootView.findViewById(R.id.result_reason);
-
-		EditText amountEditText = (EditText) rootView.findViewById(R.id.result_amount_edit);
-		TextView amountTextView = (TextView) rootView.findViewById(R.id.result_amount);
+		ImageView bitmapImageView = (ImageView) rootView
+				.findViewById(R.id.image_view);
 
 		if (psResult instanceof EsrResult) {
-			EsrResult result = (EsrResult)psResult;
+			bitmapImageView.setImageBitmap(BitmapFactory.decodeResource(
+					getResources(), R.drawable.ez_or));
+		} else {
+			bitmapImageView.setImageBitmap(BitmapFactory.decodeResource(
+					getResources(), R.drawable.ez_red));
+		}
 
-			String amountFromCode = result.getAmount(); 
-			if(amountFromCode != ""){
+		TextView accountTextView = (TextView) rootView
+				.findViewById(R.id.result_account);
+		accountTextView.setText(psResult.getAccount());
+
+		TextView reasonTextView = (TextView) rootView
+				.findViewById(R.id.result_reason_text);
+		EditText reasonEditText = (EditText) rootView
+				.findViewById(R.id.result_reason);
+
+		EditText amountEditText = (EditText) rootView
+				.findViewById(R.id.result_amount_edit);
+		TextView amountTextView = (TextView) rootView
+				.findViewById(R.id.result_amount);
+
+		if (psResult instanceof EsrResult) {
+			EsrResult result = (EsrResult) psResult;
+
+			String amountFromCode = result.getAmount();
+			if (amountFromCode != "") {
 				amountEditText.setVisibility(View.GONE);
 				amountTextView.setVisibility(View.VISIBLE);
 				amountTextView.setText(amountFromCode);
-			}
-			else{
+			} else {
 				amountTextView.setVisibility(View.GONE);
 				amountEditText.setVisibility(View.VISIBLE);
 				String amountManuel = historyItem.getAmount();
-				if(amountManuel == null || amountManuel == "" || amountManuel.length() == 0){
+				if (amountManuel == null || amountManuel == ""
+						|| amountManuel.length() == 0) {
 					amountEditText.setText(R.string.result_amount_not_set);
 					amountEditText.selectAll();
-				}
-				else{
+				} else {
 					amountEditText.setText(amountManuel);
 				}
 			}
 
-			TextView currencyTextView = (TextView) rootView.findViewById(R.id.result_currency);
+			TextView currencyTextView = (TextView) rootView
+					.findViewById(R.id.result_currency);
 			currencyTextView.setText(result.getCurrency());
 
-			TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
+			TextView referenceTextView = (TextView) rootView
+					.findViewById(R.id.result_reference_number);
 			referenceTextView.setText(result.getReference());
-			
+
 			reasonTextView.setVisibility(View.GONE);
 			reasonEditText.setVisibility(View.GONE);
 		} else if (psResult instanceof EsResult) {
-			EsResult result = (EsResult)psResult;
+			EsResult result = (EsResult) psResult;
 
-			TextView currencyTextView = (TextView) rootView.findViewById(R.id.result_currency);
+			TextView currencyTextView = (TextView) rootView
+					.findViewById(R.id.result_currency);
 			currencyTextView.setText("CHF");
-			
+
 			amountTextView.setVisibility(View.GONE);
 			amountEditText.setVisibility(View.VISIBLE);
 			String amountManuel = historyItem.getAmount();
-			if(amountManuel == null || amountManuel == "" || amountManuel.length() == 0){
+			if (amountManuel == null || amountManuel == ""
+					|| amountManuel.length() == 0) {
 				amountEditText.setText(R.string.result_amount_not_set);
 				amountEditText.selectAll();
-			}
-			else{
+			} else {
 				amountEditText.setText(amountManuel);
 			}
 
-			TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
+			TextView referenceTextView = (TextView) rootView
+					.findViewById(R.id.result_reference_number);
 			referenceTextView.setText(result.getReference());
 
 			reasonTextView.setVisibility(View.VISIBLE);
 			reasonEditText.setVisibility(View.VISIBLE);
-			
+
 			reasonEditText.setText(result.getReason());
 		}
 
 		String dtaFilename = historyItem.getDTAFilename();
 
-		ImageButton exportAgainButton = (ImageButton)rootView.findViewById(R.id.button_export_again);
+		ImageButton exportAgainButton = (ImageButton) rootView
+				.findViewById(R.id.button_export_again);
 		exportAgainButton.setOnClickListener(exportAgainListener);
 
-		TextView dtaFilenameTextView = (TextView) rootView.findViewById(R.id.result_dta_file);
-		TextView dtaFilenameTextTextView = (TextView) rootView.findViewById(R.id.result_dta_file_text);
+		TextView dtaFilenameTextView = (TextView) rootView
+				.findViewById(R.id.result_dta_file);
+		TextView dtaFilenameTextTextView = (TextView) rootView
+				.findViewById(R.id.result_dta_file_text);
 
-		if(dtaFilename != null && dtaFilename != ""){
+		if (dtaFilename != null && dtaFilename != "") {
 			dtaFilenameTextView.setText(historyItem.getDTAFilename());
 			dtaFilenameTextTextView.setVisibility(View.VISIBLE);
 			exportAgainButton.setVisibility(View.VISIBLE);
-		}
-		else{
+		} else {
 			dtaFilenameTextTextView.setVisibility(View.GONE);
 			exportAgainButton.setVisibility(View.GONE);
 			dtaFilenameTextView.setText("");
 		}
 
-		ImageButton addressChangeButton = (ImageButton)rootView.findViewById(R.id.button_address_change);
+		ImageButton addressChangeButton = (ImageButton) rootView
+				.findViewById(R.id.button_address_change);
 		addressChangeButton.setOnClickListener(addressChangeListener);
 		addressChangeButton.setVisibility(View.VISIBLE);
 
-		EditText addressEditText = (EditText) rootView.findViewById(R.id.result_address);
+		EditText addressEditText = (EditText) rootView
+				.findViewById(R.id.result_address);
 		addressEditText.setText("");
 
-		if(historyItem.getAddressId() != -1){
+		if (historyItem.getAddressId() != -1) {
 			addressEditText.setText(historyItem.getAddress());
-		}
-		else{
+		} else {
 			showAddressDialog(rootView);
 		}
 
 		return rootView;
 	}
-	
+
 	public HistoryItem getHistoryItem() {
 		return historyItem;
 	}
-	
+
 	public int getListPosition() {
 		return listPosition;
 	}
@@ -232,13 +260,16 @@ public class PsDetailFragment extends Fragment {
 		if (historyItem == null || historyItem.getResult() == null) {
 			return 0;
 		}
-		
-		PsResult result = PsResult.getInstance(historyItem.getResult().getCompleteCode());
 
-		if(result instanceof EsResult 
-				|| TextUtils.isEmpty(((EsrResult)result).getAmount())) {
-			EditText amountEditText = (EditText) getView().findViewById(R.id.result_amount_edit);
-			String newAmount = amountEditText.getText().toString().replace(',', '.');
+		PsResult result = PsResult.getInstance(historyItem.getResult()
+				.getCompleteCode());
+
+		if (result instanceof EsResult
+				|| TextUtils.isEmpty(((EsrResult) result).getAmount())) {
+			EditText amountEditText = (EditText) getView().findViewById(
+					R.id.result_amount_edit);
+			String newAmount = amountEditText.getText().toString()
+					.replace(',', '.');
 			try {
 				float newAmountTemp = Float.parseFloat(newAmount);
 				newAmountTemp *= 100;
@@ -247,17 +278,17 @@ public class PsDetailFragment extends Fragment {
 
 				newAmount = String.valueOf(newAmountTemp);
 
-				if(newAmount.indexOf('.') == newAmount.length() - 2){
+				if (newAmount.indexOf('.') == newAmount.length() - 2) {
 					newAmount += "0";
 				}
 
-				if(historyManager == null){
+				if (historyManager == null) {
 					Log.e(TAG, "onClick: historyManager is null!");
 					return 0;
 				}
 
-				historyManager.updateHistoryItemAmount(historyItem.getResult().getCompleteCode(), 
-						newAmount);
+				historyManager.updateHistoryItemAmount(historyItem.getResult()
+						.getCompleteCode(), newAmount);
 				amountEditText.setText(newAmount);
 
 			} catch (NumberFormatException e) {
@@ -266,29 +297,36 @@ public class PsDetailFragment extends Fragment {
 		}
 
 		int addressStatus = 0;
-		EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
+		EditText addressEditText = (EditText) getView().findViewById(
+				R.id.result_address);
 		String address = addressEditText.getText().toString();
-		if(address.length() > 0){
+		if (address.length() > 0) {
 
-			addressStatus = DTAFileCreator.validateAddress(address, historyItem.getResult());
+			addressStatus = DTAFileCreator.validateAddress(address,
+					historyItem.getResult());
 
 			if (historyItem.getAddressId() == -1) {
 				String account = historyItem.getResult().getAccount();
-				int addressId = historyManager.getAddressId(account, historyManager.addAddress(historyItem.getResult().getAccount(), address));
-				historyManager.updateHistoryItemAddressId(historyItem.getResult().getCompleteCode(), addressId);
-			}
-			else{
-				historyManager.updateAddress(historyItem.getAddressId(), address);
+				int addressId = historyManager.getAddressId(account,
+						historyManager.addAddress(historyItem.getResult()
+								.getAccount(), address));
+				historyManager.updateHistoryItemAddressId(historyItem
+						.getResult().getCompleteCode(), addressId);
+			} else {
+				historyManager.updateAddress(historyItem.getAddressId(),
+						address);
 			}
 		}
 
 		int reasonStatus = 0;
-		EditText reasonEditText = (EditText) getView().findViewById(R.id.result_reason);
+		EditText reasonEditText = (EditText) getView().findViewById(
+				R.id.result_reason);
 		String reason = reasonEditText.getText().toString();
-		if(reason.length() > 0){
+		if (reason.length() > 0) {
 			reasonStatus = DTAFileCreator.validateReason(reason);
 
-			historyManager.updateHistoryItemReason(historyItem.getResult().getCompleteCode(), reason);
+			historyManager.updateHistoryItemReason(historyItem.getResult()
+					.getCompleteCode(), reason);
 		}
 
 		return (addressStatus != 0 ? addressStatus : reasonStatus);
@@ -300,41 +338,47 @@ public class PsDetailFragment extends Fragment {
 		addresses.addAll(historyManager.getAddresses(result.getAccount()));
 		addresses.add(getResources().getString(R.string.address_new));
 
-		if(addresses.size() <= 1){		
-			ImageButton addressChangeButton = (ImageButton)view.findViewById(R.id.button_address_change);
+		if (addresses.size() <= 1) {
+			ImageButton addressChangeButton = (ImageButton) view
+					.findViewById(R.id.button_address_change);
 			addressChangeButton.setVisibility(View.GONE);
 			return;
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.address_dialog_title);
-		builder.setItems(addresses.toArray(new String[addresses.size()]), new DialogInterface.OnClickListener() {
+		builder.setItems(addresses.toArray(new String[addresses.size()]),
+				new DialogInterface.OnClickListener() {
 
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
 
-				EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
-				int addressId = historyManager.getAddressId(historyItem.getResult().getAccount(), which);
-				String address = historyManager.getAddress(addressId);
+						EditText addressEditText = (EditText) getView()
+								.findViewById(R.id.result_address);
+						int addressId = historyManager.getAddressId(historyItem
+								.getResult().getAccount(), which);
+						String address = historyManager.getAddress(addressId);
 
-				if(address != ""){
-					historyManager.updateHistoryItemAddressId(historyItem.getResult().getCompleteCode(), addressId);
+						if (address != "") {
+							historyManager.updateHistoryItemAddressId(
+									historyItem.getResult().getCompleteCode(),
+									addressId);
 
-					historyItem.setAddress(address);
-					historyItem.setAddressId(which);
-					addressEditText.setText(historyItem.getAddress());
+							historyItem.setAddress(address);
+							historyItem.setAddressId(which);
+							addressEditText.setText(historyItem.getAddress());
 
-					Toast toast = Toast.makeText(getActivity(), R.string.msg_saved, Toast.LENGTH_SHORT);
-					toast.setGravity(Gravity.BOTTOM, 0, 0);
-					toast.show();
-				}
-				else{
-					historyItem.setAddress("");
-					historyItem.setAddressId(-1);
-					addressEditText.setText(historyItem.getAddress());
-				}
-			}
-		});
+							Toast toast = Toast.makeText(getActivity(),
+									R.string.msg_saved, Toast.LENGTH_SHORT);
+							toast.setGravity(Gravity.BOTTOM, 0, 0);
+							toast.show();
+						} else {
+							historyItem.setAddress("");
+							historyItem.setAddressId(-1);
+							addressEditText.setText(historyItem.getAddress());
+						}
+					}
+				});
 		builder.setNeutralButton(R.string.button_cancel, null);
 		builder.show();
 	}

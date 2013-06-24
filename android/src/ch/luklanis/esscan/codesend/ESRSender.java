@@ -13,6 +13,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicStampedReference;
 
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
@@ -47,6 +49,7 @@ public class ESRSender extends Service implements Runnable {
 	private static final String ACK = "ACK";
 
 	private final AtomicBoolean mStopServer = new AtomicBoolean(false);
+	private final AtomicBoolean mRestartServer = new AtomicBoolean(false);
 	private final AtomicBoolean mServerStopped = new AtomicBoolean(true);
 	private final AtomicInteger mServerPort = new AtomicInteger(0);
 
@@ -63,6 +66,7 @@ public class ESRSender extends Service implements Runnable {
 	private final IBinder mBinder = new LocalBinder();
 
 	private Handler mDataSentHandler;
+	private String mServerAddress;
 
 	// From
 	// http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
@@ -70,10 +74,10 @@ public class ESRSender extends Service implements Runnable {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (!ESRSender.isConnectedLocal(true) && isStopped()) {
+			if (!ESRSender.isConnectedLocal(true) && !isStopped()) {
 				stopServer();
-			} else if (isStopped()) {
-				startServer();
+			} else {
+				restartServer();
 			}
 		}
 	};
@@ -190,7 +194,7 @@ public class ESRSender extends Service implements Runnable {
 		return hostInterface;
 	}
 
-	public String getLocalIpAddress() {
+	public static String getLocalIpAddress() {
 
 		InetAddress inetAddress = getLocalInterface();
 
@@ -199,6 +203,10 @@ public class ESRSender extends Service implements Runnable {
 		}
 
 		return "";
+	}
+	
+	public String getCurrentServerAddress() {		
+		return mServerAddress;
 	}
 
 	public void registerDataSentHandler(Handler dataSentCallback) {
@@ -248,10 +256,18 @@ public class ESRSender extends Service implements Runnable {
 		return mStopServer.get();
 	}
 
+	public void restartServer() {
+		mStopServer.set(false);
+		mRestartServer.set(true);
+		mDataQueue.offer(STOP_CONNECTION);
+	}
+
 	public void startServer() {
 
 		if (isConnectedLocal(true) && mServerStopped.get()) {
 			mStopServer.set(false);
+			
+			mServerAddress = getLocalIpAddress();
 
 //			if (mSendDataThread.getState() == Thread.State.TERMINATED) {
 //				mSendDataThread = new Thread(this);
@@ -275,6 +291,7 @@ public class ESRSender extends Service implements Runnable {
 		while (true) {
 			while (!mStopServer.get()) {
 				ServerSocket server = null;
+				mRestartServer.set(false);
 
 				try {
 					mServerStopped.set(false);
@@ -287,7 +304,7 @@ public class ESRSender extends Service implements Runnable {
 
 					server = new ServerSocket(mServerPort.get());
 					server.setSoTimeout(500);
-
+					
 					if (mServerPort.get() == 0) {
 						mServerPort.set(server.getLocalPort());
 						prefs.edit()
@@ -301,7 +318,7 @@ public class ESRSender extends Service implements Runnable {
 					DataOutputStream os = null;
 					DataInputStream is = null;
 
-					while (!mStopServer.get()) {
+					while (!mStopServer.get() && !mRestartServer.get()) {
 
 						String data;
 
