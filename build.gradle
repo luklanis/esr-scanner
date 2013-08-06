@@ -1,0 +1,41 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.5.+'
+    }
+}
+apply plugin: 'android'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: '*.jar')
+    compile 'com.android.support:support-v13:13.0.0'
+    compile project(':thirdparty:tess-two:tess-two')
+    compile project(':thirdparty:tess-two:eyes-two')
+    compile project(':thirdparty:ActionBarSherlock:actionbarsherlock')
+}
+
+android {
+    compileSdkVersion 17
+    buildToolsVersion "17.0.0"
+
+    buildTypes {
+        release {
+            runProguard true
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
+}
+
+task copyNativeLibs(type: Copy) {
+    from fileTree(dir: 'thirdparty/tess-two/eyes-two/libs', include: '**/*.so' )  into  'build/native-libs'
+    from fileTree(dir: 'thirdparty/tess-two/tess-two/libs', include: '**/*.so' )  into  'build/native-libs'
+}
+tasks.withType(Compile) { compileTask -> compileTask.dependsOn copyNativeLibs }
+
+clean.dependsOn 'cleanCopyNativeLibs'
+
+tasks.withType(com.android.build.gradle.tasks.PackageApplication) { pkgTask ->
+  pkgTask.jniDir new File('build/native-libs')
+}
