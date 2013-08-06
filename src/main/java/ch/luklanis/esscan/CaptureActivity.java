@@ -643,7 +643,7 @@ public final class CaptureActivity extends SherlockActivity implements
 		// mEsrSenderService.getLocalIpAddress()));
 		mStatusViewBottomRight.setText(getResources().getString(
 				R.string.status_stream_mode_active,
-				mEsrSenderService.getLocalIpAddress(),
+				ESRSender.getLocalIpAddress(),
 				mEsrSenderService.getServerPort()));
 		mStatusViewBottomRight.setVisibility(View.VISIBLE);
 	}
