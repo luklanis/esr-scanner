@@ -10,9 +10,9 @@ apply plugin: 'android'
 
 dependencies {
     compile fileTree(dir: 'libs', include: '*.jar')
-    compile 'com.android.support:support-v13:13.0.0'
+    compile 'com.android.support:support-v4:18.0.+'
     compile project(':thirdparty:tess-two:tess-two')
-    compile project(':thirdparty:tess-two:eyes-two')
+    //compile project(':thirdparty:tess-two:eyes-two')
     compile project(':thirdparty:ActionBarSherlock:actionbarsherlock')
 }
 
@@ -28,11 +28,15 @@ android {
     }
 }
 
+task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
+    gradleVersion = '1.7'
+}
+
 task copyNativeLibs(type: Copy) {
     from fileTree(dir: 'thirdparty/tess-two/eyes-two/libs', include: '**/*.so' )  into  'build/native-libs'
     from fileTree(dir: 'thirdparty/tess-two/tess-two/libs', include: '**/*.so' )  into  'build/native-libs'
 }
-tasks.withType(Compile) { compileTask -> compileTask.dependsOn copyNativeLibs }
+tasks.withType(JavaCompile) { compileTask -> compileTask.dependsOn copyNativeLibs }
 
 clean.dependsOn 'cleanCopyNativeLibs'
 
