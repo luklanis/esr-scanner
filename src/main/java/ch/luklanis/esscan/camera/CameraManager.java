@@ -196,14 +196,16 @@ public final class CameraManager {
 			((WindowManager) mPreviewView.getContext().getSystemService(Context.WINDOW_SERVICE))
 					.getDefaultDisplay().getMetrics(metrics);
 
-			int width = (int) (metrics.xdpi * FRAME_WIDTH_INCHES);
+			//int width = (int) (metrics.xdpi * FRAME_WIDTH_INCHES);
+            int width = (int) (metrics.densityDpi * FRAME_WIDTH_INCHES);
 			if (width < MIN_FRAME_WIDTH) {
 				width = MIN_FRAME_WIDTH;
 			} else if (width > previewResolution.x) {
 				width = previewResolution.x;
 			}
 
-			int height = (int) (metrics.ydpi * FRAME_HEIGHT_INCHES);
+            //int height = (int) (metrics.ydpi * FRAME_HEIGHT_INCHES);
+            int height = (int) (metrics.densityDpi * FRAME_HEIGHT_INCHES);
 			if (height < MIN_FRAME_HEIGHT) {
 				height = MIN_FRAME_HEIGHT;
 			} 
