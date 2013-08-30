@@ -746,7 +746,7 @@ public final class CaptureActivity extends SherlockActivity implements
 					getApplicationContext(),
 					getResources().getString(
 							clipboardManager.hasText() ? R.string.msg_copied
-									: R.string.msg_coderow_not_sent),
+									: R.string.msg_not_copied),
 					Toast.LENGTH_SHORT);
 			toast.setGravity(Gravity.BOTTOM, 0, 0);
 			toast.show();

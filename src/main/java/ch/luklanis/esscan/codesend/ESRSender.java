@@ -8,6 +8,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-public class ESRSender extends Service implements Runnable {
+public class ESRSender extends Service {
 
 	public class LocalBinder extends Binder {
 		public ESRSender getService() {
@@ -42,28 +43,16 @@ public class ESRSender extends Service implements Runnable {
 
 	private static final String TAG = ESRSender.class.getName();
 
-	private static final String STOP_CONNECTION = "STOP";
-
-	private static final String START_SERVER = "START";
-
-	private static final String ACK = "ACK";
-
-	private final AtomicBoolean mStopServer = new AtomicBoolean(false);
-	private final AtomicBoolean mRestartServer = new AtomicBoolean(false);
-	private final AtomicBoolean mServerStopped = new AtomicBoolean(true);
 	private final AtomicInteger mServerPort = new AtomicInteger(0);
-
-	private final ArrayBlockingQueue<String> mDataQueue = new ArrayBlockingQueue<String>(
-			200);
-
-	private final ArrayBlockingQueue<Boolean> mDataSent = new ArrayBlockingQueue<Boolean>(
-			10);
 
 	private static InetAddress hostInterface = null;
 
-	private final Thread mSendDataThread = new Thread(this);
-
 	private final IBinder mBinder = new LocalBinder();
+
+    private ESSendServer mSendServer;
+
+    SharedPreferences prefs = PreferenceManager
+            .getDefaultSharedPreferences(ESRSender.this);
 
 	private Handler mDataSentHandler;
 	private String mServerAddress;
@@ -74,10 +63,10 @@ public class ESRSender extends Service implements Runnable {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (!ESRSender.isConnectedLocal(true) && !isStopped()) {
+			if (!ESRSender.isConnectedLocal(true)) {
 				stopServer();
 			} else {
-				restartServer();
+				startServer();
 			}
 		}
 	};
@@ -92,37 +81,17 @@ public class ESRSender extends Service implements Runnable {
 
 		super.onStartCommand(intent, flags, startId);
 
-		mSendDataThread.setName("sendDataThread");
-
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(ESRSender.this);
 
 		mServerPort.compareAndSet(0,
 				prefs.getInt(PreferencesActivity.KEY_SERVER_PORT, 0));
 
-		if (mServerPort.get() == 0) {
-			ServerSocket server = null;
-			try {
-				server = new ServerSocket(mServerPort.get());
-
-				if (mServerPort.get() == 0) {
-					mServerPort.set(server.getLocalPort());
-					prefs.edit()
-							.putInt(PreferencesActivity.KEY_SERVER_PORT,
-									mServerPort.get()).apply();
-				}
-			} catch (IOException e) {
-				// do nothing
-			} finally {
-				if (server != null) {
-					try {
-						server.close();
-					} catch (IOException e) {
-						// do nothing
-					}
-				}
-			}
-		}
+        try {
+            mSendServer = new ESSendServer(mServerPort.get());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
 
 		// Registers BroadcastReceiver to track network connection changes.
 		IntentFilter filter = new IntentFilter(
@@ -218,191 +187,46 @@ public class ESRSender extends Service implements Runnable {
 	}
 
 	public void sendToListener(final String dataToSend, final int position) {
-		mDataSent.clear();
+        boolean sent = mSendServer.send(dataToSend);
 
-		mDataQueue.offer(dataToSend);
-		Thread t = new Thread() {
-			public void run() {
-				Boolean sent = false;
-
-				try {
-					sent = mDataSent.poll(3, TimeUnit.SECONDS);
-
-					if (sent == null) {
-						sent = false;
-					}
-				} catch (InterruptedException e) {
-				}
-
-				if (mDataSentHandler != null) {
-					Message message = Message.obtain(mDataSentHandler,
-							(sent ? R.id.es_send_succeeded
-									: R.id.es_send_failed));
-					message.arg1 = position;
-					message.obj = dataToSend;
-					message.sendToTarget();
-				}
-			}
-		};
-		t.start();
+        if (mDataSentHandler != null) {
+            Message message = Message.obtain(mDataSentHandler,
+                    (sent ? R.id.es_send_succeeded
+                            : R.id.es_send_failed));
+            message.arg1 = position;
+            message.obj = dataToSend;
+            message.sendToTarget();
+        }
 	}
 
 	public void stopServer() {
-		mStopServer.set(true);
-		mDataQueue.offer(STOP_CONNECTION);
-	}
-
-	public boolean isStopped() {
-		return mStopServer.get();
-	}
-
-	public void restartServer() {
-		mStopServer.set(false);
-		mRestartServer.set(true);
-		mDataQueue.offer(STOP_CONNECTION);
-	}
+        try {
+            mSendServer.stop();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
 	public void startServer() {
 
-		if (isConnectedLocal(true) && mServerStopped.get()) {
-			mStopServer.set(false);
+		if (isConnectedLocal(true)) {
 			
 			mServerAddress = getLocalIpAddress();
 
-//			if (mSendDataThread.getState() == Thread.State.TERMINATED) {
-//				mSendDataThread = new Thread(this);
-//				mSendDataThread.setName("sendDataThread");
-//			}
-			if (!mSendDataThread.isAlive()) {
-				mSendDataThread.start();
-			} else {
-				mDataQueue.offer(START_SERVER);
-			}
+            mSendServer.start();
+
+		if (mServerPort.get() == 0) {
+					mServerPort.set(mSendServer.getPort());
+					prefs.edit()
+							.putInt(PreferencesActivity.KEY_SERVER_PORT,
+									mServerPort.get()).apply();
+		}
 		}
 	}
 
 	public int getServerPort() {
-		return mServerPort.get();
-	}
-
-	@Override
-	public void run() {
-
-		while (true) {
-			while (!mStopServer.get()) {
-				ServerSocket server = null;
-				mRestartServer.set(false);
-
-				try {
-					mServerStopped.set(false);
-
-					SharedPreferences prefs = PreferenceManager
-							.getDefaultSharedPreferences(ESRSender.this);
-
-					mServerPort.compareAndSet(0, prefs.getInt(
-							PreferencesActivity.KEY_SERVER_PORT, 0));
-
-					server = new ServerSocket(mServerPort.get());
-					server.setSoTimeout(500);
-					
-					if (mServerPort.get() == 0) {
-						mServerPort.set(server.getLocalPort());
-						prefs.edit()
-								.putInt(PreferencesActivity.KEY_SERVER_PORT,
-										mServerPort.get()).apply();
-						// TODO show message to user somehow with the new
-						// port
-					}
-
-					Socket client = null;
-					DataOutputStream os = null;
-					DataInputStream is = null;
-
-					while (!mStopServer.get() && !mRestartServer.get()) {
-
-						String data;
-
-						try {
-							data = mDataQueue.poll(30, TimeUnit.SECONDS);
-
-							if (data == null) {
-								continue;
-							}
-
-							try {
-								client = server.accept();
-								client.setSoTimeout(2000);
-							} catch (Exception e) {
-								if (mStopServer.get()) {
-									continue;
-								} else {
-									throw e;
-								}
-							}
-
-							os = new DataOutputStream(client.getOutputStream());
-							os.writeUTF(data);
-							os.flush();
-
-							is = new DataInputStream(client.getInputStream());
-							String responseLine = is.readUTF();
-							if (responseLine != null
-									&& responseLine.equals(ACK)) {
-								mDataSent.offer(true);
-							} else {
-								mDataSent.offer(false);
-							}
-
-						} catch (Exception e) {
-							e.printStackTrace();
-							mDataSent.offer(false);
-						}
-
-						if (os != null) {
-							os.close();
-							os = null;
-						}
-
-						if (is != null) {
-							is.close();
-							is = null;
-						}
-
-						if (client != null) {
-							client.close();
-							client = null;
-						}
-					}
-				} catch (IOException e) {
-					mServerPort.set(0);
-					PreferenceManager
-							.getDefaultSharedPreferences(ESRSender.this)
-							.edit()
-							.putInt(PreferencesActivity.KEY_SERVER_PORT,
-									mServerPort.get()).apply();
-
-					e.printStackTrace();
-				} finally {
-					if (server != null) {
-						try {
-							server.close();
-						} catch (IOException e) {
-						}
-					}
-
-					if (mStopServer.get()) {
-						mServerStopped.set(true);
-					}
-				}
-			}
-
-			try {
-				String start = mDataQueue.poll(30, TimeUnit.SECONDS);
-				while (start == null || !start.equals(START_SERVER)) {
-					start = mDataQueue.poll(30, TimeUnit.SECONDS);
-				}
-			} catch (InterruptedException e) {
-			}
-		}
+		return mSendServer.getPort();
 	}
 }

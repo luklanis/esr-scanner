@@ -78,6 +78,7 @@
     <orderEntry type="library" exported="" name="jtar-1.0.4" level="project" />
     <orderEntry type="library" exported="" name="json_simple-1.1" level="project" />
     <orderEntry type="library" exported="" name="jmdns" level="project" />
+    <orderEntry type="library" exported="" name="Java-WebSocket-1.3.0" level="project" />
   </component>
 </module>
 

@@ -147,7 +147,7 @@ public final class CameraManager {
 	}
 
 	/**
-	 * Convenience method for {@link com.google.zxing.client.android.CaptureActivity}
+	 * Convenience method for {@link ch.luklanis.esscan.CaptureActivity}
 	 */
 	public synchronized void setTorch(boolean newSetting) {
 		if (mCamera != null) {
