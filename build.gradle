@@ -33,18 +33,18 @@ android {
     }
 }
 
-task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
-    gradleVersion = '1.7'
-}
-
-task copyNativeLibs(type: Copy) {
-    from fileTree(dir: 'thirdparty/tess-two/eyes-two/libs', include: '**/*.so' )  into  'build/native-libs'
-    from fileTree(dir: 'thirdparty/tess-two/tess-two/libs', include: '**/*.so' )  into  'build/native-libs'
-}
-tasks.withType(JavaCompile) { compileTask -> compileTask.dependsOn copyNativeLibs }
-
-clean.dependsOn 'cleanCopyNativeLibs'
-
-tasks.withType(com.android.build.gradle.tasks.PackageApplication) { pkgTask ->
-  pkgTask.jniDir new File('build/native-libs')
-}
+//task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
+//    gradleVersion = '1.7'
+//}
+//
+//task copyNativeLibs(type: Copy) {
+//    from fileTree(dir: 'thirdparty/tess-two/eyes-two/libs', include: '**/*.so' )  into  'build/native-libs'
+//    from fileTree(dir: 'thirdparty/tess-two/tess-two/libs', include: '**/*.so' )  into  'build/native-libs'
+//}
+//tasks.withType(JavaCompile) { compileTask -> compileTask.dependsOn copyNativeLibs }
+//
+//clean.dependsOn 'cleanCopyNativeLibs'
+//
+//tasks.withType(com.android.build.gradle.tasks.PackageApplication) { pkgTask ->
+//  pkgTask.jniDir new File('build/native-libs')
+//}

@@ -51,8 +51,7 @@ public class ESRSender extends Service {
 
     private ESSendServer mSendServer;
 
-    SharedPreferences prefs = PreferenceManager
-            .getDefaultSharedPreferences(ESRSender.this);
+    SharedPreferences prefs;
 
 	private Handler mDataSentHandler;
 	private String mServerAddress;
@@ -81,7 +80,7 @@ public class ESRSender extends Service {
 
 		super.onStartCommand(intent, flags, startId);
 
-		SharedPreferences prefs = PreferenceManager
+		prefs = PreferenceManager
 				.getDefaultSharedPreferences(ESRSender.this);
 
 		mServerPort.compareAndSet(0,
@@ -215,7 +214,11 @@ public class ESRSender extends Service {
 			
 			mServerAddress = getLocalIpAddress();
 
-            mSendServer.start();
+            try {
+                mSendServer.start();
+            } catch (IllegalStateException ex) {
+
+            }
 
 		if (mServerPort.get() == 0) {
 					mServerPort.set(mSendServer.getPort());
