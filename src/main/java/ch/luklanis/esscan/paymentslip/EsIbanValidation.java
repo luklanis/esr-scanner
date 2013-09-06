@@ -26,9 +26,9 @@ public class EsIbanValidation extends PsValidation {
 	};
 
 	private static final int[][] VALID_LENGTHS_IN_STEP = {
-		{ 28, -1 },  // TODO check length
-		{ 10, -1 },  // TODO check length
-		{ 10, -1 }  // TODO check length
+		{ 28, -1 },
+		{ 10, -1 },
+		{ 10, -1 }
 	};
 
 	private static final String[] STEP_FORMAT = {

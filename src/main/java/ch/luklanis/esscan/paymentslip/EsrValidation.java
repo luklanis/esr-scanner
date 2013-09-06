@@ -27,8 +27,8 @@ public class EsrValidation extends PsValidation {
     
     private static final int[][] VALID_LENGTHS_IN_STEP = {
     	{ 4, 14 },
-    	{ 28, 17 },  // TODO check length
-    	{ 10, -1 }  // TODO check length
+    	{ 28, 17 },
+    	{ 10, -1 }
     };
     
     private static final String[] STEP_FORMAT = {
