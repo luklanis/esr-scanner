@@ -13,7 +13,9 @@
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License.
+ limitations under the License.
+
+
 -->
 <resources>
 
@@ -30,6 +32,7 @@
     <string name="button_copy_code_row">Copy code row</string>
     <string name="button_send_code_row">Send code row</string>
     <string name="button_switch_ime">Switch input method</string>
+    <string name="button_send_reference_number">Send reference number</string>
     <string name="detail_title">Details</string>
     <string name="help_button_done">Done</string>
     <string name="help_button_back">Back</string>

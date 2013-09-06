@@ -54,7 +54,7 @@ public class ESSendServer extends WebSocketServer {
 
         synchronized ( con ) {
             for( WebSocket c : con ) {
-                c.send( codeRow );
+                c.send( codeRow + "." );
             }
         }
 
