@@ -33,7 +33,6 @@ import ch.luklanis.esscan.OcrResult;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.history.HistoryActivity;
 import ch.luklanis.esscan.history.HistoryManager;
-import ch.luklanis.esscan.language.LanguageCodeHelper;
 import ch.luklanis.esscan.paymentslip.EsIbanValidation;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
@@ -108,9 +107,9 @@ public final class CaptureActivity extends SherlockActivity implements
 	public static final String EXTERNAL_STORAGE_DIRECTORY = "ESRScan";
 
 	private static final int OCR_ENGINE_MODE = TessBaseAPI.OEM_TESSERACT_ONLY;
-	private static final String SOURCE_LANGUAGE_CODE_OCR = "psl"; // ISO 639-3
-																	// language
-																	// code
+
+	private static final String SOURCE_LANGUAGE_CODE_OCR = "psl";
+    private static final String SOURCE_LANGUAGE_READABLE = "payment slip";
 
 	private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE;
 	private static final String CHARACTER_WHITELIST = "0123456789>+";
@@ -121,7 +120,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private static final String COPY_AND_RETURN = "copy_and_return";
 
-	private static JmDNS mJmDns = null;
+    private static JmDNS mJmDns = null;
 	private static ServiceInfo mServiceInfo;
 
 	private static MulticastLock mMusticastLock;
@@ -137,8 +136,6 @@ public final class CaptureActivity extends SherlockActivity implements
 	private boolean mHasSurface;
 	private BeepManager mBeepManager;
 	private TessBaseAPI mBaseApi; // Java interface for the Tesseract OCR engine
-	private String mSourceLanguageReadable; // Language name, for example,
-											// "English"
 
 	private SharedPreferences mSharedPreferences;
 	private OnSharedPreferenceChangeListener mOnSharedPreferenceChangeListener;
@@ -315,7 +312,7 @@ public final class CaptureActivity extends SherlockActivity implements
 			File storageDirectory = getFilesDir();
 			if (storageDirectory != null) {
 				initOcrEngine(storageDirectory, SOURCE_LANGUAGE_CODE_OCR,
-						mSourceLanguageReadable);
+						SOURCE_LANGUAGE_READABLE);
 			}
 		} else {
 			resumeOcrEngine();
@@ -990,8 +987,6 @@ public final class CaptureActivity extends SherlockActivity implements
 		// Retrieve from preferences, and set in this Activity, the language
 		// preferences
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		mSourceLanguageReadable = LanguageCodeHelper.getOcrLanguageName(this,
-				SOURCE_LANGUAGE_CODE_OCR);
 
 		mSharedPreferences
 				.registerOnSharedPreferenceChangeListener(mOnSharedPreferenceChangeListener);

@@ -19,7 +19,6 @@ import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.ViewfinderView;
 import ch.luklanis.esscan.camera.CameraManager;
-import ch.luklanis.esscan.language.LanguageCodeHelper;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
@@ -68,9 +67,8 @@ public class ScannerIME extends InputMethodService implements
 	public static final String EXTERNAL_STORAGE_DIRECTORY = "ESRScan";
 
 	private static final int OCR_ENGINE_MODE = TessBaseAPI.OEM_TESSERACT_ONLY;
-	private static final String SOURCE_LANGUAGE_CODE_OCR = "psl"; // ISO 639-3
-																	// language
-																	// code
+	private static final String SOURCE_LANGUAGE_CODE_OCR = "psl";
+    private static final String SOURCE_LANGUAGE_READABLE = "payment slip";
 
 	private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE;
 	private static final String CHARACTER_WHITELIST = "0123456789>+";
@@ -83,7 +81,6 @@ public class ScannerIME extends InputMethodService implements
 	private TextView mStatusViewBottomLeft;
 	private boolean mHasSurface;
 	private TessBaseAPI mBaseApi; // Java interface for the Tesseract OCR engine
-	private String mSourceLanguageReadable; // Language name, for example,
 	// "English"
 
 	private SharedPreferences mSharedPreferences;
@@ -163,7 +160,7 @@ public class ScannerIME extends InputMethodService implements
 			File storageDirectory = getFilesDir();
 			if (storageDirectory != null) {
 				initOcrEngine(storageDirectory, SOURCE_LANGUAGE_CODE_OCR,
-						mSourceLanguageReadable);
+                        SOURCE_LANGUAGE_READABLE);
 			}
 		} else {
 			resumeOcrEngine();
@@ -549,8 +546,6 @@ public class ScannerIME extends InputMethodService implements
 		// Retrieve from preferences, and set in this Activity, the language
 		// preferences
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-		mSourceLanguageReadable = LanguageCodeHelper.getOcrLanguageName(this,
-				SOURCE_LANGUAGE_CODE_OCR);
 
 		mSharedPreferences
 				.registerOnSharedPreferenceChangeListener(mOnSharedPreferenceChangeListener);
