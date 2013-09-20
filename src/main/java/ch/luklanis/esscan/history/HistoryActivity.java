@@ -17,6 +17,7 @@
 package ch.luklanis.esscan.history;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
@@ -43,6 +44,7 @@ import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.ESRSender;
+import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
@@ -57,7 +59,7 @@ import com.actionbarsherlock.widget.SearchView;
 import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 
 public final class HistoryActivity extends SherlockFragmentActivity implements
-		HistoryFragment.HistoryCallbacks, Handler.Callback {
+		HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCallback {
 
 	public static final String ACTION_SHOW_RESULT = "action_show_result";
 
@@ -281,9 +283,13 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		}
 			break;
 		case android.R.id.home: {
-			if (!PsDetailActivity.savePaymentSlip(this)) {
-				return true;
-			}
+
+            int error = PsDetailActivity.savePaymentSlip(this);
+
+            if (error > 0) {
+                setCancelOkAlert(this, error);
+                return true;
+            }
 
 			NavUtils.navigateUpTo(this, new Intent(this, CaptureActivity.class));
 			return true;
@@ -316,25 +322,8 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 					.findFragmentById(R.id.ps_detail_container);
 
 			if (fragment != null) {
-				String completeCode = fragment.getHistoryItem().getResult()
-						.getCompleteCode();
-				
-				int indexOfNewline = completeCode.indexOf('\n');
-				if (indexOfNewline > -1) {
-					completeCode = completeCode.substring(0,
-							indexOfNewline);
-				}
-
-				if (boundService != null && ESRSender.isConnectedLocal()) {
-					this.boundService.sendToListener(completeCode,
-							this.historyFragment.getActivatedPosition());
-				} else if (boundService != null) {
-					Toast toast = Toast.makeText(getApplicationContext(),
-							R.string.msg_stream_mode_not_available,
-							Toast.LENGTH_SHORT);
-					toast.setGravity(Gravity.BOTTOM, 0, 0);
-					toast.show();
-				}
+                fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW, boundService,
+                        this.historyFragment.getActivatedPosition());
 			}
 		}
 			break;
@@ -343,6 +332,26 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		}
 		return true;
 	}
+
+    private void setCancelOkAlert(SherlockFragmentActivity activity,
+                                  int id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        final Activity caller = activity;
+
+        builder.setMessage(id)
+                .setNegativeButton(R.string.button_cancel, null)
+                .setPositiveButton(R.string.button_ok,
+                        new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                caller.finish();
+                            }
+                        });
+
+        builder.show();
+    }
 
 	@Override
 	public void selectTopInTwoPane() {
@@ -481,6 +490,11 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 
 		return false;
 	}
+
+    @Override
+    public ESRSender getBoundService() {
+        return this.boundService;
+    }
 
 	private void setNewDetails(int position) {
 		Bundle arguments = new Bundle();

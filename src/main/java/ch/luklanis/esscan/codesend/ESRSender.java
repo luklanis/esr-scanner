@@ -181,9 +181,9 @@ public class ESRSender extends Service {
 		mDataSentHandler = dataSentCallback;
 	}
 
-	public void sendToListener(String message) {
-		sendToListener(message, -1);
-	}
+    public void sendToListener(final String dataToSend) {
+        sendToListener(dataToSend, -1);
+    }
 
 	public void sendToListener(final String dataToSend, final int position) {
         boolean sent = mSendServer.send(dataToSend);

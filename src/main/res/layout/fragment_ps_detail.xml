@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/ps_detail"
@@ -12,7 +12,7 @@
         android:focusableInTouchMode="true"
         android:orientation="vertical"
         android:padding="8dp"
-        tools:context=".history.PsDetailFragment" >
+        tools:context=".history.PsDetailFragment">
 
         <ImageView
             android:id="@+id/image_view"
@@ -24,7 +24,7 @@
             style="@style/marginNewSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -92,27 +92,12 @@
             android:text="@string/result_reference_number"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <RelativeLayout
-            style="@style/marginNewSection"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/result_reference_number"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
-
-            <TextView
-                android:id="@+id/result_reference_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <ImageButton
-                android:id="@+id/button_address_change"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:contentDescription="@string/button_send_reference_number"
-                android:src="@drawable/ic_menu_send" />
-        </RelativeLayout>
+            android:layout_alignParentBottom="true"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
             android:id="@+id/result_reason_text"
@@ -139,26 +124,14 @@
             android:text="@string/result_exported_dta"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
+
+        <TextView
+            android:id="@+id/result_dta_file"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" >
+            android:layout_alignParentBottom="true"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
 
-            <TextView
-                android:id="@+id/result_dta_file"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
-
-            <ImageButton
-                android:id="@+id/button_export_again"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:contentDescription="@string/button_export_again"
-                android:src="@drawable/ic_delete" />
-        </RelativeLayout>
     </LinearLayout>
 
 </ScrollView>

@@ -3,6 +3,8 @@ package ch.luklanis.esscan.history;
 import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.ESRSender;
+import ch.luklanis.esscan.codesend.GetSendServiceCallback;
+
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -24,9 +26,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 public class PsDetailActivity extends SherlockFragmentActivity implements
-		Handler.Callback {
+		Handler.Callback, GetSendServiceCallback {
 
-	private static SherlockFragmentActivity callerActivity;
+	private SherlockFragmentActivity callerActivity;
 
 	private HistoryManager historyManager;
 	private Intent serviceIntent;
@@ -121,9 +123,13 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case android.R.id.home: {
-			if (!savePaymentSlip(this)) {
-				return true;
-			}
+
+            int error = savePaymentSlip(this);
+
+            if (error > 0) {
+                setCancelOkAlert(this, error);
+                return true;
+            }
 
 			NavUtils.navigateUpTo(this, new Intent(this, HistoryActivity.class));
 			return true;
@@ -156,23 +162,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 					.findFragmentById(R.id.ps_detail_container);
 
 			if (fragment != null) {
-				String completeCode = fragment.getHistoryItem().getResult()
-						.getCompleteCode();
-				
-				int indexOfNewline = completeCode.indexOf('\n');
-				if (indexOfNewline > -1) {
-					completeCode = completeCode.substring(0,
-							indexOfNewline);
-				}
-
-				if (boundService != null && ESRSender.isConnectedLocal()) {
-					this.boundService.sendToListener(completeCode);
-				} else if (boundService != null) {
-					Toast toast = Toast.makeText(getApplicationContext(),
-							R.string.msg_stream_mode_not_available, Toast.LENGTH_SHORT);
-					toast.setGravity(Gravity.BOTTOM, 0, 0);
-					toast.show();
-				}
+                fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW, boundService);
 			}
 		}
 			break;
@@ -185,35 +175,32 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			if (!savePaymentSlip(this)) {
-				return true;
-			}
+            int error = savePaymentSlip(this);
+
+            if (error > 0) {
+                setCancelOkAlert(this, error);
+                return true;
+            }
 		}
 
 		return super.onKeyDown(keyCode, event);
 	}
 
-	public static boolean savePaymentSlip(SherlockFragmentActivity activity) {
+	public static int savePaymentSlip(SherlockFragmentActivity activity) {
 		PsDetailFragment oldFragment = (PsDetailFragment) activity
 				.getSupportFragmentManager().findFragmentById(
 						R.id.ps_detail_container);
 
 		if (oldFragment != null) {
-			int error = oldFragment.save();
-
-			if (error > 0) {
-				setCancelOkAlert(activity, error);
-				return false;
-			}
+			return oldFragment.save();
 		}
 
-		return true;
+		return 0;
 	}
 
-	private static void setCancelOkAlert(SherlockFragmentActivity activity,
+	private void setCancelOkAlert(final SherlockFragmentActivity activity,
 			int id) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-		callerActivity = activity;
 
 		builder.setMessage(id)
 				.setNegativeButton(R.string.button_cancel, null)
@@ -223,7 +210,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								callerActivity.finish();
+                                activity.finish();
 							}
 						});
 
@@ -253,4 +240,9 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 
 		return false;
 	}
+
+    @Override
+    public ESRSender getBoundService() {
+        return this.boundService;
+    }
 }

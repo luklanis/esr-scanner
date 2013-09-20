@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.luklanis.esscan.R;
+import ch.luklanis.esscan.codesend.ESRSender;
+import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
@@ -15,7 +17,9 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.ClipboardManager;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -33,6 +37,9 @@ public class PsDetailFragment extends Fragment {
 	public static final String ARG_POSITION = "history_position";
 
 	protected static final String TAG = PsDetailFragment.class.getSimpleName();
+
+    public static final int SEND_COMPONENT_CODE_ROW = 0;
+    public static final int SEND_COMPONENT_REFERENCE = 1;
 
 	private HistoryManager historyManager;
 
@@ -64,7 +71,7 @@ public class PsDetailFragment extends Fragment {
 		}
 	};
 
-	private final Button.OnClickListener exportAgainListener = new Button.OnClickListener() {
+	private final View.OnClickListener exportAgainListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View v) {
 			AlertDialog.Builder builder = new AlertDialog.Builder(
@@ -79,13 +86,9 @@ public class PsDetailFragment extends Fragment {
 									historyItem.getResult().getCompleteCode(),
 									null);
 
-							ImageButton reexportButton = (ImageButton) getView()
-									.findViewById(R.id.button_export_again);
-
 							TextView dtaFilenameTextView = (TextView) getView()
 									.findViewById(R.id.result_dta_file);
 							dtaFilenameTextView.setText("");
-							reexportButton.setVisibility(View.GONE);
 						}
 					});
 			builder.show();
@@ -176,7 +179,17 @@ public class PsDetailFragment extends Fragment {
 
 			TextView referenceTextView = (TextView) rootView
 					.findViewById(R.id.result_reference_number);
-			referenceTextView.setText(result.getReference());
+            SpannableString content = new SpannableString(result.getReference());
+            content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+            referenceTextView.setText(content);
+
+            final GetSendServiceCallback getSendServiceCallback = (GetSendServiceCallback)getActivity();
+            referenceTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    send(SEND_COMPONENT_REFERENCE, getSendServiceCallback.getBoundService());
+                }
+            });
 
 			reasonTextView.setVisibility(View.GONE);
 			reasonEditText.setVisibility(View.GONE);
@@ -200,7 +213,7 @@ public class PsDetailFragment extends Fragment {
 
 			TextView referenceTextView = (TextView) rootView
 					.findViewById(R.id.result_reference_number);
-			referenceTextView.setText(result.getReference());
+            referenceTextView.setText(result.getReference());
 
 			reasonTextView.setVisibility(View.VISIBLE);
 			reasonEditText.setVisibility(View.VISIBLE);
@@ -210,22 +223,20 @@ public class PsDetailFragment extends Fragment {
 
 		String dtaFilename = historyItem.getDTAFilename();
 
-		ImageButton exportAgainButton = (ImageButton) rootView
-				.findViewById(R.id.button_export_again);
-		exportAgainButton.setOnClickListener(exportAgainListener);
-
 		TextView dtaFilenameTextView = (TextView) rootView
 				.findViewById(R.id.result_dta_file);
+        dtaFilenameTextView.setOnClickListener(exportAgainListener);
+
 		TextView dtaFilenameTextTextView = (TextView) rootView
 				.findViewById(R.id.result_dta_file_text);
 
 		if (dtaFilename != null && dtaFilename != "") {
-			dtaFilenameTextView.setText(historyItem.getDTAFilename());
+            SpannableString content = new SpannableString(historyItem.getDTAFilename());
+            content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
+			dtaFilenameTextView.setText(content);
 			dtaFilenameTextTextView.setVisibility(View.VISIBLE);
-			exportAgainButton.setVisibility(View.VISIBLE);
 		} else {
 			dtaFilenameTextTextView.setVisibility(View.GONE);
-			exportAgainButton.setVisibility(View.GONE);
 			dtaFilenameTextView.setText("");
 		}
 
@@ -331,6 +342,38 @@ public class PsDetailFragment extends Fragment {
 
 		return (addressStatus != 0 ? addressStatus : reasonStatus);
 	}
+
+    public void send(int sendComponent, final ESRSender boundService) {
+        send(sendComponent, boundService, -1);
+    }
+
+    public void send(int sendComponent, final ESRSender boundService, int position) {
+
+        String completeCode = "";
+        if (sendComponent == SEND_COMPONENT_CODE_ROW) {
+            completeCode = getHistoryItem().getResult().getCompleteCode();
+        } else {
+            if (getHistoryItem().getResult().getType().equals(EsrResult.PS_TYPE_NAME)) {
+                completeCode = ((EsrResult)getHistoryItem().getResult()).getReference();
+            }
+        }
+
+        int indexOfNewline = completeCode.indexOf('\n');
+        if (indexOfNewline > -1) {
+            completeCode = completeCode.substring(0,
+                    indexOfNewline);
+        }
+
+        if (boundService != null && ESRSender.isConnectedLocal()) {
+            boundService.sendToListener(completeCode, position);
+        } else if (boundService != null) {
+            Toast toast = Toast.makeText(this.getActivity(),
+                    R.string.msg_stream_mode_not_available,
+                    Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.BOTTOM, 0, 0);
+            toast.show();
+        }
+    }
 
 	private void showAddressDialog(View view) {
 		PsResult result = historyItem.getResult();
