@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
  Copyright (C) 2010 ZXing authors
  Copyright (C) 2012 Lukas Landis
 
@@ -48,7 +47,8 @@
     <string name="history_share_as_dta_title">DTA file from ESR Scanner</string>
     <string name="history_share_as_dta_summary">DTA should be attached.
         If there is no attachment, the email app didn\'t support it.
-        So please, can you add the file \"%s\" manually.</string>
+        So please, can you add the file \"%s\" manually.
+    </string>
     <string name="history_title">History</string>
     <string name="history_clear_one_history_text">Delete payment</string>
     <string name="history_empty">Empty</string>
@@ -62,30 +62,52 @@
     <string name="menu_switch_stream_mode">Stream mode</string>
     <string name="msg_sure">Are you sure?</string>
     <string name="msg_unmount_usb">Sorry, the SD card is not accessible.</string>
-    <string name="msg_address_line_to_long_20">The DTA file only allows 20 signs per line and 4 lines. It will cut on export.</string>
-    <string name="msg_address_line_to_long_24">The DTA file only allows 24 signs per line and 4 lines. It will cut on export.</string>
+    <string name="msg_address_line_to_long_20">The DTA file only allows 20 signs per line and 4
+        lines. It will cut on export.
+    </string>
+    <string name="msg_address_line_to_long_24">The DTA file only allows 24 signs per line and 4
+        lines. It will cut on export.
+    </string>
     <string name="msg_saved">Successfully saved</string>
     <string name="msg_dta_saved">DTA file saved in %s</string>
     <string name="msg_database_saved">Backup successfully saved!</string>
     <string name="msg_database_restored">Data successfully restored!</string>
+    <string name="msg_click_ok_to_export_again">Click ok if you want to include this payment in the
+        next exported DTA.
+    </string>
     <string name="msg_copied">Successfully copied</string>
     <string name="msg_not_copied">Unable to copy result to clipboard</string>
     <string name="msg_nothing_to_export">No payment to export.</string>
     <string name="msg_no_email_client">No email client found</string>
     <string name="msg_amount_not_valid">Amount is not valid.</string>
     <string name="msg_amount_is_empty">Please set the amount for the transfer to %s first.</string>
-    <string name="msg_own_iban_is_not_set">To create DTA files your own IBAN is needed. Please write it down in Settings.</string>
-    <string name="msg_own_iban_is_not_valid">IBAN is not valid. It has to be from switzerland.</string>
-    <string name="msg_own_address_is_not_set">To create DTA files your own address is needed. Please write it down in Settings.</string>
-    <string name="msg_stream_mode_not_available">Slip-reader mode only in a local network area available!</string>
+    <string name="msg_own_iban_is_not_set">To create DTA files your own IBAN is needed. Please write
+        it down in Settings.
+    </string>
+    <string name="msg_own_iban_is_not_valid">IBAN is not valid. It has to be from switzerland.
+    </string>
+    <string name="msg_own_address_is_not_set">To create DTA files your own address is needed. Please
+        write it down in Settings.
+    </string>
+    <string name="msg_stream_mode_not_available">Slip-reader mode only in a local network area
+        available!
+    </string>
     <string name="msg_coderow_saved">Code row saved!</string>
     <string name="msg_coderow_sent">Code row sent!</string>
-    <string name="msg_coderow_not_sent">Unable to send code row. ESR Receiver is not connected!</string>
-    <string name="msg_confirm_delete_title">Delete payment</string>
-    <string name="msg_confirm_delete_message">You are about to delete the payment, OK to proceed?</string>
-    <string name="msg_reason_line_to_long">The DTA file only allows 28 signs per line and 4 lines. It will cut on export.</string>
-    <string name="msg_unsupported_field">The selected input doesn\'t support the needed characters!</string>
-    <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
+    <string name="msg_coderow_not_sent">Unable to send code row. ESR Receiver is not connected!
+    </string>
+    <string name="msg_confirm_delete_payment_title">Delete payment</string>
+    <string name="msg_confirm_delete_message">You are about to delete the payment, OK to proceed?
+    </string>
+    <string name="msg_reason_line_to_long">The DTA file only allows 28 signs per line and 4 lines.
+        It will cut on export.
+    </string>
+    <string name="msg_unsupported_field">The selected input doesn\'t support the needed
+        characters!
+    </string>
+    <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation.
+        Please rotate!
+    </string>
     <string name="msg_touch_to_focus">Touch somewhere to focus!</string>
     <string name="notif_scan_to_clipboard_title">ESRScanner scan to clipboard</string>
     <string name="notif_scan_to_clipboard_summary">Tab to scan ESR to clipboard and return</string>
@@ -100,9 +122,12 @@
     <string name="preferences_play_beep_title">Play beep</string>
     <string name="preferences_character_whitelist_title">Character whitelist</string>
     <string name="preferences_reverse_image_title">Reversed camera image</string>
-    <string name="preferences_reverse_image_summary">Enable on devices with a front camera only</string>
+    <string name="preferences_reverse_image_summary">Enable on devices with a front camera only
+    </string>
     <string name="preferences_address_title">Your Address</string>
-    <string name="preferences_address_summary">At least your name/surname on the first line and ZIP/city on the second line</string>
+    <string name="preferences_address_summary">At least your name/surname on the first line and
+        ZIP/city on the second line
+    </string>
     <string name="preferences_iban_title">Your IBAN</string>
     <string name="preferences_vibrate_title">Vibrate</string>
     <string name="preferences_execution_day_title">Execution day</string>
@@ -110,18 +135,26 @@
     <string name="preferences_email_address_title">Default email address</string>
     <string name="preferences_email_address_summary"></string>
     <string name="preferences_enable_stream_mode_title">Enable slip-reader mode</string>
-    <string name="preferences_enable_stream_mode_summary">Sends the recognized code row to your pc</string>
+    <string name="preferences_enable_stream_mode_summary">Sends the recognized code row to your pc
+    </string>
     <string name="preferences_backup_restore_title">Backup/Restore</string>
     <string name="preferences_backup_title">Backup</string>
-    <string name="preferences_backup_summary">Tab to create backup of database and preferences on external storage.</string>
+    <string name="preferences_backup_summary">Tab to create backup of database and preferences on
+        external storage.
+    </string>
     <string name="preferences_restore_title">Restore</string>
-    <string name="preferences_restore_summary">Tab to restore a previous backup. Existing data will be overwritten.</string>
+    <string name="preferences_restore_summary">Tab to restore a previous backup. Existing data will
+        be overwritten.
+    </string>
     <string name="preferences_only_copy_title">Copy scan result over notification</string>
-    <string name="preferences_only_copy_summary">If checked, a notification appears when leaving 
-        	ESRScanner to scan directly to clipboard.</string>
+    <string name="preferences_only_copy_summary">If checked, a notification appears when leaving
+        ESRScanner to scan directly to clipboard.
+    </string>
     <string name="preferences_show_ocr_result_title">Show OCR result</string>
-    <string name="preferences_show_scan_result_summary">If disabled, the ESR Scanner stays in the scan mode and doesn\'t loose the focus. 
-        	But please check the payment before execute.</string>
+    <string name="preferences_show_scan_result_summary">If disabled, the ESR Scanner stays in the
+        scan mode and doesn\'t loose the focus.
+        But please check the payment before execute.
+    </string>
     <string name="preferences_show_scan_result_title">Open history after each scan</string>
     <string name="result_account">Account</string>
     <string name="result_address">Recipient</string>

@@ -118,7 +118,7 @@ public class HistoryFragment extends ListFragment {
 				activatedPosition = position;
 
 				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-				.setTitle(R.string.msg_confirm_delete_title)
+				.setTitle(R.string.msg_confirm_delete_payment_title)
 				.setMessage(R.string.msg_confirm_delete_message)
 				.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
 

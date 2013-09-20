@@ -68,6 +68,8 @@
     <string name="msg_dta_saved">DTA Datei gespeichert unter %s</string>
     <string name="msg_database_saved">Daten erfolgreich gesichert!</string>
     <string name="msg_database_restored">Daten erfolgreich wiederhergestellt!</string>
+    <string name="msg_click_ok_to_export_again">Klicken Sie Ok, wenn Sie diese Zahlung im nächsten DTA-Export mit drin haben möchten.
+    </string>
     <string name="msg_copied">Erfolgreich kopiert!</string>
     <string name="msg_not_copied">Leider konnte das Ergebnis nicht in die Zwischenablage kopiert werden!</string>
     <string name="msg_nothing_to_export">Alle Zahlungen wurden schon mal exportiert.</string>
@@ -81,7 +83,7 @@
     <string name="msg_coderow_saved">Codierzeile wurde gespeichert!</string>
     <string name="msg_coderow_sent">Codierzeile wurde gesendet!</string>
     <string name="msg_coderow_not_sent">Codierzeile senden nicht möglich. ESR Receiver ist nicht verbunden!</string>
-    <string name="msg_confirm_delete_title">Lösche Zahlung</string>
+    <string name="msg_confirm_delete_payment_title">Lösche Zahlung</string>
     <string name="msg_confirm_delete_message">Soll die Zahlung gelöscht werden?</string>
     <string name="msg_reason_line_to_long">Das DTA Format erlaubt nur 28 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
