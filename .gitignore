@@ -1,6 +1,7 @@
 *.swp
 *~
 *.suo
+*.iml
 local.properties
 build/
 thirdparty/
