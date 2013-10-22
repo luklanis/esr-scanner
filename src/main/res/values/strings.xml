@@ -102,6 +102,7 @@
     <string name="msg_reason_line_to_long">The DTA file only allows 28 signs per line and 4 lines.
         It will cut on export.
     </string>
+    <string name="msg_send_over_http_not_possible">Sending code row over http is not possible!</string>
     <string name="msg_unsupported_field">The selected input doesn\'t support the needed
         characters!
     </string>
@@ -150,12 +151,17 @@
     <string name="preferences_only_copy_summary">If checked, a notification appears when leaving
         ESRScanner to scan directly to clipboard.
     </string>
+    <string name="preferences_password_title">Password</string>
+    <string name="preferences_password_summary">Password to encrypt code row</string>
     <string name="preferences_show_ocr_result_title">Show OCR result</string>
     <string name="preferences_show_scan_result_summary">If disabled, the ESR Scanner stays in the
         scan mode and doesn\'t loose the focus.
         But please check the payment before execute.
     </string>
     <string name="preferences_show_scan_result_title">Open history after each scan</string>
+    <string name="preferences_stream_title">Stream settings</string>
+    <string name="preferences_username_title">Username</string>
+    <string name="preferences_username_summary">An email address as username is recommended</string>
     <string name="result_account">Account</string>
     <string name="result_address">Recipient</string>
     <string name="result_amount_not_set">0.00</string>

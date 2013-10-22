@@ -23,6 +23,7 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,10 +45,10 @@ import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.ESRSender;
+import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
+import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
-import ch.luklanis.esscan.paymentslip.EsResult;
-import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
 import java.util.List;
@@ -130,8 +131,9 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 	};
 
 	private HistoryFragment historyFragment;
+    private ESRSenderHttp mEsrSenderHttp;
 
-	@Override
+    @Override
 	protected void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		setContentView(R.layout.activity_history);
@@ -427,6 +429,20 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 		if (twoPane) {
 			serviceIntent = new Intent(this, ESRSender.class);
 			doBindService();
+
+            SharedPreferences prefs = PreferenceManager
+                    .getDefaultSharedPreferences(this);
+
+            String username = prefs.getString(PreferencesActivity.KEY_USERNAME, "");
+            String password = prefs.getString(PreferencesActivity.KEY_PASSWORD, "");
+            try {
+                if (!username.isEmpty() && !password.isEmpty()) {
+                    mEsrSenderHttp = new ESRSenderHttp(getApplicationContext(), username, password);
+                }
+            } catch (Exception e) {
+                setOkAlert(R.string.msg_send_over_http_not_possible);
+                e.printStackTrace();
+            }
 		}
 
 		int error = dtaFileCreator.getFirstErrorId();
@@ -492,8 +508,12 @@ public final class HistoryActivity extends SherlockFragmentActivity implements
 	}
 
     @Override
-    public ESRSender getBoundService() {
-        return this.boundService;
+    public IEsrSender getEsrSender() {
+        if (mEsrSenderHttp != null) {
+            return mEsrSenderHttp;
+        } else {
+            return boundService;
+        }
     }
 
 	private void setNewDetails(int position) {

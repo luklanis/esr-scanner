@@ -33,7 +33,7 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-public class ESRSender extends Service {
+public class ESRSender extends Service implements IEsrSender {
 
 	public class LocalBinder extends Binder {
 		public ESRSender getService() {

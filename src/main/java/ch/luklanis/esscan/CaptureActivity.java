@@ -18,8 +18,6 @@
 
 package ch.luklanis.esscan;
 
-import ch.luklanis.esscan.BeepManager;
-
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -28,9 +26,9 @@ import com.googlecode.tesseract.android.TessBaseAPI;
 
 import ch.luklanis.esscan.camera.CameraManager;
 import ch.luklanis.esscan.codesend.ESRSender;
-import ch.luklanis.esscan.HelpActivity;
-import ch.luklanis.esscan.OcrResult;
-import ch.luklanis.esscan.PreferencesActivity;
+import ch.luklanis.esscan.codesend.ESRSenderHttp;
+import ch.luklanis.esscan.codesend.GetSendServiceCallback;
+import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.history.HistoryActivity;
 import ch.luklanis.esscan.history.HistoryManager;
 import ch.luklanis.esscan.paymentslip.EsIbanValidation;
@@ -97,7 +95,7 @@ import javax.jmdns.ServiceInfo;
  * http://code.google.com/p/zxing/
  */
 public final class CaptureActivity extends SherlockActivity implements
-		SurfaceHolder.Callback, IBase {
+		SurfaceHolder.Callback, IBase, GetSendServiceCallback {
 
 	private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -156,6 +154,9 @@ public final class CaptureActivity extends SherlockActivity implements
 
 	private Intent mServiceIntent;
 
+    private ESRSender mEsrSenderService = null;
+    private ESRSenderHttp mEsrSenderHttp = null;
+
 	// From
 	// http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
 	private final BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
@@ -195,8 +196,6 @@ public final class CaptureActivity extends SherlockActivity implements
 			}
 		}
 	};
-
-	private ESRSender mEsrSenderService = null;
 
 	private boolean mShowScanResult;
 
@@ -300,7 +299,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
 		mCaptureActivityHandler = null;
 
-		retrievePreferences();
+        retrievePreferences();
 
 		resetStatusView();
 		mPsValidation.gotoBeginning(true);
@@ -334,6 +333,17 @@ public final class CaptureActivity extends SherlockActivity implements
 		}
 
 		doBindService();
+
+        String username = mSharedPreferences.getString(PreferencesActivity.KEY_USERNAME, "");
+        String password = mSharedPreferences.getString(PreferencesActivity.KEY_PASSWORD, "");
+        try {
+            if (!username.isEmpty() && !password.isEmpty()) {
+                mEsrSenderHttp = new ESRSenderHttp(getContext(), username, password);
+            }
+        } catch (Exception e) {
+            setOKAlert(R.string.msg_send_over_http_not_possible);
+            e.printStackTrace();
+        }
 
 		Intent intent = getIntent();
 
@@ -545,6 +555,15 @@ public final class CaptureActivity extends SherlockActivity implements
 		resetStatusView();
 	}
 
+    @Override
+    public IEsrSender getEsrSender() {
+        if (mEsrSenderHttp != null) {
+            return mEsrSenderHttp;
+        } else {
+            return mEsrSenderService;
+        }
+    }
+
 	public Handler getHandler() {
 		return mCaptureActivityHandler;
 	}
@@ -618,6 +637,8 @@ public final class CaptureActivity extends SherlockActivity implements
 				// a RuntimeException.
 				mCaptureActivityHandler = new CaptureActivityHandler(this,
 						mCameraManager);
+
+                mEsrSenderHttp.registerDataSentHandler(mCaptureActivityHandler);
 
 				if (mBaseApi != null) {
 					mCaptureActivityHandler.startDecode(mBaseApi);
@@ -721,10 +742,10 @@ public final class CaptureActivity extends SherlockActivity implements
 			String completeCode = psResult.getCompleteCode();
 			int indexOfNewline = completeCode.indexOf('\n');
 			if (indexOfNewline < 0) {
-				mEsrSenderService.sendToListener(completeCode);
+				getEsrSender().sendToListener(completeCode);
 			} else {
-				mEsrSenderService.sendToListener(completeCode.substring(0,
-						indexOfNewline));
+                getEsrSender().sendToListener(completeCode.substring(0,
+                        indexOfNewline));
 			}
 			return;
 		}

@@ -1,9 +1,12 @@
 package ch.luklanis.esscan.history;
 
 import ch.luklanis.esscan.Intents;
+import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.ESRSender;
+import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
+import ch.luklanis.esscan.codesend.IEsrSender;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -14,10 +17,12 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.text.ClipboardManager;
 import android.view.Gravity;
@@ -35,6 +40,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 	private boolean serviceIsBound;
 
 	private ESRSender boundService = null;
+    private ESRSenderHttp mEsrSenderHttp;
 
 	private final Handler mDataSentHandler = new Handler(this);
 
@@ -55,7 +61,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 		}
 	};
 
-	@Override
+    @Override
 	protected void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		setContentView(R.layout.activity_ps_detail);
@@ -88,6 +94,20 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 
 		serviceIntent = new Intent(this, ESRSender.class);
 		doBindService();
+
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(this);
+
+        String username = prefs.getString(PreferencesActivity.KEY_USERNAME, "");
+        String password = prefs.getString(PreferencesActivity.KEY_PASSWORD, "");
+        try {
+            if (!username.isEmpty() && !password.isEmpty()) {
+                mEsrSenderHttp = new ESRSenderHttp(getApplicationContext(), username, password);
+            }
+        } catch (Exception e) {
+            setOkAlert(R.string.msg_send_over_http_not_possible);
+            e.printStackTrace();
+        }
 	}
 
 	@Override
@@ -198,6 +218,15 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 		return 0;
 	}
 
+    private void setOkAlert(int id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage(id)
+                .setPositiveButton(R.string.button_ok, null);
+
+        builder.show();
+    }
+
 	private void setCancelOkAlert(final SherlockFragmentActivity activity,
 			int id) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -242,7 +271,11 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 	}
 
     @Override
-    public ESRSender getBoundService() {
-        return this.boundService;
+    public IEsrSender getEsrSender() {
+        if (mEsrSenderHttp != null) {
+            return mEsrSenderHttp;
+        } else {
+            return boundService;
+        }
     }
 }

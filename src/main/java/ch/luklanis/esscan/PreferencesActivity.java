@@ -70,6 +70,9 @@ OnSharedPreferenceChangeListener {
 	public static final String KEY_ONLY_COPY = "preferences_only_copy";
 	public static final String KEY_COPY_PART = "preferences_copy_part";
 
+    public static final String KEY_USERNAME = "preferences_username";
+    public static final String KEY_PASSWORD = "preferences_password";
+
 	// Preference keys carried over from ZXing project
 	public static final String KEY_REVERSE_IMAGE = "preferences_reverse_image";
 	public static final String KEY_PLAY_BEEP = "preferences_play_beep";

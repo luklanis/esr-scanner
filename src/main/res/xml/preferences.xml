@@ -16,9 +16,23 @@
 -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <!-- GENERAL SETTINGS -->
-    <!-- <PreferenceCategory android:title="@string/preferences_general_title" >
-    </PreferenceCategory> -->
+    <!-- STREAM SETTINGS -->
+    <PreferenceCategory android:title="@string/preferences_stream_title" >
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="preferences_username"
+            android:title="@string/preferences_username_title"
+            android:summary="@string/preferences_username_summary"
+            android:inputType="textEmailAddress" />
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="preferences_password"
+            android:title="@string/preferences_password_title"
+            android:summary="@string/preferences_password_summary"
+            android:inputType="textPassword" />
+    </PreferenceCategory>
 
     <!-- DTA FORMAT SETTINGS -->
     <PreferenceCategory android:title="@string/preferences_dta_format_title" >

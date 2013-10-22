@@ -6,6 +6,7 @@ import java.util.List;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.ESRSender;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
+import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
@@ -188,7 +189,7 @@ public class PsDetailFragment extends Fragment {
             referenceTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    send(SEND_COMPONENT_REFERENCE, getSendServiceCallback.getBoundService());
+                    send(SEND_COMPONENT_REFERENCE, getSendServiceCallback.getEsrSender());
                 }
             });
 
@@ -344,11 +345,11 @@ public class PsDetailFragment extends Fragment {
 		return (addressStatus != 0 ? addressStatus : reasonStatus);
 	}
 
-    public void send(int sendComponent, final ESRSender boundService) {
+    public void send(int sendComponent, final IEsrSender boundService) {
         send(sendComponent, boundService, -1);
     }
 
-    public void send(int sendComponent, final ESRSender boundService, int position) {
+    public void send(int sendComponent, final IEsrSender boundService, int position) {
 
         String completeCode = "";
         if (sendComponent == SEND_COMPONENT_CODE_ROW) {
