@@ -33,10 +33,24 @@ android {
         targetSdkVersion 18
     }
 
+    signingConfigs {
+        debug {
+            storeFile file("/home/lukas/.android/debug.keystore")
+        }
+
+        release {
+            storeFile file('/home/lukas/WualaDrive/gulb/Projects/keyStore')
+            storePassword System.console().readLine("\n\$ Enter keystore password: ")
+            keyAlias 'luklaniskey'
+            keyPassword System.console().readLine("\n\$ Enter key password: ")
+        }
+    }
+
     buildTypes {
         release {
-            runProguard true
+            runProguard false
             proguardFile getDefaultProguardFile('proguard-android.txt')
+            signingConfig signingConfigs.release
         }
     }
 }

@@ -11,6 +11,8 @@
 -keep class javax.jmdns.JmDNS { *; }
 -keep class javax.jmdns.ServiceInfo { *; }
 
+-keep class javax.crypto.** { *; }
+
 -keep class com.google.gson.** { *; }
 -keep class org.bouncycastle.** { *; }
 -keep class org.java-websocket.** { *; }
