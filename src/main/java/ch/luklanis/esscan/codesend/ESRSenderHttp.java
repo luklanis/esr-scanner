@@ -20,14 +20,14 @@ import ch.luklanis.esscan.R;
  */
 public class ESRSenderHttp implements IEsrSender {
 
-    private final String url;
+    private final String url = "http://esr-relay.herokuapp.com";
     private final String password;
     private final String emailAddress;
     private final String hash;
     private final Context context;
     private Handler mDataSentHandler;
 
-    public ESRSenderHttp(Context context, String password, String emailAddress)
+    public ESRSenderHttp(Context context, String emailAddress, String password)
             throws NoSuchAlgorithmException,
             NoSuchProviderException,
             UnsupportedEncodingException {
@@ -35,8 +35,6 @@ public class ESRSenderHttp implements IEsrSender {
         this.password = password;
         this.emailAddress = emailAddress;
         hash = Crypto.getHash(password, emailAddress);
-        url = String.format("http://esr-relay.herokuapp.com/%s/%s", emailAddress,
-                hash);
     }
 
     public void registerDataSentHandler(Handler dataSentCallback) {

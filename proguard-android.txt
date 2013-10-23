@@ -4,7 +4,14 @@
 
 -keep class android.support.v4.app.** { *; }
 -keep interface android.support.v4.app.** { *; }
+
 -keep class com.actionbarsherlock.** { *; }
 -keep interface com.actionbarsherlock.** { *; }
+
 -keep class javax.jmdns.JmDNS { *; }
 -keep class javax.jmdns.ServiceInfo { *; }
+
+-keep class com.google.gson.** { *; }
+-keep class org.bouncycastle.** { *; }
+-keep class org.java-websocket.** { *; }
+-keep class com.koushikdutta.** { *; }

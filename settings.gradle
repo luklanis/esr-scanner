@@ -1,3 +1,2 @@
 // include ':thirdparty:tess-two:eyes-two'
-include ':thirdparty:ActionBarSherlock:actionbarsherlock'
 include ':thirdparty:tess-two:tess-two'

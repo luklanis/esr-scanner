@@ -103,6 +103,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
         try {
             if (!username.isEmpty() && !password.isEmpty()) {
                 mEsrSenderHttp = new ESRSenderHttp(getApplicationContext(), username, password);
+                mEsrSenderHttp.registerDataSentHandler(mDataSentHandler);
             }
         } catch (Exception e) {
             setOkAlert(R.string.msg_send_over_http_not_possible);
@@ -182,7 +183,7 @@ public class PsDetailActivity extends SherlockFragmentActivity implements
 					.findFragmentById(R.id.ps_detail_container);
 
 			if (fragment != null) {
-                fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW, boundService);
+                fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW, getEsrSender());
 			}
 		}
 			break;

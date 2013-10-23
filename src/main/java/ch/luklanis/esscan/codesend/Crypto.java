@@ -4,6 +4,8 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.util.Base64;
 
+import org.bouncycastle.util.encoders.HexEncoder;
+
 import java.io.UnsupportedEncodingException;
 import java.security.AlgorithmParameters;
 import java.security.MessageDigest;
@@ -23,12 +25,11 @@ import javax.crypto.spec.SecretKeySpec;
 public class Crypto {
 
     public static final String PROVIDER = "BC";
-    public static final int IV_LENGTH = 16;
     public static final int PBE_ITERATION_COUNT = 10000;
 
     private static final String RANDOM_ALGORITHM = "SHA1PRNG";
     private static final String HASH_ALGORITHM = "SHA-512";
-    private static final String PBE_ALGORITHM = "PBEWithSHA256And256BitAES-CBC";
+    private static final String PBE_ALGORITHM = "PBEWithSHA256And256BitAES-CBC-BC";
     private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final String SECRET_KEY_ALGORITHM = "AES";
 
@@ -42,12 +43,17 @@ public class Crypto {
             byte[] encryptedText = encryptionCipher.doFinal(cleartext.getBytes("UTF-8"));
 
             return new String[] {
-                    Base64.encodeToString(iv, Base64.DEFAULT),
-                    Base64.encodeToString(encryptedText, Base64.DEFAULT)};
+                    Base64.encodeToString(iv, Base64.NO_WRAP),
+                    Base64.encodeToString(encryptedText, Base64.NO_WRAP)};
     }
 
-    public static SecretKey getSecretKey(String password, String salt) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-            PBEKeySpec pbeKeySpec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), PBE_ITERATION_COUNT, 256);
+    public static SecretKey getSecretKey(String password, String salt)
+            throws NoSuchProviderException,
+            NoSuchAlgorithmException,
+            InvalidKeySpecException,
+            UnsupportedEncodingException {
+        char[] pw = toHexString(password.getBytes("UTF-8")).toCharArray();
+            PBEKeySpec pbeKeySpec = new PBEKeySpec(pw, salt.getBytes("UTF-8"), PBE_ITERATION_COUNT, 256);
             SecretKeyFactory factory = SecretKeyFactory.getInstance(PBE_ALGORITHM, PROVIDER);
             SecretKey tmp = factory.generateSecret(pbeKeySpec);
             SecretKey secret = new SecretKeySpec(tmp.getEncoded(), SECRET_KEY_ALGORITHM);
@@ -59,14 +65,18 @@ public class Crypto {
             String input = password + salt;
             MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM, PROVIDER);
             byte[] out = md.digest(input.getBytes("UTF-8"));
-            return Base64.encodeToString(out, Base64.DEFAULT);
+            return Base64.encodeToString(out, Base64.NO_WRAP | Base64.URL_SAFE | Base64.NO_PADDING);
     }
 
-    private static byte[] generateIv() throws NoSuchAlgorithmException, NoSuchProviderException {
-        SecureRandom random = SecureRandom.getInstance(RANDOM_ALGORITHM);
-        byte[] iv = new byte[IV_LENGTH];
-        random.nextBytes(iv);
-        return iv;
-    }
+    private static String toHexString(byte[] data) {
+        	StringBuffer hexString = new StringBuffer();
 
+	        for (int i = 0; i < data.length; i++) {
+	            String hex = Integer.toHexString(0xff & data[i]);
+	            if(hex.length() == 1) hexString.append('0');
+	            hexString.append(hex);
+	        }
+
+        return hexString.toString();
+    }
 }
