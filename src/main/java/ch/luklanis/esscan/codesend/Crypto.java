@@ -4,14 +4,11 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.util.Base64;
 
-import org.bouncycastle.util.encoders.HexEncoder;
-
 import java.io.UnsupportedEncodingException;
 import java.security.AlgorithmParameters;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.Cipher;
@@ -25,9 +22,8 @@ import javax.crypto.spec.SecretKeySpec;
 public class Crypto {
 
     public static final String PROVIDER = "BC";
-    public static final int PBE_ITERATION_COUNT = 10000;
+    public static final int PBE_ITERATION_COUNT = 5000;
 
-    private static final String RANDOM_ALGORITHM = "SHA1PRNG";
     private static final String HASH_ALGORITHM = "SHA-512";
     private static final String PBE_ALGORITHM = "PBEWithSHA256And256BitAES-CBC-BC";
     private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
@@ -35,8 +31,7 @@ public class Crypto {
 
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static String[] encrypt(SecretKey secret, String cleartext) throws Exception {
-        Cipher encryptionCipher = null;
-            encryptionCipher = Cipher.getInstance(CIPHER_ALGORITHM, PROVIDER);
+        Cipher encryptionCipher = Cipher.getInstance(CIPHER_ALGORITHM, PROVIDER);
         encryptionCipher.init(Cipher.ENCRYPT_MODE, secret);
             AlgorithmParameters params = encryptionCipher.getParameters();
             byte[] iv = params.getParameterSpec(IvParameterSpec.class).getIV();
@@ -56,8 +51,7 @@ public class Crypto {
             PBEKeySpec pbeKeySpec = new PBEKeySpec(pw, salt.getBytes("UTF-8"), PBE_ITERATION_COUNT, 256);
             SecretKeyFactory factory = SecretKeyFactory.getInstance(PBE_ALGORITHM, PROVIDER);
             SecretKey tmp = factory.generateSecret(pbeKeySpec);
-            SecretKey secret = new SecretKeySpec(tmp.getEncoded(), SECRET_KEY_ALGORITHM);
-            return secret;
+        return new SecretKeySpec(tmp.getEncoded(), SECRET_KEY_ALGORITHM);
     }
 
     @TargetApi(Build.VERSION_CODES.FROYO)
@@ -69,10 +63,10 @@ public class Crypto {
     }
 
     private static String toHexString(byte[] data) {
-        	StringBuffer hexString = new StringBuffer();
+        StringBuilder hexString = new StringBuilder();
 
-	        for (int i = 0; i < data.length; i++) {
-	            String hex = Integer.toHexString(0xff & data[i]);
+        for (int i = 0; i < data.length; i++) {
+            String hex = Integer.toHexString(0xff & data[i]);
 	            if(hex.length() == 1) hexString.append('0');
 	            hexString.append(hex);
 	        }
