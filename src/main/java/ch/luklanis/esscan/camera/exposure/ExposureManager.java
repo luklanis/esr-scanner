@@ -20,9 +20,9 @@ import ch.luklanis.android.common.PlatformSupportManager;
 
 public final class ExposureManager extends PlatformSupportManager<ExposureInterface> {
 
-  public ExposureManager() {
-    super(ExposureInterface.class, new DefaultExposureInterface());
-    addImplementationClass(8, "ch.luklanis.esscan.camera.exposure.FroyoExposureInterface");
-  }
+    public ExposureManager() {
+        super(ExposureInterface.class, new DefaultExposureInterface());
+        addImplementationClass(8, "ch.luklanis.esscan.camera.exposure.FroyoExposureInterface");
+    }
 
 }

@@ -39,17 +39,37 @@ android {
         }
 
         release {
-            storeFile file('/home/lukas/WualaDrive/gulb/Projects/keyStore')
-            storePassword System.console().readLine("\n\$ Enter keystore password: ")
-            keyAlias 'luklaniskey'
-            keyPassword System.console().readLine("\n\$ Enter key password: ")
+            if (project.hasProperty('storeFile')) {
+                storeFile file(project.storeFile)
+            } else {
+                storeFile System.console().readLine("\n\$ Enter keystore path: ")
+            }
+
+            if (project.hasProperty('storePassword')) {
+                storePassword = project.storePassword
+            } else {
+                storePassword System.console().readLine("\n\$ Enter keystore password: ")
+            }
+
+            if (project.hasProperty('keyAlias')) {
+                keyAlias = project.keyAlias
+            } else {
+                keyAlias System.console().readLine("\n\$ Enter key alias: ")
+            }
+
+            if (project.hasProperty('keyPassword')) {
+                keyPassword = project.keyPassword
+            } else {
+                keyPassword System.console().readLine("\n\$ Enter key password: ")
+            }
         }
     }
 
     buildTypes {
         release {
-            runProguard false
+            runProguard true
             proguardFile getDefaultProguardFile('proguard-android.txt')
+            proguardFile 'proguard-android.txt'
             signingConfig signingConfigs.release
         }
     }

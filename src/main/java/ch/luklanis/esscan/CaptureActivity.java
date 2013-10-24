@@ -18,32 +18,11 @@
 
 package ch.luklanis.esscan;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
-import com.googlecode.tesseract.android.TessBaseAPI;
-
-import ch.luklanis.esscan.camera.CameraManager;
-import ch.luklanis.esscan.codesend.ESRSender;
-import ch.luklanis.esscan.codesend.ESRSenderHttp;
-import ch.luklanis.esscan.codesend.GetSendServiceCallback;
-import ch.luklanis.esscan.codesend.IEsrSender;
-import ch.luklanis.esscan.history.HistoryActivity;
-import ch.luklanis.esscan.history.HistoryManager;
-import ch.luklanis.esscan.paymentslip.EsIbanValidation;
-import ch.luklanis.esscan.paymentslip.EsResult;
-import ch.luklanis.esscan.paymentslip.EsrResult;
-import ch.luklanis.esscan.paymentslip.EsrValidation;
-import ch.luklanis.esscan.paymentslip.PsResult;
-import ch.luklanis.esscan.paymentslip.PsValidation;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
-//import android.content.ClipData;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -79,12 +58,34 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+import com.googlecode.tesseract.android.TessBaseAPI;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
+
+import ch.luklanis.esscan.camera.CameraManager;
+import ch.luklanis.esscan.codesend.ESRSender;
+import ch.luklanis.esscan.codesend.ESRSenderHttp;
+import ch.luklanis.esscan.codesend.GetSendServiceCallback;
+import ch.luklanis.esscan.codesend.IEsrSender;
+import ch.luklanis.esscan.history.HistoryActivity;
+import ch.luklanis.esscan.history.HistoryManager;
+import ch.luklanis.esscan.paymentslip.EsIbanValidation;
+import ch.luklanis.esscan.paymentslip.EsResult;
+import ch.luklanis.esscan.paymentslip.EsrResult;
+import ch.luklanis.esscan.paymentslip.EsrValidation;
+import ch.luklanis.esscan.paymentslip.PsResult;
+import ch.luklanis.esscan.paymentslip.PsValidation;
+
+//import android.content.ClipData;
 
 /**
  * This activity opens the camera and does the actual scanning on a background
@@ -95,8 +96,8 @@ import javax.jmdns.ServiceInfo;
  * The code for this class was adapted from the ZXing project:
  * http://code.google.com/p/zxing/
  */
-public final class CaptureActivity extends SherlockActivity implements
-        SurfaceHolder.Callback, IBase, GetSendServiceCallback {
+public final class CaptureActivity extends SherlockActivity
+        implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
 
     private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -178,8 +179,7 @@ public final class CaptureActivity extends SherlockActivity implements
                     setOKAlert(R.string.msg_stream_mode_not_available);
 
                     clearIPAddresses();
-                    if (mPsValidation.getSpokenType().equals(
-                            EsResult.PS_TYPE_NAME)) {
+                    if (mPsValidation.getSpokenType().equals(EsResult.PS_TYPE_NAME)) {
                         mPsValidation = new EsrValidation();
                     }
                     resetStatusView();
@@ -253,8 +253,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
         setContentView(R.layout.capture);
 
-        Security.addProvider(new org.bouncycastle.jce.provider
-                .BouncyCastleProvider());
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
         mShowOcrResult = false;
 
@@ -264,12 +263,10 @@ public final class CaptureActivity extends SherlockActivity implements
 
         mBeepManager = new BeepManager(this);
 
-        mSharedPreferences = PreferenceManager
-                .getDefaultSharedPreferences(this);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Registers BroadcastReceiver to track network connection changes.
-        IntentFilter filter = new IntentFilter(
-                ConnectivityManager.CONNECTIVITY_ACTION);
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(mNetworkReceiver, filter);
 
         mServiceIntent = new Intent(this, ESRSender.class);
@@ -316,8 +313,7 @@ public final class CaptureActivity extends SherlockActivity implements
             // Initialize the OCR engine
             File storageDirectory = getFilesDir();
             if (storageDirectory != null) {
-                initOcrEngine(storageDirectory, SOURCE_LANGUAGE_CODE_OCR,
-                        SOURCE_LANGUAGE_READABLE);
+                initOcrEngine(storageDirectory, SOURCE_LANGUAGE_CODE_OCR, SOURCE_LANGUAGE_READABLE);
             }
         } else {
             resumeOcrEngine();
@@ -400,8 +396,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
         doUnbindService();
 
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
             CreateCopyNotification();
         } else {
@@ -489,8 +484,7 @@ public final class CaptureActivity extends SherlockActivity implements
         Intent intent;
         switch (item.getItemId()) {
             case R.id.menu_switch_ps: {
-                if (this.mPsValidation.getSpokenType().equals(
-                        EsrResult.PS_TYPE_NAME)) {
+                if (this.mPsValidation.getSpokenType().equals(EsrResult.PS_TYPE_NAME)) {
                     this.mPsValidation = new EsIbanValidation();
                 } else {
                     this.mPsValidation = new EsrValidation();
@@ -502,10 +496,10 @@ public final class CaptureActivity extends SherlockActivity implements
                 // seperate if to exclude complete statement in compiled code
                 if (mEnableStreamMode) {
                     mEnableStreamMode = false;
-                    mSharedPreferences
-                            .edit()
+                    mSharedPreferences.edit()
                             .putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-                                    mEnableStreamMode).apply();
+                                    mEnableStreamMode)
+                            .apply();
 
                     clearIPAddresses();
                     if (mPsValidation.getSpokenType().equals(EsResult.PS_TYPE_NAME)) {
@@ -516,10 +510,10 @@ public final class CaptureActivity extends SherlockActivity implements
                     invalidateOptionsMenu();
                 } else {
                     mEnableStreamMode = true;
-                    mSharedPreferences
-                            .edit()
+                    mSharedPreferences.edit()
                             .putBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
-                                    mEnableStreamMode).apply();
+                                    mEnableStreamMode)
+                            .apply();
 
                     if (mEnableStreamMode) {
                         showIPAddresses();
@@ -540,15 +534,13 @@ public final class CaptureActivity extends SherlockActivity implements
             }
             case R.id.menu_help: {
                 intent = new Intent(this, HelpActivity.class);
-                intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY,
-                        HelpActivity.DEFAULT_PAGE);
+                intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY, HelpActivity.DEFAULT_PAGE);
                 startActivity(intent);
                 break;
             }
             case R.id.menu_about: {
                 intent = new Intent(this, HelpActivity.class);
-                intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY,
-                        HelpActivity.ABOUT_PAGE);
+                intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY, HelpActivity.ABOUT_PAGE);
                 startActivity(intent);
                 break;
             }
@@ -616,8 +608,7 @@ public final class CaptureActivity extends SherlockActivity implements
 
             mBaseApi.setPageSegMode(PAGE_SEGMENTATION_MODE);
             mBaseApi.setVariable(TessBaseAPI.VAR_CHAR_BLACKLIST, "");
-            mBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST,
-                    CHARACTER_WHITELIST);
+            mBaseApi.setVariable(TessBaseAPI.VAR_CHAR_WHITELIST, CHARACTER_WHITELIST);
         }
     }
 
@@ -626,8 +617,7 @@ public final class CaptureActivity extends SherlockActivity implements
      */
     void restartPreviewAfterDelay(long delayMS) {
         if (mCaptureActivityHandler != null) {
-            mCaptureActivityHandler.sendEmptyMessageDelayed(
-                    R.id.restart_decode, delayMS);
+            mCaptureActivityHandler.sendEmptyMessageDelayed(R.id.restart_decode, delayMS);
         }
 
         resumeOcrEngine();
@@ -646,8 +636,7 @@ public final class CaptureActivity extends SherlockActivity implements
             if (mCaptureActivityHandler == null) {
                 // Creating the handler starts the preview, which can also throw
                 // a RuntimeException.
-                mCaptureActivityHandler = new CaptureActivityHandler(this,
-                        mCameraManager);
+                mCaptureActivityHandler = new CaptureActivityHandler(this, mCameraManager);
 
                 if (mEsrSenderHttp != null) {
                     mEsrSenderHttp.registerDataSentHandler(mCaptureActivityHandler);
@@ -658,13 +647,11 @@ public final class CaptureActivity extends SherlockActivity implements
                 }
             }
         } catch (IOException ioe) {
-            showErrorMessage("Error",
-                    "Could not initialize camera. Please try restarting device.");
+            showErrorMessage("Error", "Could not initialize camera. Please try restarting device.");
         } catch (RuntimeException e) {
             // Barcode Scanner has seen crashes in the wild of this variety:
             // java.?lang.?RuntimeException: Fail to connect to camera service
-            showErrorMessage("Error",
-                    "Could not initialize camera. Please try restarting device.");
+            showErrorMessage("Error", "Could not initialize camera. Please try restarting device.");
         }
     }
 
@@ -672,8 +659,7 @@ public final class CaptureActivity extends SherlockActivity implements
         // mStatusViewBottomRight.setText(getResources().getString(
         // R.string.status_view_ip_address,
         // mEsrSenderService.getLocalIpAddress()));
-        mStatusViewBottomRight.setText(getResources().getString(
-                R.string.status_stream_mode_active,
+        mStatusViewBottomRight.setText(getResources().getString(R.string.status_stream_mode_active,
                 ESRSender.getLocalIpAddress(),
                 mEsrSenderService.getServerPort()));
         mStatusViewBottomRight.setVisibility(View.VISIBLE);
@@ -688,8 +674,7 @@ public final class CaptureActivity extends SherlockActivity implements
         mHasSurface = false;
     }
 
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
     }
 
     /**
@@ -732,8 +717,7 @@ public final class CaptureActivity extends SherlockActivity implements
      * @param languageCode Three-letter ISO 639-3 language code for OCR
      * @param languageName Name of the language for OCR, for example, "English"
      */
-    private void initOcrEngine(File storageRoot, String languageCode,
-                               String languageName) {
+    private void initOcrEngine(File storageRoot, String languageCode, String languageName) {
         // Set up the dialog box for the thermometer-style download progress
         // indicator
         if (mInitOcrProgressDialog != null) {
@@ -742,9 +726,12 @@ public final class CaptureActivity extends SherlockActivity implements
         mInitOcrProgressDialog = new ProgressDialog(this);
 
         // Start AsyncTask to install language data and init OCR
-        new OcrInitAsyncTask(this, new TessBaseAPI(), mInitOcrProgressDialog,
-                languageCode, languageName, OCR_ENGINE_MODE)
-                .execute(storageRoot.toString());
+        new OcrInitAsyncTask(this,
+                new TessBaseAPI(),
+                mInitOcrProgressDialog,
+                languageCode,
+                languageName,
+                OCR_ENGINE_MODE).execute(storageRoot.toString());
     }
 
     public void showResult(PsResult psResult) {
@@ -756,8 +743,7 @@ public final class CaptureActivity extends SherlockActivity implements
             if (indexOfNewline < 0) {
                 getEsrSender().sendToListener(completeCode);
             } else {
-                getEsrSender().sendToListener(completeCode.substring(0,
-                        indexOfNewline));
+                getEsrSender().sendToListener(completeCode.substring(0, indexOfNewline));
             }
             return;
         }
@@ -766,17 +752,14 @@ public final class CaptureActivity extends SherlockActivity implements
             EsrResult esrResult = (EsrResult) psResult;
             String toCopy = PreferenceManager.getDefaultSharedPreferences(this)
                     .getString(PreferencesActivity.KEY_COPY_PART, "0")
-                    .equals("0") ? esrResult.getCompleteCode() : esrResult
-                    .getReference();
+                    .equals("0") ? esrResult.getCompleteCode() : esrResult.getReference();
 
-            ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            ClipboardManager clipboardManager = (ClipboardManager) getSystemService(
+                    CLIPBOARD_SERVICE);
             clipboardManager.setText(toCopy);
 
-            Toast toast = Toast.makeText(
-                    getApplicationContext(),
-                    getResources().getString(
-                            clipboardManager.hasText() ? R.string.msg_copied
-                                    : R.string.msg_not_copied),
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    getResources().getString(clipboardManager.hasText() ? R.string.msg_copied : R.string.msg_not_copied),
                     Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.BOTTOM, 0, 0);
             toast.show();
@@ -793,25 +776,22 @@ public final class CaptureActivity extends SherlockActivity implements
 
         Intent intent = new Intent(this, HistoryActivity.class);
         intent.setAction(HistoryActivity.ACTION_SHOW_RESULT);
-        intent.putExtra(HistoryActivity.EXTRA_CODE_ROW,
-                psResult.getCompleteCode());
+        intent.putExtra(HistoryActivity.EXTRA_CODE_ROW, psResult.getCompleteCode());
         startActivity(intent);
     }
 
     public void showDialogAndRestartScan(int resourceId) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(
-                CaptureActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(CaptureActivity.this);
         builder.setMessage(resourceId);
-        builder.setPositiveButton(R.string.button_ok,
-                new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mPsValidation.gotoBeginning(false);
-                        mLastValidationStep = mPsValidation.getCurrentStep();
-                        restartPreviewAfterDelay(0L);
-                    }
-                });
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mPsValidation.gotoBeginning(false);
+                mLastValidationStep = mPsValidation.getCurrentStep();
+                restartPreviewAfterDelay(0L);
+            }
+        });
         builder.show();
     }
 
@@ -825,12 +805,13 @@ public final class CaptureActivity extends SherlockActivity implements
 
         // Send an OcrResultText object to the ViewfinderView for text rendering
         mViewfinderView.addResultText(new OcrResultText(ocrResult.getText(),
-                ocrResult.getWordConfidences(), ocrResult.getMeanConfidence(),
-                ocrResult.getBitmapDimensions(), ocrResult
-                .getCharacterBoundingBoxes(), ocrResult
-                .getWordBoundingBoxes(), ocrResult
-                .getTextlineBoundingBoxes(), ocrResult
-                .getRegionBoundingBoxes()));
+                ocrResult.getWordConfidences(),
+                ocrResult.getMeanConfidence(),
+                ocrResult.getBitmapDimensions(),
+                ocrResult.getCharacterBoundingBoxes(),
+                ocrResult.getWordBoundingBoxes(),
+                ocrResult.getTextlineBoundingBoxes(),
+                ocrResult.getRegionBoundingBoxes()));
 
         mStatusViewBottomLeft.setText(ocrResult.getText());
 
@@ -924,16 +905,13 @@ public final class CaptureActivity extends SherlockActivity implements
 
         switch (this.mPsValidation.getCurrentStep()) {
             case 1:
-                statusView1
-                        .setBackgroundResource(R.drawable.status_view_background);
+                statusView1.setBackgroundResource(R.drawable.status_view_background);
                 break;
             case 2:
-                statusView2
-                        .setBackgroundResource(R.drawable.status_view_background);
+                statusView2.setBackgroundResource(R.drawable.status_view_background);
                 break;
             case 3:
-                statusView3
-                        .setBackgroundResource(R.drawable.status_view_background);
+                statusView3.setBackgroundResource(R.drawable.status_view_background);
                 break;
 
             default:
@@ -949,9 +927,8 @@ public final class CaptureActivity extends SherlockActivity implements
     }
 
     private void DeleteRecursive(File fileOrDirectory) {
-        if (fileOrDirectory.isDirectory())
-            for (File child : fileOrDirectory.listFiles())
-                DeleteRecursive(child);
+        if (fileOrDirectory.isDirectory()) for (File child : fileOrDirectory.listFiles())
+            DeleteRecursive(child);
 
         fileOrDirectory.delete();
     }
@@ -964,13 +941,10 @@ public final class CaptureActivity extends SherlockActivity implements
      */
     private boolean checkAndRunFirstLaunch() {
         try {
-            PackageInfo info = getPackageManager().getPackageInfo(
-                    getPackageName(), 0);
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
             int currentVersion = info.versionCode;
-            SharedPreferences prefs = PreferenceManager
-                    .getDefaultSharedPreferences(this);
-            int lastVersion = prefs.getInt(
-                    PreferencesActivity.KEY_HELP_VERSION_SHOWN, 0);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            int lastVersion = prefs.getInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN, 0);
 
             if (currentVersion > lastVersion) {
 
@@ -983,15 +957,14 @@ public final class CaptureActivity extends SherlockActivity implements
                 // Record the last version for which we last displayed the
                 // What's New (Help) page
                 prefs.edit()
-                        .putInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN,
-                                currentVersion).commit();
+                        .putInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN, currentVersion)
+                        .commit();
                 Intent intent = new Intent(this, HelpActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
 
                 // Show the default page on a clean install, and the what's new
                 // page on an upgrade.
-                String page = lastVersion == 0 ? HelpActivity.DEFAULT_PAGE
-                        : HelpActivity.WHATS_NEW_PAGE;
+                String page = lastVersion == 0 ? HelpActivity.DEFAULT_PAGE : HelpActivity.WHATS_NEW_PAGE;
                 intent.putExtra(HelpActivity.REQUESTED_PAGE_KEY, page);
                 startActivity(intent);
                 return true;
@@ -1021,17 +994,17 @@ public final class CaptureActivity extends SherlockActivity implements
         // preferences
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-        mSharedPreferences
-                .registerOnSharedPreferenceChangeListener(mOnSharedPreferenceChangeListener);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(
+                mOnSharedPreferenceChangeListener);
 
-        mShowOcrResult = mSharedPreferences.getBoolean(
-                PreferencesActivity.KEY_SHOW_OCR_RESULT_PREFERENCE, false);
+        mShowOcrResult = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_OCR_RESULT_PREFERENCE,
+                false);
 
-        mShowScanResult = mSharedPreferences.getBoolean(
-                PreferencesActivity.KEY_SHOW_SCAN_RESULT_PREFERENCE, true);
+        mShowScanResult = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_SCAN_RESULT_PREFERENCE,
+                true);
 
-        mEnableStreamMode = mSharedPreferences.getBoolean(
-                PreferencesActivity.KEY_ENABLE_STREAM_MODE, false);
+        mEnableStreamMode = mSharedPreferences.getBoolean(PreferencesActivity.KEY_ENABLE_STREAM_MODE,
+                false);
 
         mBeepManager.updatePrefs();
     }
@@ -1043,9 +1016,11 @@ public final class CaptureActivity extends SherlockActivity implements
      * @param message The error message to be displayed
      */
     public void showErrorMessage(String title, String message) {
-        new AlertDialog.Builder(this).setTitle(title).setMessage(message)
+        new AlertDialog.Builder(this).setTitle(title)
+                .setMessage(message)
                 .setOnCancelListener(new FinishListener(this))
-                .setPositiveButton("Done", new FinishListener(this)).show();
+                .setPositiveButton("Done", new FinishListener(this))
+                .show();
     }
 
     private void setOKAlert(int id) {
@@ -1062,24 +1037,21 @@ public final class CaptureActivity extends SherlockActivity implements
     private void CreateCopyNotification() {
         Resources res = getResources();
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                this)
-                .setSmallIcon(R.drawable.ic_menu_edit)
-                .setContentTitle(
-                        res.getString(R.string.notif_scan_to_clipboard_title))
-                .setContentText(
-                        res.getString(R.string.notif_scan_to_clipboard_summary));
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_menu_edit)
+                .setContentTitle(res.getString(R.string.notif_scan_to_clipboard_title))
+                .setContentText(res.getString(R.string.notif_scan_to_clipboard_summary));
 
         // Creates an Intent for the Activity
         Intent notifyIntent = new Intent(this, CaptureActivity.class);
         // Sets the Activity to start in a new, empty task
-        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         notifyIntent.putExtra(COPY_AND_RETURN, true);
         // Creates the PendingIntent
-        PendingIntent pendigIntent = PendingIntent.getActivity(this, 0,
-                notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendigIntent = PendingIntent.getActivity(this,
+                0,
+                notifyIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Puts the PendingIntent into the notification builder
         builder.setContentIntent(pendigIntent);
@@ -1101,16 +1073,18 @@ public final class CaptureActivity extends SherlockActivity implements
 
     private void setUpJmDNS(int port) {
         if (mJmDns == null) {
-            android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) getSystemService(android.content.Context.WIFI_SERVICE);
+            android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) getSystemService(
+                    android.content.Context.WIFI_SERVICE);
             mMusticastLock = wifi.createMulticastLock("LockForServiceRegister");
             mMusticastLock.setReferenceCounted(true);
             mMusticastLock.acquire();
 
             try {
                 String name = android.os.Build.MODEL.toLowerCase();
-                mJmDns = JmDNS.create(ESRSender.getLocalInterface(),
-                        name);
-                mServiceInfo = ServiceInfo.create(SERVICE_TYPE, name, port,
+                mJmDns = JmDNS.create(ESRSender.getLocalInterface(), name);
+                mServiceInfo = ServiceInfo.create(SERVICE_TYPE,
+                        name,
+                        port,
                         "ESR Scanner of " + android.os.Build.MODEL);
                 mJmDns.registerService(mServiceInfo);
             } catch (IOException e) {

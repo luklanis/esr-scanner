@@ -1,11 +1,10 @@
 package ch.luklanis.esscan.codesend;
 
-import com.google.gson.JsonObject;
-
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
+import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -15,8 +14,20 @@ import java.security.NoSuchProviderException;
 
 import ch.luklanis.esscan.R;
 
-/**
- * Created by lukas on 10/22/13.
+/*
+ * Copyright 2013 Lukas Landis
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 public class ESRSenderHttp implements IEsrSender {
 
@@ -28,9 +39,7 @@ public class ESRSenderHttp implements IEsrSender {
     private Handler mDataSentHandler;
 
     public ESRSenderHttp(Context context, String emailAddress, String password)
-            throws NoSuchAlgorithmException,
-            NoSuchProviderException,
-            UnsupportedEncodingException {
+            throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
         this.context = context;
         this.password = password;
         this.emailAddress = emailAddress;
@@ -51,7 +60,8 @@ public class ESRSenderHttp implements IEsrSender {
         json.addProperty("id", emailAddress);
 
         try {
-            String[] encrypted = Crypto.encrypt(Crypto.getSecretKey(password, emailAddress), dataToSend);
+            String[] encrypted = Crypto.encrypt(Crypto.getSecretKey(password, emailAddress),
+                    dataToSend);
             json.addProperty("iv", encrypted[0]);
             json.addProperty("message", encrypted[1]);
         } catch (Exception e) {
@@ -74,8 +84,7 @@ public class ESRSenderHttp implements IEsrSender {
 
                         if (mDataSentHandler != null) {
                             Message message = Message.obtain(mDataSentHandler,
-                                    result.equals("OK") ? R.id.es_send_succeeded :
-                                            R.id.es_send_failed);
+                                    result.equals("OK") ? R.id.es_send_succeeded : R.id.es_send_failed);
                             message.arg1 = position;
                             message.obj = dataToSend;
                             message.sendToTarget();

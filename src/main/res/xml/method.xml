@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
 /**
  * Copyright (c) 2008, The Android Open Source Project
  *
@@ -17,13 +16,12 @@
  */
 -->
 
-<!-- The attributes in this XML file provide configuration information -->
-<!-- for the Search Manager. -->
+<!-- The attributes in this XML file provide configuration information --><!-- for the Search Manager. -->
 
 <input-method xmlns:android="http://schemas.android.com/apk/res/android"
-        android:settingsActivity="ch.luklanis.esscan.PreferencesActivity" >
+              android:settingsActivity="ch.luklanis.esscan.PreferencesActivity">
     <subtype
         android:label="@string/subtype_esr_label"
         android:imeSubtypeLocale="de_CH"
-        android:imeSubtypeMode="ocr" />
+        android:imeSubtypeMode="ocr"/>
 </input-method>

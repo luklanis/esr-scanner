@@ -26,9 +26,9 @@ import android.os.AsyncTask;
 @TargetApi(11)
 public final class HoneycombAsyncTaskExecInterface implements AsyncTaskExecInterface {
 
-  @Override
-  public <T> void execute(AsyncTask<T,?,?> task, T... args) {
-    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, args);
-  }
+    @Override
+    public <T> void execute(AsyncTask<T, ?, ?> task, T... args) {
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, args);
+    }
 
 }

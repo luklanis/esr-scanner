@@ -3,6 +3,7 @@
 *.suo
 *.iml
 local.properties
+gradle.properties
 build/
 thirdparty/
 .gradle/

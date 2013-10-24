@@ -18,84 +18,85 @@ package ch.luklanis.esscan.paymentslip;
 /**
  * Encapsulates the result of OCR.
  */
-public final class EsResult extends PsResult{
+public final class EsResult extends PsResult {
 
-	public static final String PS_TYPE_NAME = "red";
-	
-	private String reason;
+    public static final String PS_TYPE_NAME = "red";
 
-	public EsResult(String completeCode) {
-		super(completeCode);
-		reason = "";
-	}
-	
-	public EsResult(String completeCode, long timestamp) {
-		super(completeCode, timestamp);
-		reason = "";
-	}
-	
-	public EsResult(String completeCode, String reason, long timestamp) {
-		super(completeCode, timestamp);
-		this.reason = reason;
-	}
+    private String reason;
 
-	@Override
-	public String getAccount(){
-		String code = completeCode;
-		int indexOfNewLine = code.indexOf('\n');
+    public EsResult(String completeCode) {
+        super(completeCode);
+        reason = "";
+    }
 
-		if(indexOfNewLine < 0){
-			return "?";
-		}
+    public EsResult(String completeCode, long timestamp) {
+        super(completeCode, timestamp);
+        reason = "";
+    }
 
-		int indentureNumber = Integer.parseInt(code.substring((indexOfNewLine + 3), (indexOfNewLine + 9)));
+    public EsResult(String completeCode, String reason, long timestamp) {
+        super(completeCode, timestamp);
+        this.reason = reason;
+    }
 
-		return code.substring((indexOfNewLine + 1), (indexOfNewLine + 3)) + "-" + String.valueOf(indentureNumber) + "-"
-		+ code.substring(indexOfNewLine + 9, indexOfNewLine + 10);
-	}
+    @Override
+    public String getAccount() {
+        String code = completeCode;
+        int indexOfNewLine = code.indexOf('\n');
 
-	@Override
-	public String toString() {
-		return getAccount() + ", " + getCurrency();
-	}
+        if (indexOfNewLine < 0) {
+            return "?";
+        }
 
-	@Override
-	public int getMaxAddressLength() {
-		return 24;
-	}
+        int indentureNumber = Integer.parseInt(code.substring((indexOfNewLine + 3),
+                (indexOfNewLine + 9)));
 
-	@Override
-	public String getCurrency() {
-		return "CHF";
-	}
+        return code.substring((indexOfNewLine + 1), (indexOfNewLine + 3)) + "-" + String.valueOf(
+                indentureNumber) + "-" + code.substring(indexOfNewLine + 9, indexOfNewLine + 10);
+    }
 
-	public String getReference(){
-		String code = completeCode;
-		int indexOfPlus = code.indexOf('+');
+    @Override
+    public String toString() {
+        return getAccount() + ", " + getCurrency();
+    }
 
-		if(indexOfPlus < 0){
-			return "?";
-		}
+    @Override
+    public int getMaxAddressLength() {
+        return 24;
+    }
 
-		return code.substring(0, indexOfPlus);
-	}
+    @Override
+    public String getCurrency() {
+        return "CHF";
+    }
 
-	public String getClearing(){
-		String code = completeCode;
-		int indexOfSpace = code.indexOf(' ');
+    public String getReference() {
+        String code = completeCode;
+        int indexOfPlus = code.indexOf('+');
 
-		if(indexOfSpace < 0){
-			return "?";
-		}
+        if (indexOfPlus < 0) {
+            return "?";
+        }
 
-		return code.substring((indexOfSpace + 1), (indexOfSpace + 10));
-	}
-	
-	public String getReason() {
-		return reason;
-	}
-	
-	public void setReason(String reason) {
-		this.reason = reason;
-	}
+        return code.substring(0, indexOfPlus);
+    }
+
+    public String getClearing() {
+        String code = completeCode;
+        int indexOfSpace = code.indexOf(' ');
+
+        if (indexOfSpace < 0) {
+            return "?";
+        }
+
+        return code.substring((indexOfSpace + 1), (indexOfSpace + 10));
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
 }

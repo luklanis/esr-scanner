@@ -1,7 +1,5 @@
 package ch.luklanis.esscan.history;
 
-import java.util.Comparator;
-import ch.luklanis.esscan.R;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -11,226 +9,234 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.util.Comparator;
+
+import ch.luklanis.esscan.R;
+
 public class HistoryFragment extends ListFragment {
 
-	private static final String STATE_ACTIVATED_POSITION = "activated_position";
+    private static final String STATE_ACTIVATED_POSITION = "activated_position";
 
-	private HistoryCallbacks historyCallbacks;
-	private int activatedPosition = ListView.INVALID_POSITION;
+    private HistoryCallbacks historyCallbacks;
+    private int activatedPosition = ListView.INVALID_POSITION;
 
-	public interface HistoryCallbacks {
-		public void selectTopInTwoPane();
-		public void onItemSelected(int oldPosition, int newPosition);
-		public int getPositionToActivate();
-		public void setOptionalOkAlert(int id);
-	}
+    public interface HistoryCallbacks {
+        public void selectTopInTwoPane();
 
-	private HistoryManager historyManager;
-	private HistoryItemAdapter adapter;
+        public void onItemSelected(int oldPosition, int newPosition);
 
-	private HistoryFragment self;
+        public int getPositionToActivate();
 
-	private boolean listIsEmpty;
+        public void setOptionalOkAlert(int id);
+    }
 
-	private static HistoryCallbacks sDummyCallbacks = new HistoryCallbacks(){
-		@Override
-		public void onItemSelected(int oldPosition, int newPosition) {
-		}
-		@Override
-		public void setOptionalOkAlert(int id) {
-		}
-		@Override
-		public int getPositionToActivate() {
-			return -1;
-		}
-		@Override
-		public void selectTopInTwoPane() {
-		}
-	};
+    private HistoryManager historyManager;
+    private HistoryItemAdapter adapter;
 
-	protected static final Comparator<HistoryItem> historyComparator = new Comparator<HistoryItem>() {
+    private HistoryFragment self;
 
-		@Override
-		public int compare(HistoryItem lhs, HistoryItem rhs) {
-			if (rhs.getResult() == null) {
-				if (lhs.getResult() == null) {
-					return 0;
-				}
+    private boolean listIsEmpty;
 
-				return 1;
-			}
+    private static HistoryCallbacks sDummyCallbacks = new HistoryCallbacks() {
+        @Override
+        public void onItemSelected(int oldPosition, int newPosition) {
+        }
 
-			if (lhs.getResult() == null) {
-				return -1;
-			}
+        @Override
+        public void setOptionalOkAlert(int id) {
+        }
 
-			return (Long.valueOf(rhs.getResult().getTimestamp()))
-					.compareTo(lhs.getResult().getTimestamp());
-		}
-	};
+        @Override
+        public int getPositionToActivate() {
+            return -1;
+        }
 
-	public HistoryFragment() {
-		listIsEmpty = true;
-	}
+        @Override
+        public void selectTopInTwoPane() {
+        }
+    };
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    protected static final Comparator<HistoryItem> historyComparator = new Comparator<HistoryItem>() {
 
-		historyManager = new HistoryManager(getActivity());
-		self = this;
+        @Override
+        public int compare(HistoryItem lhs, HistoryItem rhs) {
+            if (rhs.getResult() == null) {
+                if (lhs.getResult() == null) {
+                    return 0;
+                }
 
-		adapter = null;
-	}
+                return 1;
+            }
 
-	@Override
-	public void onListItemClick(ListView listView, View view, int position, long id) {
+            if (lhs.getResult() == null) {
+                return -1;
+            }
 
-		if (listIsEmpty) {
-			return;
-		}
+            return (Long.valueOf(rhs.getResult().getTimestamp())).compareTo(lhs.getResult()
+                    .getTimestamp());
+        }
+    };
 
-		super.onListItemClick(listView, view, position, id);
+    public HistoryFragment() {
+        listIsEmpty = true;
+    }
 
-		int oldPosition = activatedPosition;
-		activatedPosition = position;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		historyCallbacks.onItemSelected(oldPosition, position);
-	}
+        historyManager = new HistoryManager(getActivity());
+        self = this;
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
+        adapter = null;
+    }
 
-		if (savedInstanceState != null && savedInstanceState
-				.containsKey(STATE_ACTIVATED_POSITION)) {
-			setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
-		}
+    @Override
+    public void onListItemClick(ListView listView, View view, int position, long id) {
 
-		ListView listview = getListView();
-		registerForContextMenu(listview);
-		listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        if (listIsEmpty) {
+            return;
+        }
 
-			@Override
-			public boolean onItemLongClick(AdapterView<?> adapterView, View view,
-					int position, long id) {
+        super.onListItemClick(listView, view, position, id);
 
-				activatedPosition = position;
+        int oldPosition = activatedPosition;
+        activatedPosition = position;
 
-				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-				.setTitle(R.string.msg_confirm_delete_payment_title)
-				.setMessage(R.string.msg_confirm_delete_message)
-				.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+        historyCallbacks.onItemSelected(oldPosition, position);
+    }
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						historyManager.deleteHistoryItem(activatedPosition);
-						historyCallbacks.selectTopInTwoPane();
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-						GetHistoryAsyncTask async = new GetHistoryAsyncTask(self, historyManager);
-						async.execute();
-					}
-				})
-				.setNegativeButton(R.string.button_cancel, null);
+        if (savedInstanceState != null && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
+            setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+        }
 
-				builder.show();
-				return true;
-			}
-		});
-	}
+        ListView listview = getListView();
+        registerForContextMenu(listview);
+        listview.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
-	@Override
-	public void onResume() {
-		super.onResume();
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position,
+                                           long id) {
 
-		GetHistoryAsyncTask async = new GetHistoryAsyncTask(this, historyManager);
-		async.execute();
-	}
+                activatedPosition = position;
 
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		if (!(activity instanceof HistoryCallbacks)) {
-			throw new IllegalStateException("Activity must implement fragment's callbacks.");
-		}
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity()).setTitle(R.string.msg_confirm_delete_payment_title)
+                        .setMessage(R.string.msg_confirm_delete_message)
+                        .setPositiveButton(R.string.button_ok,
+                                new DialogInterface.OnClickListener() {
 
-		historyCallbacks = (HistoryCallbacks) activity;
-	}
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        historyManager.deleteHistoryItem(activatedPosition);
+                                        historyCallbacks.selectTopInTwoPane();
 
-	@Override
-	public void onDetach() {
-		super.onDetach();
-		historyCallbacks = sDummyCallbacks ;
-	}
+                                        GetHistoryAsyncTask async = new GetHistoryAsyncTask(self,
+                                                historyManager);
+                                        async.execute();
+                                    }
+                                })
+                        .setNegativeButton(R.string.button_cancel, null);
 
-	@Override
-	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		if (activatedPosition != ListView.INVALID_POSITION) {
-			outState.putInt(STATE_ACTIVATED_POSITION, activatedPosition);
-		}
-	}
+                builder.show();
+                return true;
+            }
+        });
+    }
 
-	public void setActivateOnItemClick(boolean activateOnItemClick) {
-		getListView().setChoiceMode(activateOnItemClick
-				? ListView.CHOICE_MODE_SINGLE
-						: ListView.CHOICE_MODE_NONE);
-	}
+    @Override
+    public void onResume() {
+        super.onResume();
 
-	public void setActivatedPosition(int position) {
-		if (position == ListView.INVALID_POSITION) {
-			getListView().setItemChecked(activatedPosition, false);
-		} else {
-			getListView().setItemChecked(position, true);
-		}
+        GetHistoryAsyncTask async = new GetHistoryAsyncTask(this, historyManager);
+        async.execute();
+    }
 
-		activatedPosition = position;
-	}
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (!(activity instanceof HistoryCallbacks)) {
+            throw new IllegalStateException("Activity must implement fragment's callbacks.");
+        }
 
-	public void updatePosition(int position, HistoryItem item) {
+        historyCallbacks = (HistoryCallbacks) activity;
+    }
 
-		if (adapter != null && adapter.getCount() > position) {
-			HistoryItem listItem = adapter.getItem(position);
-			listItem.update(item);
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        historyCallbacks = sDummyCallbacks;
+    }
 
-			getActivity().runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					adapter.notifyDataSetChanged();
-				}
-			});
-		}
-	}
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (activatedPosition != ListView.INVALID_POSITION) {
+            outState.putInt(STATE_ACTIVATED_POSITION, activatedPosition);
+        }
+    }
 
-	public void setHistoryItemAdapter(HistoryItemAdapter adapter) {
+    public void setActivateOnItemClick(boolean activateOnItemClick) {
+        getListView().setChoiceMode(activateOnItemClick ? ListView.CHOICE_MODE_SINGLE : ListView.CHOICE_MODE_NONE);
+    }
 
-		if (adapter.isEmpty()) {
-			adapter.add(new HistoryItem(null));
-			listIsEmpty = true;
-		} else {
-			listIsEmpty = false;
-		}
+    public void setActivatedPosition(int position) {
+        if (position == ListView.INVALID_POSITION) {
+            getListView().setItemChecked(activatedPosition, false);
+        } else {
+            getListView().setItemChecked(position, true);
+        }
 
-		this.adapter = adapter;
-		
-		try {
-			setListAdapter(this.adapter);
-			setListShown(true);
+        activatedPosition = position;
+    }
 
-			this.adapter.notifyDataSetInvalidated();
+    public void updatePosition(int position, HistoryItem item) {
 
-			int position = historyCallbacks.getPositionToActivate();
-			setActivatedPosition(position);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+        if (adapter != null && adapter.getCount() > position) {
+            HistoryItem listItem = adapter.getItem(position);
+            listItem.update(item);
 
-	public HistoryItemAdapter getHistoryItemAdapter() {
-		return adapter;
-	}
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        }
+    }
 
-	public int getActivatedPosition() {
-		return activatedPosition;
-	}
+    public void setHistoryItemAdapter(HistoryItemAdapter adapter) {
+
+        if (adapter.isEmpty()) {
+            adapter.add(new HistoryItem(null));
+            listIsEmpty = true;
+        } else {
+            listIsEmpty = false;
+        }
+
+        this.adapter = adapter;
+
+        try {
+            setListAdapter(this.adapter);
+            setListShown(true);
+
+            this.adapter.notifyDataSetInvalidated();
+
+            int position = historyCallbacks.getPositionToActivate();
+            setActivatedPosition(position);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public HistoryItemAdapter getHistoryItemAdapter() {
+        return adapter;
+    }
+
+    public int getActivatedPosition() {
+        return activatedPosition;
+    }
 }

@@ -19,59 +19,59 @@ package ch.luklanis.esscan.paymentslip;
  * Encapsulates the result of OCR.
  */
 public abstract class PsResult {
-	protected final String completeCode;
+    protected final String completeCode;
 
-	protected final long timestamp;
+    protected final long timestamp;
 
-	public static PsResult getInstance(String completeCode) {
-		return getInstance(completeCode, 0);
-	}
+    public static PsResult getInstance(String completeCode) {
+        return getInstance(completeCode, 0);
+    }
 
-	public static PsResult getInstance(String completeCode, long timestamp) {
-		if (getCoderowType(completeCode).equals(EsrResult.PS_TYPE_NAME)) {
-			return timestamp == 0 ? new EsrResult(completeCode)
-					: new EsrResult(completeCode, timestamp);
-		} else {
-			return timestamp == 0 ? new EsResult(completeCode) : new EsResult(
-					completeCode, timestamp);
-		}
-	}
+    public static PsResult getInstance(String completeCode, long timestamp) {
+        if (getCoderowType(completeCode).equals(EsrResult.PS_TYPE_NAME)) {
+            return timestamp == 0 ? new EsrResult(completeCode) : new EsrResult(completeCode,
+                    timestamp);
+        } else {
+            return timestamp == 0 ? new EsResult(completeCode) : new EsResult(completeCode,
+                    timestamp);
+        }
+    }
 
-	public PsResult(String completeCode) {
-		this.completeCode = completeCode;
-		this.timestamp = System.currentTimeMillis();
-	}
+    public PsResult(String completeCode) {
+        this.completeCode = completeCode;
+        this.timestamp = System.currentTimeMillis();
+    }
 
-	public PsResult(String completeCode, long timestamp) {
-		this.completeCode = completeCode;
-		this.timestamp = timestamp;
-	}
+    public PsResult(String completeCode, long timestamp) {
+        this.completeCode = completeCode;
+        this.timestamp = timestamp;
+    }
 
-	public String getCompleteCode() {
-		return completeCode;
-	}
+    public String getCompleteCode() {
+        return completeCode;
+    }
 
-	public long getTimestamp() {
-		return timestamp;
-	}
-	
-	public static String getCoderowType(String completeCodeRow) {
-		int plusLocation = completeCodeRow.indexOf("+");
-		int greaterThanLocation = completeCodeRow.indexOf(">");
-		
-		return (plusLocation > greaterThanLocation) ? EsrResult.PS_TYPE_NAME : EsResult.PS_TYPE_NAME;
-	}
-	
-	public String getType() {
-		return getCoderowType(this.completeCode);
-	}
+    public long getTimestamp() {
+        return timestamp;
+    }
 
-	public abstract String getAccount();
+    public static String getCoderowType(String completeCodeRow) {
+        int plusLocation = completeCodeRow.indexOf("+");
+        int greaterThanLocation = completeCodeRow.indexOf(">");
 
-	public abstract int getMaxAddressLength();
-	
-	public abstract String getCurrency();
+        return (plusLocation > greaterThanLocation) ? EsrResult.PS_TYPE_NAME : EsResult.PS_TYPE_NAME;
+    }
 
-	@Override
-	public abstract String toString();
+    public String getType() {
+        return getCoderowType(this.completeCode);
+    }
+
+    public abstract String getAccount();
+
+    public abstract int getMaxAddressLength();
+
+    public abstract String getCurrency();
+
+    @Override
+    public abstract String toString();
 }

@@ -8,21 +8,25 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 
-/**
- * Created by lukas on 8/30/13.
+/*
+ * Copyright 2013 Lukas Landis
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 public class ESSendServer extends WebSocketServer {
 
-    private static final String TAG = ESRSender.class.getName();
-
-    private static final String STOP_CONNECTION = "STOP";
-
-    private static final String START_SERVER = "START";
-
-    private static final String ACK = "ACK";
-
     public ESSendServer(int port) throws UnknownHostException {
-        super( new InetSocketAddress( port ) );
+        super(new InetSocketAddress(port));
     }
 
     @Override
@@ -52,9 +56,9 @@ public class ESSendServer extends WebSocketServer {
             return false;
         }
 
-        synchronized ( con ) {
-            for( WebSocket c : con ) {
-                c.send( codeRow + "." );
+        synchronized (con) {
+            for (WebSocket c : con) {
+                c.send(codeRow + ".");
             }
         }
 

@@ -18,111 +18,113 @@ package ch.luklanis.esscan.paymentslip;
 /**
  * Encapsulates the result of OCR.
  */
-public final class EsrResult extends PsResult{
-	
-	public static final String PS_TYPE_NAME = "orange";
+public final class EsrResult extends PsResult {
 
-	public EsrResult(String completeCode) {
-		super(completeCode);
-	}
-	
-	public EsrResult(String completeCode, long timestamp) {
-		super(completeCode, timestamp);
-	}
+    public static final String PS_TYPE_NAME = "orange";
 
-	@Override
-	public String getAccount(){
-		String code = completeCode;
-		int indexOfSpace = code.indexOf(' ');
+    public EsrResult(String completeCode) {
+        super(completeCode);
+    }
 
-		if(indexOfSpace < 0){
-			return "?";
-		}
+    public EsrResult(String completeCode, long timestamp) {
+        super(completeCode, timestamp);
+    }
 
-		int indentureNumber = Integer.parseInt(code.substring((indexOfSpace + 3), (indexOfSpace + 9)));
+    @Override
+    public String getAccount() {
+        String code = completeCode;
+        int indexOfSpace = code.indexOf(' ');
 
-		return code.substring((indexOfSpace + 1), (indexOfSpace + 3)) + "-" + String.valueOf(indentureNumber) + "-"
-		+ code.substring((indexOfSpace + 9), (indexOfSpace + 10));
-	}
+        if (indexOfSpace < 0) {
+            return "?";
+        }
 
-	@Override
-	public String toString() {
-		return getAccount() + ", " + getCurrency();
-	}
+        int indentureNumber = Integer.parseInt(code.substring((indexOfSpace + 3),
+                (indexOfSpace + 9)));
 
-	@Override
-	public int getMaxAddressLength() {
-		return 20;
-	}
+        return code.substring((indexOfSpace + 1), (indexOfSpace + 3)) + "-" + String.valueOf(
+                indentureNumber) + "-" + code.substring((indexOfSpace + 9), (indexOfSpace + 10));
+    }
 
-	public String getAmount(){
-		String code = completeCode;
+    @Override
+    public String toString() {
+        return getAccount() + ", " + getCurrency();
+    }
 
-		if(code.indexOf('>') <= 3){
-			return "";
-		}
+    @Override
+    public int getMaxAddressLength() {
+        return 20;
+    }
 
-		int beforePoint = Integer.parseInt(code.substring(2, 10));
+    public String getAmount() {
+        String code = completeCode;
 
-		return String.valueOf(beforePoint) + "." + code.substring(10, 12);
-	}
+        if (code.indexOf('>') <= 3) {
+            return "";
+        }
 
-	@Override
-	public String getCurrency(){
-		String code = completeCode;
-		int esrType = Integer.parseInt(code.substring(0, 2));
+        int beforePoint = Integer.parseInt(code.substring(2, 10));
 
-		switch(esrType){
-		case 1:
-		case 3:
-		case 4:
-		case 11:
-		case 14:
-			return "CHF";
-		case 21:
-		case 23:
-		case 31:
-		case 33:
-			return "EUR";
-		default: return "?";
-		}
-	}
+        return String.valueOf(beforePoint) + "." + code.substring(10, 12);
+    }
 
-	public String getAccountUnformated(){
-		String code = completeCode;
-		int indexOfSpace = code.indexOf(' ');
+    @Override
+    public String getCurrency() {
+        String code = completeCode;
+        int esrType = Integer.parseInt(code.substring(0, 2));
 
-		if(indexOfSpace < 0){
-			return "";
-		}
+        switch (esrType) {
+            case 1:
+            case 3:
+            case 4:
+            case 11:
+            case 14:
+                return "CHF";
+            case 21:
+            case 23:
+            case 31:
+            case 33:
+                return "EUR";
+            default:
+                return "?";
+        }
+    }
 
-		return code.substring((indexOfSpace + 1), (indexOfSpace + 10));
-	}
+    public String getAccountUnformated() {
+        String code = completeCode;
+        int indexOfSpace = code.indexOf(' ');
 
-	public String getReference(){
-		String code = completeCode;
-		int indexOfSpecialChar = code.indexOf('>');
-		int indexOfPlus = code.indexOf('+');
-		int blockSize = 5;
+        if (indexOfSpace < 0) {
+            return "";
+        }
 
-		if(indexOfSpecialChar < 0 || indexOfPlus < indexOfSpecialChar){
-			return "?";
-		}
+        return code.substring((indexOfSpace + 1), (indexOfSpace + 10));
+    }
 
-		String referenz = code.substring((indexOfSpecialChar + 1), indexOfPlus);
-		
-		while(referenz.indexOf('0') == 0){
-			referenz = referenz.substring(1, referenz.length());
-		}
+    public String getReference() {
+        String code = completeCode;
+        int indexOfSpecialChar = code.indexOf('>');
+        int indexOfPlus = code.indexOf('+');
+        int blockSize = 5;
 
-		int firstChars = referenz.length() % blockSize;
-		String referenz_formated = referenz.substring(0, firstChars);
+        if (indexOfSpecialChar < 0 || indexOfPlus < indexOfSpecialChar) {
+            return "?";
+        }
 
-		for (int i = 0; i < referenz.length() / blockSize; i++) {
-			int start = (i * blockSize) + firstChars;
-			referenz_formated += " " + referenz.substring(start, start + blockSize);
-		}
+        String referenz = code.substring((indexOfSpecialChar + 1), indexOfPlus);
 
-		return referenz_formated;
-	}
+        while (referenz.indexOf('0') == 0) {
+            referenz = referenz.substring(1, referenz.length());
+        }
+
+        int firstChars = referenz.length() % blockSize;
+        String referenz_formated = referenz.substring(0, firstChars);
+
+        for (int i = 0; i < referenz.length() / blockSize; i++) {
+            int start = (i * blockSize) + firstChars;
+            referenz_formated += " " + referenz.substring(start, start + blockSize);
+        }
+
+        return referenz_formated;
+    }
 }

@@ -23,12 +23,12 @@ import android.hardware.Camera;
  */
 final class DefaultOpenCameraInterface implements OpenCameraInterface {
 
-  /**
-   * Calls {@link Camera#open()}.
-   */
-  @Override
-  public Camera open() {
-    return Camera.open();
-  }
-  
+    /**
+     * Calls {@link Camera#open()}.
+     */
+    @Override
+    public Camera open() {
+        return Camera.open();
+    }
+
 }

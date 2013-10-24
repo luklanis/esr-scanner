@@ -17,44 +17,45 @@
 
 package ch.luklanis.esscan;
 
-import com.googlecode.tesseract.android.TessBaseAPI;
-
 import android.os.Handler;
 import android.os.Looper;
+
+import com.googlecode.tesseract.android.TessBaseAPI;
+
 import java.util.concurrent.CountDownLatch;
 
 /**
  * This thread does all the heavy lifting of decoding the images.
- *
+ * <p/>
  * The code for this class was adapted from the ZXing project: http://code.google.com/p/zxing
  */
 final class DecodeThread extends Thread {
 
-  private final IBase base;
-  private Handler handler;
-  private final CountDownLatch handlerInitLatch;
-  private final TessBaseAPI baseApi;
+    private final IBase base;
+    private Handler handler;
+    private final CountDownLatch handlerInitLatch;
+    private final TessBaseAPI baseApi;
 
-  DecodeThread(IBase base, TessBaseAPI baseApi) {
-    this.base = base;
-    this.baseApi = baseApi;
-    handlerInitLatch = new CountDownLatch(1);
-  }
-
-  Handler getHandler() {
-    try {
-      handlerInitLatch.await();
-    } catch (InterruptedException ie) {
-      // continue?
+    DecodeThread(IBase base, TessBaseAPI baseApi) {
+        this.base = base;
+        this.baseApi = baseApi;
+        handlerInitLatch = new CountDownLatch(1);
     }
-    return handler;
-  }
 
-  @Override
-  public void run() {
-    Looper.prepare();
-    handler = new DecodeHandler(base, baseApi);
-    handlerInitLatch.countDown();
-    Looper.loop();
-  }
+    Handler getHandler() {
+        try {
+            handlerInitLatch.await();
+        } catch (InterruptedException ie) {
+            // continue?
+        }
+        return handler;
+    }
+
+    @Override
+    public void run() {
+        Looper.prepare();
+        handler = new DecodeHandler(base, baseApi);
+        handlerInitLatch.countDown();
+        Looper.loop();
+    }
 }

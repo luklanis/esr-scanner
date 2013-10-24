@@ -16,12 +16,6 @@
  */
 package ch.luklanis.esscan;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Locale;
-
-import com.actionbarsherlock.app.SherlockActivity;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -37,162 +31,168 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 
+import com.actionbarsherlock.app.SherlockActivity;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Locale;
+
 /**
  * Activity to display informational pages to the user in a WebView.
- * 
+ * <p/>
  * The code for this class was adapted from the ZXing project: http://code.google.com/p/zxing
  */
 public final class HelpActivity extends SherlockActivity {
 
-	private static final String TAG = HelpActivity.class.getSimpleName();
+    private static final String TAG = HelpActivity.class.getSimpleName();
 
-	// Use this key and one of the values below when launching this activity via intent. If not
-	// present, the default page will be loaded.
-	public static final String REQUESTED_PAGE_KEY = "requested_page_key";
-	public static final String DEFAULT_PAGE = "index.html";
-	public static final String ABOUT_PAGE = "about.html";
-	public static final String WHATS_NEW_PAGE = "whatsnew.html";
+    // Use this key and one of the values below when launching this activity via intent. If not
+    // present, the default page will be loaded.
+    public static final String REQUESTED_PAGE_KEY = "requested_page_key";
+    public static final String DEFAULT_PAGE = "index.html";
+    public static final String ABOUT_PAGE = "about.html";
+    public static final String WHATS_NEW_PAGE = "whatsnew.html";
 
-	private static final String WEBVIEW_STATE_PRESENT = "webview_state_present";
+    private static final String WEBVIEW_STATE_PRESENT = "webview_state_present";
 
-	private static final String DEFAULT_LANGUAGE = "en";
+    private static final String DEFAULT_LANGUAGE = "en";
 
-	private static final String LANGUAGE;
-	static {
-		Locale locale = Locale.getDefault();
-		String language = locale == null ? DEFAULT_LANGUAGE : locale.getLanguage();
-		LANGUAGE = language;
-	}
+    private static final String LANGUAGE;
 
-	private static final Collection<String> TRANSLATED_HELP_ASSET_LANGUAGES =
-			Arrays.asList("en", "de");
+    static {
+        Locale locale = Locale.getDefault();
+        String language = locale == null ? DEFAULT_LANGUAGE : locale.getLanguage();
+        LANGUAGE = language;
+    }
 
-	private static final String BASE_URL = "file:///android_asset/html";
+    private static final Collection<String> TRANSLATED_HELP_ASSET_LANGUAGES = Arrays.asList("en",
+            "de");
 
-	private static final String BASE_HELP_URL = BASE_URL + "-"
-			+ (TRANSLATED_HELP_ASSET_LANGUAGES.contains(LANGUAGE) ? LANGUAGE : DEFAULT_LANGUAGE) +"/";
+    private static final String BASE_URL = "file:///android_asset/html";
+
+    private static final String BASE_HELP_URL = BASE_URL + "-" + (TRANSLATED_HELP_ASSET_LANGUAGES.contains(
+            LANGUAGE) ? LANGUAGE : DEFAULT_LANGUAGE) + "/";
 
 //	private static final String BASE_HELP_URL = BASE_URL + "-de/";
 
-	private WebView webView;
+    private WebView webView;
 
-	private final Button.OnClickListener doneListener = new Button.OnClickListener() {
-		@Override
-		public void onClick(View view) {
-			finish();
-		}
-	};
+    private final Button.OnClickListener doneListener = new Button.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            finish();
+        }
+    };
 
-	@Override
-	protected void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
-		setContentView(R.layout.help);
-		
-		// Hide Icon in ActionBar
-		getSupportActionBar().setDisplayShowHomeEnabled(false);
+    @Override
+    protected void onCreate(Bundle icicle) {
+        super.onCreate(icicle);
+        setContentView(R.layout.help);
 
-		webView = (WebView)findViewById(R.id.help_contents);
-		webView.setWebViewClient(new HelpClient((Activity)this));
+        // Hide Icon in ActionBar
+        getSupportActionBar().setDisplayShowHomeEnabled(false);
 
-		Intent intent = getIntent();
+        webView = (WebView) findViewById(R.id.help_contents);
+        webView.setWebViewClient(new HelpClient((Activity) this));
 
-		// Show an OK button.
-		View doneButton = findViewById(R.id.done_button);
-		doneButton.setOnClickListener(doneListener);
+        Intent intent = getIntent();
 
-		// Froyo has a bug with calling onCreate() twice in a row, which causes the What's New page
-		// that's auto-loaded on first run to appear blank. As a workaround we only call restoreState()
-		// if a valid URL was loaded at the time the previous activity was torn down.
-		if (icicle != null && icicle.getBoolean(WEBVIEW_STATE_PRESENT, false)) {
-			webView.restoreState(icicle);
-		} else if (intent != null){
-			String page = intent.getStringExtra(REQUESTED_PAGE_KEY);
+        // Show an OK button.
+        View doneButton = findViewById(R.id.done_button);
+        doneButton.setOnClickListener(doneListener);
 
-			if( page != null && page.length() > 0) {
-				
-				if(page.equals(DEFAULT_PAGE) || page.equals(ABOUT_PAGE)) {
-					webView.loadUrl(BASE_HELP_URL + page);
-				} else {
-					webView.loadUrl(BASE_URL + "/" + page);
-				}
-				
-			}else {
-				webView.loadUrl(BASE_HELP_URL + DEFAULT_PAGE);
-			}
-		}else {
-			webView.loadUrl(BASE_HELP_URL + DEFAULT_PAGE); 
-		}
-	}
+        // Froyo has a bug with calling onCreate() twice in a row, which causes the What's New page
+        // that's auto-loaded on first run to appear blank. As a workaround we only call restoreState()
+        // if a valid URL was loaded at the time the previous activity was torn down.
+        if (icicle != null && icicle.getBoolean(WEBVIEW_STATE_PRESENT, false)) {
+            webView.restoreState(icicle);
+        } else if (intent != null) {
+            String page = intent.getStringExtra(REQUESTED_PAGE_KEY);
 
-	@Override
-	protected void onSaveInstanceState(Bundle state) {
-		String url = webView.getUrl();
-		if (url != null && url.length() > 0) {
-			webView.saveState(state);
-			state.putBoolean(WEBVIEW_STATE_PRESENT, true);
-		}
-	}
+            if (page != null && page.length() > 0) {
 
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			if (webView.canGoBack()) {
-				webView.goBack();
-				return true;
-			}
-		}
-		return super.onKeyDown(keyCode, event);
-	}
+                if (page.equals(DEFAULT_PAGE) || page.equals(ABOUT_PAGE)) {
+                    webView.loadUrl(BASE_HELP_URL + page);
+                } else {
+                    webView.loadUrl(BASE_URL + "/" + page);
+                }
 
-	private final class HelpClient extends WebViewClient {
-		Activity context;
-		public HelpClient(Activity context){
-			this.context = context;
-		}
+            } else {
+                webView.loadUrl(BASE_HELP_URL + DEFAULT_PAGE);
+            }
+        } else {
+            webView.loadUrl(BASE_HELP_URL + DEFAULT_PAGE);
+        }
+    }
 
-		@Override
-		public void onPageFinished(WebView view, String url) {
-			setTitle(view.getTitle());
-		}
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        String url = webView.getUrl();
+        if (url != null && url.length() > 0) {
+            webView.saveState(state);
+            state.putBoolean(WEBVIEW_STATE_PRESENT, true);
+        }
+    }
 
-		@Override
-		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			if (url.startsWith("file")) {
-				if (url.contains("{html-lang}")) {
-					String page = url.substring(url.lastIndexOf('/') + 1);
-					view.loadUrl(BASE_HELP_URL + page);
-					return true;
-				}
-				return false;
-			} else if (url.startsWith("mailto:")) {
-				try {
-					MailTo mt = MailTo.parse(url);
-					Intent i = new Intent(Intent.ACTION_SEND);
-					i.setType("message/rfc822");
-					i.putExtra(Intent.EXTRA_EMAIL, new String[]{mt.getTo()});
-					i.putExtra(Intent.EXTRA_SUBJECT, mt.getSubject());
-					i.putExtra(Intent.EXTRA_TEXT, mt.getBody());
-					context.startActivity(i);
-					view.reload();
-				}
-				catch (ActivityNotFoundException e) {
-					Log.w(TAG, "Problem with Intent.ACTION_SEND", e);
-					new AlertDialog.Builder(context)
-					.setTitle("Contact Info")
-					.setMessage( "Please send your feedback to: cinusdev@gmail.com" )
-					.setPositiveButton( "Done", new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							Log.d("AlertDialog", "Positive");
-						}
-					})
-					.show();
-				}
-				return true;
-			} else {
-				// Open external URLs in Browser.
-				startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-				return true;
-			}
-		}
-	}
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (webView.canGoBack()) {
+                webView.goBack();
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private final class HelpClient extends WebViewClient {
+        Activity context;
+
+        public HelpClient(Activity context) {
+            this.context = context;
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            setTitle(view.getTitle());
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            if (url.startsWith("file")) {
+                if (url.contains("{html-lang}")) {
+                    String page = url.substring(url.lastIndexOf('/') + 1);
+                    view.loadUrl(BASE_HELP_URL + page);
+                    return true;
+                }
+                return false;
+            } else if (url.startsWith("mailto:")) {
+                try {
+                    MailTo mt = MailTo.parse(url);
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("message/rfc822");
+                    i.putExtra(Intent.EXTRA_EMAIL, new String[]{mt.getTo()});
+                    i.putExtra(Intent.EXTRA_SUBJECT, mt.getSubject());
+                    i.putExtra(Intent.EXTRA_TEXT, mt.getBody());
+                    context.startActivity(i);
+                    view.reload();
+                } catch (ActivityNotFoundException e) {
+                    Log.w(TAG, "Problem with Intent.ACTION_SEND", e);
+                    new AlertDialog.Builder(context).setTitle("Contact Info")
+                            .setMessage("Please send your feedback to: cinusdev@gmail.com")
+                            .setPositiveButton("Done", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Log.d("AlertDialog", "Positive");
+                                }
+                            })
+                            .show();
+                }
+                return true;
+            } else {
+                // Open external URLs in Browser.
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                return true;
+            }
+        }
+    }
 }

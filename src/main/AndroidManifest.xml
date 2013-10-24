@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
  Copyright 2012 Lukas Landis
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,91 +15,87 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ch.luklanis.esscan"
-    android:installLocation="auto"
-    android:versionCode="37"
-    android:versionName="0.8.10" >
+          package="ch.luklanis.esscan"
+          android:installLocation="auto"
+          android:versionCode="37"
+          android:versionName="0.8.10">
 
     <uses-sdk
         android:minSdkVersion="10"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="18"/>
 
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
         android:smallScreens="false"
-        android:xlargeScreens="true" />
+        android:xlargeScreens="true"/>
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="true" />
+        android:required="true"/>
     <uses-feature
         android:name="android.hardware.camera.autofocus"
-        android:required="false" />
+        android:required="false"/>
     <uses-feature
         android:name="android.hardware.camera.flash"
-        android:required="false" />
+        android:required="false"/>
 
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
 
     <application
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.Sherlock" >
+        android:theme="@style/Theme.Sherlock">
         <activity
             android:name=".CaptureActivity"
             android:configChanges="keyboardHidden|orientation"
             android:screenOrientation="landscape"
             android:uiOptions="splitActionBarWhenNarrow"
-            android:windowSoftInputMode="stateAlwaysHidden" >
+            android:windowSoftInputMode="stateAlwaysHidden">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
             android:name=".HelpActivity"
-            android:screenOrientation="user" >
-        </activity>
-        <activity android:name=".PreferencesActivity" />
+            android:screenOrientation="user"></activity>
+        <activity android:name=".PreferencesActivity"/>
         <activity
             android:name=".history.HistoryActivity"
             android:label="@string/history_title"
             android:stateNotNeeded="true"
-            android:uiOptions="splitActionBarWhenNarrow" >
-        </activity>
+            android:uiOptions="splitActionBarWhenNarrow"></activity>
         <activity
             android:name=".history.PsDetailActivity"
             android:label="@string/detail_title"
             android:stateNotNeeded="true"
-            android:uiOptions="splitActionBarWhenNarrow" >
-        </activity>
+            android:uiOptions="splitActionBarWhenNarrow"></activity>
 
         <service
             android:name=".codesend.ESRSender"
             android:exported="false"
-            android:label="Code row send service" >
-        </service>
+            android:label="Code row send service"></service>
 
         <!-- Declares the input method service -->
         <service
             android:name=".ime.ScannerIME"
             android:label="@string/scanner_ime_label"
-            android:permission="android.permission.BIND_INPUT_METHOD" >
+            android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
-                <action android:name="android.view.InputMethod" />
+                <action android:name="android.view.InputMethod"/>
             </intent-filter>
 
             <meta-data
                 android:name="android.view.im"
-                android:resource="@xml/method" />
+                android:resource="@xml/method"/>
         </service>
     </application>
 

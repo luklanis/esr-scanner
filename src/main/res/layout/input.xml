@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<?xml version="1.0" encoding="UTF-8"?><!--
  Copyright (C) 2008 ZXing authors
  Copyright 2011 Robert Theis
  Copyright 2012 Lukas Landis
@@ -17,26 +16,26 @@
  limitations under the License.
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/scalable_view"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center" >
+                xmlns:tools="http://schemas.android.com/tools"
+                android:id="@+id/scalable_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
 
     <SurfaceView
         android:id="@+id/preview_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
     <ch.luklanis.esscan.ViewfinderView
         android:id="@+id/viewfinder_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#0000" />
+        android:background="#0000"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/status_view_top_red"
@@ -47,12 +46,12 @@
             android:orientation="vertical"
             android:paddingLeft="4dip"
             android:paddingTop="72dip"
-            android:visibility="gone" >
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal" >
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/status_view_1_red"
@@ -61,7 +60,7 @@
                     android:text="00000000000000123456789128+"
                     android:textColor="@color/status_text"
                     android:textSize="14sp"
-                    tools:ignore="HardcodedText" />
+                    tools:ignore="HardcodedText"/>
 
                 <TextView
                     android:id="@+id/status_view_2_red"
@@ -70,7 +69,7 @@
                     android:text=" 070888854>"
                     android:textColor="@color/status_text"
                     android:textSize="14sp"
-                    tools:ignore="HardcodedText" />
+                    tools:ignore="HardcodedText"/>
             </LinearLayout>
 
             <TextView
@@ -80,7 +79,7 @@
                 android:text="800009393>"
                 android:textColor="@color/status_text"
                 android:textSize="14sp"
-                tools:ignore="HardcodedText" />
+                tools:ignore="HardcodedText"/>
         </LinearLayout>
 
         <LinearLayout
@@ -90,7 +89,7 @@
             android:layout_alignParentTop="true"
             android:orientation="horizontal"
             android:paddingLeft="4dip"
-            android:paddingTop="72dip" >
+            android:paddingTop="72dip">
 
             <TextView
                 android:id="@+id/status_view_1_orange"
@@ -99,7 +98,7 @@
                 android:text="0100003949753>"
                 android:textColor="@color/status_text"
                 android:textSize="14sp"
-                tools:ignore="HardcodedText" />
+                tools:ignore="HardcodedText"/>
 
             <TextView
                 android:id="@+id/status_view_2_orange"
@@ -108,7 +107,7 @@
                 android:text="210000000003139471430009017+"
                 android:textColor="@color/status_text"
                 android:textSize="14sp"
-                tools:ignore="HardcodedText" />
+                tools:ignore="HardcodedText"/>
 
             <TextView
                 android:id="@+id/status_view_3_orange"
@@ -117,7 +116,7 @@
                 android:text=" 010001628>"
                 android:textColor="@color/status_text"
                 android:textSize="14sp"
-                tools:ignore="HardcodedText" />
+                tools:ignore="HardcodedText"/>
         </LinearLayout>
 
         <LinearLayout
@@ -125,7 +124,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
-            android:orientation="vertical" >
+            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -134,7 +133,7 @@
                 android:padding="4dip"
                 android:text="@string/msg_touch_to_focus"
                 android:textColor="@color/status_text"
-                android:textSize="14sp" />
+                android:textSize="14sp"/>
 
             <TextView
                 android:id="@+id/status_view_bottom_left"
@@ -145,7 +144,7 @@
                 android:text=""
                 android:textColor="@color/status_text"
                 android:textSize="14sp"
-                android:visibility="gone" />
+                android:visibility="gone"/>
         </LinearLayout>
 
         <TextView
@@ -159,7 +158,7 @@
             android:text=""
             android:textColor="@color/status_text"
             android:textSize="14sp"
-            android:visibility="gone" />
+            android:visibility="gone"/>
     </RelativeLayout>
 
 </RelativeLayout>

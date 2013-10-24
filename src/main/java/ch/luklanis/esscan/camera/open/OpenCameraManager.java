@@ -24,9 +24,9 @@ import ch.luklanis.android.common.PlatformSupportManager;
  */
 public final class OpenCameraManager extends PlatformSupportManager<OpenCameraInterface> {
 
-  public OpenCameraManager() {
-    super(OpenCameraInterface.class, new DefaultOpenCameraInterface());
-    addImplementationClass(9, "ch.luklanis.esscan.camera.open.GingerbreadOpenCameraInterface");
-  }
+    public OpenCameraManager() {
+        super(OpenCameraInterface.class, new DefaultOpenCameraInterface());
+        addImplementationClass(9, "ch.luklanis.esscan.camera.open.GingerbreadOpenCameraInterface");
+    }
 
 }

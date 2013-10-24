@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
  Copyright 2011 Robert Theis
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,39 +13,39 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- STREAM SETTINGS -->
-    <PreferenceCategory android:title="@string/preferences_stream_title" >
+    <PreferenceCategory android:title="@string/preferences_stream_title">
 
         <EditTextPreference
             android:defaultValue=""
             android:key="preferences_username"
             android:title="@string/preferences_username_title"
             android:summary="@string/preferences_username_summary"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"/>
 
         <EditTextPreference
             android:defaultValue=""
             android:key="preferences_password"
             android:title="@string/preferences_password_title"
             android:summary="@string/preferences_password_summary"
-            android:inputType="textPassword" />
+            android:inputType="textPassword"/>
     </PreferenceCategory>
 
     <!-- DTA FORMAT SETTINGS -->
-    <PreferenceCategory android:title="@string/preferences_dta_format_title" >
-        
+    <PreferenceCategory android:title="@string/preferences_dta_format_title">
+
         <EditTextPreference
             android:defaultValue=""
             android:key="preferences_address"
             android:summary="@string/preferences_address_summary"
-            android:title="@string/preferences_address_title" />
-        
+            android:title="@string/preferences_address_title"/>
+
         <EditTextPreference
             android:defaultValue=""
             android:key="preferences_iban"
-            android:title="@string/preferences_iban_title" />
+            android:title="@string/preferences_iban_title"/>
 
         <ListPreference
             android:key="preferences_execution_day"
@@ -54,87 +53,87 @@
             android:entries="@array/execution_day"
             android:entryValues="@array/execution_day"
             android:title="@string/preferences_execution_day_title"
-            android:summary="@string/preferences_execution_day_summary" />
-        
+            android:summary="@string/preferences_execution_day_summary"/>
+
         <EditTextPreference
             android:defaultValue=""
             android:key="preferences_email_address"
             android:title="@string/preferences_email_address_title"
             android:summary="@string/preferences_email_address_summary"
-            android:inputType="textEmailAddress" />
-        
+            android:inputType="textEmailAddress"/>
+
     </PreferenceCategory>
 
     <!-- ADVANCED SETTINGS -->
-    <PreferenceCategory android:title="@string/preferences_advanced_title" >
+    <PreferenceCategory android:title="@string/preferences_advanced_title">
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_only_copy"
             android:title="@string/preferences_only_copy_title"
-            android:summary="@string/preferences_only_copy_summary" />
-        
+            android:summary="@string/preferences_only_copy_summary"/>
+
         <ListPreference
             android:key="preferences_copy_part"
             android:title="@string/preferences_copy_part_title"
             android:entries="@array/copy_part"
             android:entryValues="@array/copy_part_values"
             android:defaultValue="0"
-            android:dependency="preferences_only_copy" />
-        
+            android:dependency="preferences_only_copy"/>
+
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="preferences_play_beep"
-            android:title="@string/preferences_play_beep_title" />
-        
+            android:title="@string/preferences_play_beep_title"/>
+
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_vibrate"
-            android:title="@string/preferences_vibrate_title" />
-            
+            android:title="@string/preferences_vibrate_title"/>
+
         <CheckBoxPreference
             android:key="preferences_only_macro_focus"
             android:defaultValue="false"
-            android:title="@string/preferences_only_macro_focus_title" />
-            
+            android:title="@string/preferences_only_macro_focus_title"/>
+
         <CheckBoxPreference
             android:key="preferences_no_continous_auto_focus"
             android:defaultValue="true"
             android:title="@string/preferences_no_continous_auto_focus_title"
-            android:summary="@string/preferences_no_continous_auto_focus_summary" />
-            
+            android:summary="@string/preferences_no_continous_auto_focus_summary"/>
+
         <CheckBoxPreference
             android:key="preferences_enable_torch"
             android:defaultValue="false"
-            android:title="@string/preferences_enable_torch_title" />
+            android:title="@string/preferences_enable_torch_title"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_reverse_image"
             android:title="@string/preferences_reverse_image_title"
-            android:summary="@string/preferences_reverse_image_summary" />
+            android:summary="@string/preferences_reverse_image_summary"/>
 
         <CheckBoxPreference
             android:defaultValue="false"
             android:key="preferences_show_ocr_result"
-            android:title="@string/preferences_show_ocr_result_title" />
+            android:title="@string/preferences_show_ocr_result_title"/>
 
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="preferences_show_scan_result"
             android:title="@string/preferences_show_scan_result_title"
-            android:summary="@string/preferences_show_scan_result_summary" />
+            android:summary="@string/preferences_show_scan_result_summary"/>
     </PreferenceCategory>
 
     <!-- BACKUP/RESTORE SETTINGS -->
-    <PreferenceCategory android:title="@string/preferences_backup_restore_title" >
+    <PreferenceCategory android:title="@string/preferences_backup_restore_title">
         <Preference
             android:title="@string/preferences_backup_title"
             android:key="preferences_button_backup"
-            android:summary="@string/preferences_backup_summary" />
+            android:summary="@string/preferences_backup_summary"/>
         <Preference
             android:title="@string/preferences_restore_title"
             android:key="preferences_button_restore"
-            android:summary="@string/preferences_restore_summary" />
+            android:summary="@string/preferences_restore_summary"/>
     </PreferenceCategory>
 
 </PreferenceScreen>
