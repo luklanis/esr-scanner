@@ -176,7 +176,9 @@ public final class CaptureActivity extends SherlockActivity
                 closeJmDns();
 
                 if (mEnableStreamMode) {
-                    setOKAlert(R.string.msg_stream_mode_not_available);
+                    if (mEsrSenderHttp == null) {
+                        setOKAlert(R.string.msg_stream_mode_not_available);
+                    }
 
                     clearIPAddresses();
                     if (mPsValidation.getSpokenType().equals(EsResult.PS_TYPE_NAME)) {
@@ -222,7 +224,7 @@ public final class CaptureActivity extends SherlockActivity
                     invalidateOptionsMenu();
                 }
             } else {
-                if (mEnableStreamMode) {
+                if (mEnableStreamMode && mEsrSenderHttp == null) {
                     setOKAlert(R.string.msg_stream_mode_not_available);
                 }
             }
@@ -737,7 +739,7 @@ public final class CaptureActivity extends SherlockActivity
     public void showResult(PsResult psResult) {
         mBeepManager.playBeepSoundAndVibrate();
 
-        if (mEnableStreamMode && mEsrSenderService != null) {
+        if (mEnableStreamMode && getEsrSender() != null) {
             String completeCode = psResult.getCompleteCode();
             int indexOfNewline = completeCode.indexOf('\n');
             if (indexOfNewline < 0) {

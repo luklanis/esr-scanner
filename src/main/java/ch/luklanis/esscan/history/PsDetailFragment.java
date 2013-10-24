@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.luklanis.esscan.R;
-import ch.luklanis.esscan.codesend.ESRSender;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
@@ -337,14 +336,8 @@ public class PsDetailFragment extends Fragment {
             completeCode = completeCode.substring(0, indexOfNewline);
         }
 
-        if (boundService != null && ESRSender.isConnectedLocal()) {
+        if (boundService != null) {
             boundService.sendToListener(completeCode, position);
-        } else if (boundService != null) {
-            Toast toast = Toast.makeText(this.getActivity(),
-                    R.string.msg_stream_mode_not_available,
-                    Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.BOTTOM, 0, 0);
-            toast.show();
         }
     }
 

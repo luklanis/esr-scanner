@@ -321,7 +321,7 @@ public final class HistoryActivity extends SherlockFragmentActivity
 
                 if (fragment != null) {
                     fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW,
-                            boundService,
+                            getEsrSender(),
                             this.historyFragment.getActivatedPosition());
                 }
             }
