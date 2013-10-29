@@ -22,12 +22,18 @@ import javax.crypto.spec.SecretKeySpec;
 public class Crypto {
 
     public static final String PROVIDER = "BC";
-    public static final int PBE_ITERATION_COUNT = 5000;
+    public static final int PBE_ITERATION_COUNT = 1000;
 
     private static final String HASH_ALGORITHM = "SHA-512";
-    private static final String PBE_ALGORITHM = "PBEWithSHA256And256BitAES-CBC-BC";
-    private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
-    private static final String SECRET_KEY_ALGORITHM = "AES";
+    //    private static final String PBE_ALGORITHM = "PBEWithSHA256And256BitAES-CBC-BC";       // AES
+    private static final String PBE_ALGORITHM = "PBEWithSHAAnd3-KeyTripleDES-CBC";
+    //    private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";       // AES
+    private static final String CIPHER_ALGORITHM = "DESede/CBC/PKCS5Padding";
+    //    private static final String SECRET_KEY_ALGORITHM = "AES";       // AES
+    private static final String SECRET_KEY_ALGORITHM = "DESede";
+
+    //    private static final int KEY_LENGTH = 256;       // AES
+    private static final int KEY_LENGTH = 192;
 
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static String[] encrypt(SecretKey secret, String cleartext) throws Exception {
@@ -50,8 +56,7 @@ public class Crypto {
         char[] pw = toHexString(password.getBytes("UTF-8")).toCharArray();
         PBEKeySpec pbeKeySpec = new PBEKeySpec(pw,
                 salt.getBytes("UTF-8"),
-                PBE_ITERATION_COUNT,
-                256);
+                PBE_ITERATION_COUNT, KEY_LENGTH);
         SecretKeyFactory factory = SecretKeyFactory.getInstance(PBE_ALGORITHM, PROVIDER);
         SecretKey tmp = factory.generateSecret(pbeKeySpec);
         return new SecretKeySpec(tmp.getEncoded(), SECRET_KEY_ALGORITHM);
