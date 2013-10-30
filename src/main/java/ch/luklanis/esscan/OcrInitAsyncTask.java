@@ -135,10 +135,9 @@ public final class OcrInitAsyncTask extends AsyncTask<String, String, Boolean> {
         // box behind it
 
         // Initialize the OCR engine
-        if (baseApi.init(destinationDirBase + File.separator, languageCode, ocrEngineMode)) {
-            return installSuccess;
-        }
-        return false;
+        return baseApi.init(destinationDirBase + File.separator,
+                languageCode,
+                ocrEngineMode) && installSuccess;
     }
 
     /**

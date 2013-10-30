@@ -498,9 +498,7 @@ public class DTAFileCreator {
                 return res.getString(R.string.msg_nothing_to_export);
             }
 
-            for (int i = 0; i < items.size(); i++) {
-                HistoryItem item = items.get(i);
-
+            for (HistoryItem item : items) {
                 if (nullToEmpty(item.getAmount()).equals("") || Float.parseFloat(item.getAmount()) == 0.00) {
                     return res.getString(R.string.msg_amount_is_empty,
                             item.getResult().getAccount());

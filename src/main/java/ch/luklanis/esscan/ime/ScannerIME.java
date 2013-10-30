@@ -223,11 +223,6 @@ public class ScannerIME extends InputMethodService
     }
 
     @Override
-    public void onFinishInput() {
-        super.onFinishInput();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
 

@@ -57,7 +57,7 @@ public class ESRSenderHttp implements IEsrSender {
 
     public void sendToListener(final String dataToSend, final int position) {
 
-        AsyncTask asyncTask = new AsyncTask<Object, Integer, JsonObject>() {
+        AsyncTask<Object, Integer, JsonObject> asyncTask = new AsyncTask<Object, Integer, JsonObject>() {
             @Override
             protected JsonObject doInBackground(Object... objects) {
                 try {

@@ -36,8 +36,8 @@ public abstract class PsValidation {
     protected int getCheckDigit(int[] digits) {
         int lastValue = 0;
 
-        for (int i = 0; i < digits.length; i++) {
-            lastValue = MODULO10[lastValue][digits[i]];
+        for (int digit : digits) {
+            lastValue = MODULO10[lastValue][digit];
         }
 
         return CHECK_DIGIT[lastValue];
@@ -90,9 +90,9 @@ public abstract class PsValidation {
     public String getCompleteCode() {
         String result = "";
 
-        for (int i = 0; i < completeCode.length; i++) {
-            if (completeCode[i] != null) {
-                result += completeCode[i];
+        for (String codePart : completeCode) {
+            if (codePart != null) {
+                result += codePart;
             }
         }
 

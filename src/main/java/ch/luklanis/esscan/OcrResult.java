@@ -74,12 +74,11 @@ public final class OcrResult {
         Canvas canvas = new Canvas(bitmap);
 
         // Draw bounding boxes around each word
-        for (int i = 0; i < wordBoundingBoxes.size(); i++) {
+        for (Rect r : wordBoundingBoxes) {
             paint.setAlpha(0xA0);
             paint.setColor(0xFF00CCFF);
             paint.setStyle(Style.STROKE);
             paint.setStrokeWidth(3);
-            Rect r = wordBoundingBoxes.get(i);
             canvas.drawRect(r, paint);
         }
 

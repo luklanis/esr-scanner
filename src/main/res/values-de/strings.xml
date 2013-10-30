@@ -87,9 +87,9 @@
     <string name="msg_reason_line_to_long">Das DTA Format erlaubt nur 28 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
-    <string name="msg_touch_to_focus">Zum Fokusieren bitte Display berühren!</string>
+    <string name="msg_touch_to_focus">Zum Fokussieren bitte Display berühren!</string>
     <string name="msg_wait_title">Bitte warten.</string>
-    <string name="msg_wait_sending">Verschlüssele und sende die Codierzeile...</string>
+    <string name="msg_wait_sending">Verschlüssele und sende die Codierzeile&#8230;</string>
     <string name="notif_scan_to_clipboard_title">ESR in die Zwischenablage scannen</string>
     <string name="notif_scan_to_clipboard_summary">Anwählen um einen ESR direkt in die Zwischenablage zu scannen</string>
     <string name="picture">Ein kleines Bild von einem Orangen Einzahlungsschein</string>

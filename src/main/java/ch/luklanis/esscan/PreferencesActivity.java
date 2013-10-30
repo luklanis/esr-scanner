@@ -106,7 +106,7 @@ public class PreferencesActivity extends PreferenceActivity
 
         addPreferencesFromResource(R.xml.preferences);
 
-        Preference backupButton = (Preference) findPreference(KEY_BUTTON_BACKUP);
+        Preference backupButton = findPreference(KEY_BUTTON_BACKUP);
         backupButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference arg0) {
@@ -115,7 +115,7 @@ public class PreferencesActivity extends PreferenceActivity
             }
         });
 
-        Preference restoreButton = (Preference) findPreference(KEY_BUTTON_RESTORE);
+        Preference restoreButton = findPreference(KEY_BUTTON_RESTORE);
         restoreButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference arg0) {

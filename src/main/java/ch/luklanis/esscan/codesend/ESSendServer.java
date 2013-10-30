@@ -5,7 +5,6 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Collection;
 
 /*
@@ -25,7 +24,7 @@ import java.util.Collection;
  */
 public class ESSendServer extends WebSocketServer {
 
-    public ESSendServer(int port) throws UnknownHostException {
+    public ESSendServer(int port) {
         super(new InetSocketAddress(port));
     }
 

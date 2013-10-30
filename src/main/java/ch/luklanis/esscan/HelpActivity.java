@@ -91,7 +91,7 @@ public final class HelpActivity extends Activity {
         getActionBar().setDisplayShowHomeEnabled(false);
 
         webView = (WebView) findViewById(R.id.help_contents);
-        webView.setWebViewClient(new HelpClient((Activity) this));
+        webView.setWebViewClient(new HelpClient(this));
 
         Intent intent = getIntent();
 

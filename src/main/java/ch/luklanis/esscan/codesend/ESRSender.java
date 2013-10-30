@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -76,11 +75,7 @@ public class ESRSender extends Service implements IEsrSender {
 
         mServerPort.compareAndSet(0, prefs.getInt(PreferencesActivity.KEY_SERVER_PORT, 0));
 
-        try {
-            mSendServer = new ESSendServer(mServerPort.get());
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
+        mSendServer = new ESSendServer(mServerPort.get());
 
         // Registers BroadcastReceiver to track network connection changes.
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -97,6 +92,7 @@ public class ESRSender extends Service implements IEsrSender {
         try {
             unregisterReceiver(mNetworkReceiver);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
 
         stopServer();
@@ -201,7 +197,7 @@ public class ESRSender extends Service implements IEsrSender {
             try {
                 mSendServer.start();
             } catch (IllegalStateException ex) {
-
+                ex.printStackTrace();
             }
 
             if (mServerPort.get() == 0) {

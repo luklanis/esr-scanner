@@ -51,9 +51,7 @@ public class EsIbanValidation extends PsValidation {
             int[] digits = getDigitsFromText(related, related.length() - 1);
             int[] withoutCheckDigit = new int[digits.length - 1];
 
-            for (int i = 0; i < withoutCheckDigit.length; i++) {
-                withoutCheckDigit[i] = digits[i];
-            }
+            System.arraycopy(digits, 0, withoutCheckDigit, 0, withoutCheckDigit.length);
 
             int checkDigit = getCheckDigit(withoutCheckDigit);
 
@@ -130,10 +128,7 @@ public class EsIbanValidation extends PsValidation {
 
     @Override
     protected boolean additionalStepTest(String related) {
-        if (currentStep == 2 && related.equals(completeCode[1])) {
-            return false;
-        }
+        return !(currentStep == 2 && related.equals(completeCode[1]));
 
-        return true;
     }
 }

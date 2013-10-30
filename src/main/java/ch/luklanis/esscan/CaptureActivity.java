@@ -97,7 +97,7 @@ import ch.luklanis.esscan.paymentslip.PsValidation;
  * http://code.google.com/p/zxing/
  */
 public final class CaptureActivity extends Activity
-implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
+        implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
 
     private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -435,6 +435,7 @@ implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
         try {
             unregisterReceiver(mNetworkReceiver);
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
         }
 
         super.onDestroy();
@@ -1100,7 +1101,6 @@ implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
                 mJmDns.registerService(mServiceInfo);
             } catch (IOException e) {
                 e.printStackTrace();
-                return;
             }
         }
     }

@@ -56,7 +56,8 @@ public class Crypto {
         char[] pw = toHexString(password.getBytes("UTF-8")).toCharArray();
         PBEKeySpec pbeKeySpec = new PBEKeySpec(pw,
                 salt.getBytes("UTF-8"),
-                PBE_ITERATION_COUNT, KEY_LENGTH);
+                PBE_ITERATION_COUNT,
+                KEY_LENGTH);
         SecretKeyFactory factory = SecretKeyFactory.getInstance(PBE_ALGORITHM, PROVIDER);
         SecretKey tmp = factory.generateSecret(pbeKeySpec);
         return new SecretKeySpec(tmp.getEncoded(), SECRET_KEY_ALGORITHM);
@@ -74,8 +75,8 @@ public class Crypto {
     private static String toHexString(byte[] data) {
         StringBuilder hexString = new StringBuilder();
 
-        for (int i = 0; i < data.length; i++) {
-            String hex = Integer.toHexString(0xff & data[i]);
+        for (byte d : data) {
+            String hex = Integer.toHexString(0xff & d);
             if (hex.length() == 1) hexString.append('0');
             hexString.append(hex);
         }

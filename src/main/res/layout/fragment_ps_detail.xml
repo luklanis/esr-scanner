@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
     <LinearLayout
         android:id="@+id/ps_detail"
@@ -18,7 +18,7 @@
             android:id="@+id/image_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/picture" />
+            android:contentDescription="@string/picture"/>
 
         <RelativeLayout
             style="@style/marginNewSection"
@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:text="@string/result_address"
-                android:textAppearance="?android:attr/textAppearanceMedium" />
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <ImageButton
                 android:id="@+id/button_address_change"
@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:contentDescription="@string/button_change"
-                android:src="@drawable/ic_edit" />
+                android:src="@drawable/ic_edit"/>
         </RelativeLayout>
 
         <EditText
@@ -49,55 +49,54 @@
             android:inputType="textPostalAddress|textMultiLine|textCapWords"
             android:nextFocusLeft="@id/result_address"
             android:nextFocusUp="@id/result_address"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
 
         <TextView
             android:id="@+id/result_currency"
             style="@style/marginNewSection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
         <TextView
             android:id="@+id/result_amount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLength="11"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
 
         <EditText
             android:id="@+id/result_amount_edit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
-            android:maxLength="11" />
+            android:maxLength="11"/>
 
         <TextView
             style="@style/marginNewSection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/result_account"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
         <TextView
             android:id="@+id/result_account"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
 
         <TextView
             style="@style/marginNewSection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/result_reference_number"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
         <TextView
             android:id="@+id/result_reference_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
 
         <TextView
             android:id="@+id/result_reason_text"
@@ -106,7 +105,7 @@
             android:layout_height="wrap_content"
             android:text="@string/result_reason"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <EditText
             android:id="@+id/result_reason"
@@ -114,7 +113,7 @@
             android:layout_height="wrap_content"
             android:inputType="textMultiLine|textCapWords"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:visibility="gone" />
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/result_dta_file_text"
@@ -122,15 +121,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/result_exported_dta"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
 
 
         <TextView
             android:id="@+id/result_dta_file"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textAppearance="?android:attr/textAppearanceSmall"/>
 
     </LinearLayout>
 
