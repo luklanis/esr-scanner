@@ -31,22 +31,20 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.widget.SearchView;
-import com.actionbarsherlock.widget.SearchView.OnQueryTextListener;
 
 import java.util.List;
 
@@ -61,8 +59,8 @@ import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
-public final class HistoryActivity extends SherlockFragmentActivity
-        implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCallback {
+public final class HistoryActivity extends FragmentActivity
+implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCallback {
 
     public static final String ACTION_SHOW_RESULT = "action_show_result";
 
@@ -87,14 +85,14 @@ public final class HistoryActivity extends SherlockFragmentActivity
 
     private ESRSender boundService = null;
 
-    final private OnQueryTextListener queryListener = new OnQueryTextListener() {
+    final private SearchView.OnQueryTextListener queryListener = new SearchView.OnQueryTextListener() {
 
         @Override
         public boolean onQueryTextChange(String newText) {
             if (TextUtils.isEmpty(newText)) {
-                getSupportActionBar().setSubtitle("History");
+                getActionBar().setSubtitle("History");
             } else {
-                getSupportActionBar().setSubtitle("History - Searching for: " + newText);
+                getActionBar().setSubtitle("History - Searching for: " + newText);
             }
 
             HistoryItemAdapter adapter = historyFragment.getHistoryItemAdapter();
@@ -139,7 +137,7 @@ public final class HistoryActivity extends SherlockFragmentActivity
         super.onCreate(icicle);
         setContentView(R.layout.activity_history);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         this.historyFragment = ((HistoryFragment) getSupportFragmentManager().findFragmentById(R.id.history));
 
@@ -180,7 +178,7 @@ public final class HistoryActivity extends SherlockFragmentActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (historyManager.hasHistoryItems()) {
-            getSupportMenuInflater().inflate(R.menu.history_menu, menu);
+            getMenuInflater().inflate(R.menu.history_menu, menu);
 
             SearchView searchView = (SearchView) menu.findItem(R.id.history_menu_search)
                     .getActionView();
@@ -347,7 +345,7 @@ public final class HistoryActivity extends SherlockFragmentActivity
         return true;
     }
 
-    private void setCancelOkAlert(SherlockFragmentActivity activity, int id) {
+    private void setCancelOkAlert(FragmentActivity activity, int id) {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         final Activity caller = activity;
 
@@ -445,6 +443,7 @@ public final class HistoryActivity extends SherlockFragmentActivity
             try {
                 if (!username.isEmpty() && !password.isEmpty()) {
                     mEsrSenderHttp = new ESRSenderHttp(getApplicationContext(), username, password);
+                    mEsrSenderHttp.registerDataSentHandler(mDataSentHandler);
                 }
             } catch (Exception e) {
                 setOkAlert(R.string.msg_send_over_http_not_possible);

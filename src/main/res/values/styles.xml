@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="activated" parent="style/Theme.Sherlock">
-        <item name="android:background">?attr/activatedBackgroundIndicator</item>
+    <!-- style/Theme.Holo
+    ?attr/activatedBackgroundIndicator-->
+    <style name="activated" parent="android:Theme.Holo">
+        <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
     </style>
 
     <style name="marginNewSection">

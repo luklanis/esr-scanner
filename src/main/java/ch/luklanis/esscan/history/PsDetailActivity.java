@@ -13,16 +13,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
 import android.text.ClipboardManager;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 
 import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.PreferencesActivity;
@@ -32,10 +31,10 @@ import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
 
-public class PsDetailActivity extends SherlockFragmentActivity
+public class PsDetailActivity extends FragmentActivity
         implements Handler.Callback, GetSendServiceCallback {
 
-    private SherlockFragmentActivity callerActivity;
+    private FragmentActivity callerActivity;
 
     private HistoryManager historyManager;
     private Intent serviceIntent;
@@ -69,7 +68,7 @@ public class PsDetailActivity extends SherlockFragmentActivity
         super.onCreate(icicle);
         setContentView(R.layout.activity_ps_detail);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (icicle == null) {
             Bundle arguments = new Bundle();
@@ -140,7 +139,7 @@ public class PsDetailActivity extends SherlockFragmentActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportMenuInflater().inflate(R.menu.details_menu, menu);
+        getMenuInflater().inflate(R.menu.details_menu, menu);
 
         return true;
     }
@@ -223,7 +222,7 @@ public class PsDetailActivity extends SherlockFragmentActivity
         return super.onKeyDown(keyCode, event);
     }
 
-    public static int savePaymentSlip(SherlockFragmentActivity activity) {
+    public static int savePaymentSlip(FragmentActivity activity) {
         PsDetailFragment oldFragment = (PsDetailFragment) activity.getSupportFragmentManager()
                 .findFragmentById(R.id.ps_detail_container);
 
@@ -242,7 +241,7 @@ public class PsDetailActivity extends SherlockFragmentActivity
         builder.show();
     }
 
-    private void setCancelOkAlert(final SherlockFragmentActivity activity, int id) {
+    private void setCancelOkAlert(final FragmentActivity activity, int id) {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
         builder.setMessage(id)

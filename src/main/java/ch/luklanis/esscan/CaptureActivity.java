@@ -19,6 +19,7 @@
 package ch.luklanis.esscan;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -49,6 +50,9 @@ import android.text.style.CharacterStyle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -58,10 +62,6 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuInflater;
-import com.actionbarsherlock.view.MenuItem;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.io.File;
@@ -96,8 +96,8 @@ import ch.luklanis.esscan.paymentslip.PsValidation;
  * The code for this class was adapted from the ZXing project:
  * http://code.google.com/p/zxing/
  */
-public final class CaptureActivity extends SherlockActivity
-        implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
+public final class CaptureActivity extends Activity
+implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
 
     private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -248,7 +248,7 @@ public final class CaptureActivity extends SherlockActivity
 
     @Override
     public void onCreate(Bundle icicle) {
-        requestWindowFeature(com.actionbarsherlock.view.Window.FEATURE_ACTION_BAR_OVERLAY);
+        requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         super.onCreate(icicle);
 
         Window window = getWindow();
@@ -467,7 +467,7 @@ public final class CaptureActivity extends SherlockActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getSupportMenuInflater();
+        MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.capture_menu, menu);
 
         MenuItem psSwitch = menu.findItem(R.id.menu_switch_ps);

@@ -26,12 +26,11 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.Preference;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
-
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,7 +53,7 @@ import ch.luklanis.esscan.paymentslip.DTAFileCreator;
  * <p/>
  * The code for this class was adapted from the ZXing project: http://code.google.com/p/zxing
  */
-public class PreferencesActivity extends SherlockPreferenceActivity
+public class PreferencesActivity extends PreferenceActivity
         implements OnSharedPreferenceChangeListener {
 
     // Preference keys not carried over from ZXing project
@@ -95,15 +94,15 @@ public class PreferencesActivity extends SherlockPreferenceActivity
     /**
      * Set the default preference values.
      *
-     * @param Bundle savedInstanceState the current Activity's state, as passed by
-     *               Android
+     * @param savedInstanceState the current Activity's state, as passed by
+     *                           Android
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Hide Icon in ActionBar
-        getSupportActionBar().setDisplayShowHomeEnabled(false);
+        getActionBar().setDisplayShowHomeEnabled(false);
 
         addPreferencesFromResource(R.xml.preferences);
 

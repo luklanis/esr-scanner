@@ -9,9 +9,6 @@
 -keep class android.support.v4.app.** { *; }
 -keep interface android.support.v4.app.** { *; }
 
--keep class com.actionbarsherlock.** { *; }
--keep interface com.actionbarsherlock.** { *; }
-
 #-keep class javax.** { *; }
 #-keep interface javax.** { *; }
 
@@ -30,4 +27,3 @@
 -keep class com.koushikdutta.** { *; }
 
 -dontwarn javax.naming.**
--dontwarn com.actionbarsherlock.BuildConfig

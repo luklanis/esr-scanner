@@ -31,8 +31,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 
-import com.actionbarsherlock.app.SherlockActivity;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
@@ -42,7 +40,7 @@ import java.util.Locale;
  * <p/>
  * The code for this class was adapted from the ZXing project: http://code.google.com/p/zxing
  */
-public final class HelpActivity extends SherlockActivity {
+public final class HelpActivity extends Activity {
 
     private static final String TAG = HelpActivity.class.getSimpleName();
 
@@ -59,19 +57,19 @@ public final class HelpActivity extends SherlockActivity {
 
     private static final String LANGUAGE;
 
-    static {
-        Locale locale = Locale.getDefault();
-        String language = locale == null ? DEFAULT_LANGUAGE : locale.getLanguage();
-        LANGUAGE = language;
-    }
+    private static final String BASE_HELP_URL;
 
     private static final Collection<String> TRANSLATED_HELP_ASSET_LANGUAGES = Arrays.asList("en",
-            "de");
+            "de",
+            "fr");
 
     private static final String BASE_URL = "file:///android_asset/html";
 
-    private static final String BASE_HELP_URL = BASE_URL + "-" + (TRANSLATED_HELP_ASSET_LANGUAGES.contains(
-            LANGUAGE) ? LANGUAGE : DEFAULT_LANGUAGE) + "/";
+    static {
+        Locale locale = Locale.getDefault();
+        LANGUAGE = locale == null ? DEFAULT_LANGUAGE : locale.getLanguage();
+        BASE_HELP_URL = BASE_URL + "-" + (TRANSLATED_HELP_ASSET_LANGUAGES.contains(LANGUAGE) ? LANGUAGE : DEFAULT_LANGUAGE) + "/";
+    }
 
 //	private static final String BASE_HELP_URL = BASE_URL + "-de/";
 
@@ -90,7 +88,7 @@ public final class HelpActivity extends SherlockActivity {
         setContentView(R.layout.help);
 
         // Hide Icon in ActionBar
-        getSupportActionBar().setDisplayShowHomeEnabled(false);
+        getActionBar().setDisplayShowHomeEnabled(false);
 
         webView = (WebView) findViewById(R.id.help_contents);
         webView.setWebViewClient(new HelpClient((Activity) this));

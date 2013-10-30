@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/history_menu_search"
-        android:actionViewClass="com.actionbarsherlock.widget.SearchView"
+        android:actionViewClass="android.widget.SearchView"
         android:icon="@drawable/zoom"
         android:showAsAction="always|collapseActionView"
         android:title="@string/menu_search"/>
