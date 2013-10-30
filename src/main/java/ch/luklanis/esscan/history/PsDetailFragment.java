@@ -336,9 +336,7 @@ public class PsDetailFragment extends Fragment {
             completeCode = completeCode.substring(0, indexOfNewline);
         }
 
-        if (boundService != null) {
-            boundService.sendToListener(completeCode, position);
-        }
+        boundService.sendToListener(completeCode, position);
     }
 
     private void showAddressDialog(View view) {

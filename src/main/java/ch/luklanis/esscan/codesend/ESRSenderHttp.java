@@ -1,6 +1,7 @@
 package ch.luklanis.esscan.codesend;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 
@@ -55,41 +56,59 @@ public class ESRSenderHttp implements IEsrSender {
     }
 
     public void sendToListener(final String dataToSend, final int position) {
-        JsonObject json = new JsonObject();
-        json.addProperty("hash", hash);
-        json.addProperty("id", emailAddress);
 
-        try {
-            String[] encrypted = Crypto.encrypt(Crypto.getSecretKey(password, emailAddress),
-                    dataToSend);
-            json.addProperty("iv", encrypted[0]);
-            json.addProperty("message", encrypted[1]);
-        } catch (Exception e) {
-            e.printStackTrace();
+        AsyncTask asyncTask = new AsyncTask<Object, Integer, JsonObject>() {
+            @Override
+            protected JsonObject doInBackground(Object... objects) {
+                try {
+                    JsonObject json = new JsonObject();
+                    json.addProperty("hash", hash);
+                    json.addProperty("id", emailAddress);
 
-            if (mDataSentHandler != null) {
-                Message message = Message.obtain(mDataSentHandler, R.id.es_send_failed);
-                message.arg1 = position;
-                message.obj = dataToSend;
-                message.sendToTarget();
-            }
-        }
+                    String[] encrypted = Crypto.encrypt(Crypto.getSecretKey(password, emailAddress),
+                            dataToSend);
+                    json.addProperty("iv", encrypted[0]);
+                    json.addProperty("message", encrypted[1]);
 
-        Ion.with(context, url)
-                .setJsonObjectBody(json)
-                .asString()
-                .setCallback(new FutureCallback<String>() {
-                    @Override
-                    public void onCompleted(Exception e, String result) {
+                    return json;
+                } catch (Exception e) {
+                    e.printStackTrace();
 
-                        if (mDataSentHandler != null) {
-                            Message message = Message.obtain(mDataSentHandler,
-                                    result.equals("OK") ? R.id.es_send_succeeded : R.id.es_send_failed);
-                            message.arg1 = position;
-                            message.obj = dataToSend;
-                            message.sendToTarget();
-                        }
+                    if (mDataSentHandler != null) {
+                        Message message = Message.obtain(mDataSentHandler, R.id.es_send_failed);
+                        message.arg1 = position;
+                        message.obj = dataToSend;
+                        message.sendToTarget();
                     }
-                });
+
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(JsonObject json) {
+                if (json != null) {
+                    Ion.with(context, url)
+                            .setJsonObjectBody(json)
+                            .asString()
+                            .setCallback(new FutureCallback<String>() {
+                                @Override
+                                public void onCompleted(Exception e, String result) {
+
+                                    if (mDataSentHandler != null) {
+                                        Message message = Message.obtain(mDataSentHandler,
+                                                result.equals("OK") ? R.id.es_send_succeeded : R.id.es_send_failed);
+                                        message.arg1 = position;
+                                        message.obj = dataToSend;
+                                        message.sendToTarget();
+                                    }
+                                }
+                            });
+                }
+            }
+
+        };
+
+        asyncTask.execute();
     }
 }

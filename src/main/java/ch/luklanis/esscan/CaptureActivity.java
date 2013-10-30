@@ -161,6 +161,8 @@ public final class CaptureActivity extends SherlockActivity
     private ESRSender mEsrSenderService = null;
     private ESRSenderHttp mEsrSenderHttp = null;
 
+    private ProgressDialog mSendingProgressDialog = null;
+
     // From
     // http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
     private final BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
@@ -266,6 +268,10 @@ public final class CaptureActivity extends SherlockActivity
         mBeepManager = new BeepManager(this);
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        mSendingProgressDialog = new ProgressDialog(this);
+        mSendingProgressDialog.setTitle(R.string.msg_wait_title);
+        mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
 
         // Registers BroadcastReceiver to track network connection changes.
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
@@ -740,6 +746,7 @@ public final class CaptureActivity extends SherlockActivity
         mBeepManager.playBeepSoundAndVibrate();
 
         if (mEnableStreamMode && getEsrSender() != null) {
+            mSendingProgressDialog.show();
             String completeCode = psResult.getCompleteCode();
             int indexOfNewline = completeCode.indexOf('\n');
             if (indexOfNewline < 0) {
@@ -783,6 +790,8 @@ public final class CaptureActivity extends SherlockActivity
     }
 
     public void showDialogAndRestartScan(int resourceId) {
+        mSendingProgressDialog.dismiss();
+
         AlertDialog.Builder builder = new AlertDialog.Builder(CaptureActivity.this);
         builder.setMessage(resourceId);
         builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {

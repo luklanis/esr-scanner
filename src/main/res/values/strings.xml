@@ -103,13 +103,15 @@
         It will cut on export.
     </string>
     <string name="msg_send_over_http_not_possible">Sending code row over http is not possible!</string>
+    <string name="msg_touch_to_focus">Touch somewhere to focus!</string>
     <string name="msg_unsupported_field">The selected input doesn\'t support the needed
         characters!
     </string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation.
         Please rotate!
     </string>
-    <string name="msg_touch_to_focus">Touch somewhere to focus!</string>
+    <string name="msg_wait_title">Please wait.</string>
+    <string name="msg_wait_sending">Encrypting and sending code row...</string>
     <string name="notif_scan_to_clipboard_title">ESRScanner scan to clipboard</string>
     <string name="notif_scan_to_clipboard_summary">Tab to scan ESR to clipboard and return</string>
     <string name="picture">A little picture of a orange payment slip</string>

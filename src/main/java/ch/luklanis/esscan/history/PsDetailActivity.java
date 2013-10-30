@@ -2,6 +2,7 @@ package ch.luklanis.esscan.history;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -44,6 +45,7 @@ public class PsDetailActivity extends SherlockFragmentActivity
     private ESRSenderHttp mEsrSenderHttp;
 
     private final Handler mDataSentHandler = new Handler(this);
+    private ProgressDialog mSendingProgressDialog;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
 
@@ -81,6 +83,10 @@ public class PsDetailActivity extends SherlockFragmentActivity
         }
 
         historyManager = new HistoryManager(this);
+
+        mSendingProgressDialog = new ProgressDialog(this);
+        mSendingProgressDialog.setTitle(R.string.msg_wait_title);
+        mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
     }
 
     @Override
@@ -183,7 +189,17 @@ public class PsDetailActivity extends SherlockFragmentActivity
                         R.id.ps_detail_container);
 
                 if (fragment != null) {
-                    fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW, getEsrSender());
+
+                    IEsrSender sender = getEsrSender();
+
+                    if (sender != null) {
+                        mSendingProgressDialog.show();
+
+                        fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW, sender);
+                    } else {
+                        Message message = Message.obtain(mDataSentHandler, R.id.es_send_failed);
+                        message.sendToTarget();
+                    }
                 }
             }
             break;
@@ -245,6 +261,8 @@ public class PsDetailActivity extends SherlockFragmentActivity
     @Override
     public boolean handleMessage(Message message) {
         int msgId = 0;
+
+        mSendingProgressDialog.dismiss();
 
         if (message.what == R.id.es_send_succeeded) {
             historyManager.updateHistoryItemFileName((String) message.obj,

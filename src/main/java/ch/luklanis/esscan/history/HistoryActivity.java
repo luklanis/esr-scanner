@@ -19,6 +19,7 @@ package ch.luklanis.esscan.history;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -131,6 +132,7 @@ public final class HistoryActivity extends SherlockFragmentActivity
 
     private HistoryFragment historyFragment;
     private ESRSenderHttp mEsrSenderHttp;
+    private ProgressDialog mSendingProgressDialog;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -152,6 +154,10 @@ public final class HistoryActivity extends SherlockFragmentActivity
 
         dtaFileCreator = new DTAFileCreator(this);
         historyManager = new HistoryManager(this);
+
+        mSendingProgressDialog = new ProgressDialog(this);
+        mSendingProgressDialog.setTitle(R.string.msg_wait_title);
+        mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
 
         Intent intent = getIntent();
 
@@ -320,9 +326,18 @@ public final class HistoryActivity extends SherlockFragmentActivity
                         R.id.ps_detail_container);
 
                 if (fragment != null) {
-                    fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW,
-                            getEsrSender(),
-                            this.historyFragment.getActivatedPosition());
+                    IEsrSender sender = getEsrSender();
+
+                    if (sender != null) {
+                        mSendingProgressDialog.show();
+
+                        fragment.send(PsDetailFragment.SEND_COMPONENT_CODE_ROW,
+                                sender,
+                                this.historyFragment.getActivatedPosition());
+                    } else {
+                        Message message = Message.obtain(mDataSentHandler, R.id.es_send_failed);
+                        message.sendToTarget();
+                    }
                 }
             }
             break;
@@ -474,6 +489,8 @@ public final class HistoryActivity extends SherlockFragmentActivity
     @Override
     public boolean handleMessage(Message message) {
         int msgId = 0;
+
+        mSendingProgressDialog.dismiss();
 
         if (message.what == R.id.es_send_succeeded) {
             historyManager.updateHistoryItemFileName((String) message.obj,

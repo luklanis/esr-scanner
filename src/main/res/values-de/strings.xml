@@ -88,6 +88,8 @@
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
     <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
     <string name="msg_touch_to_focus">Zum Fokusieren bitte Display berühren!</string>
+    <string name="msg_wait_title">Bitte warten.</string>
+    <string name="msg_wait_sending">Verschlüssele und sende die Codierzeile...</string>
     <string name="notif_scan_to_clipboard_title">ESR in die Zwischenablage scannen</string>
     <string name="notif_scan_to_clipboard_summary">Anwählen um einen ESR direkt in die Zwischenablage zu scannen</string>
     <string name="picture">Ein kleines Bild von einem Orangen Einzahlungsschein</string>
@@ -120,10 +122,14 @@
     <string name="preferences_only_copy_title">Kopiere Ergebnis über Benachrichtigung</string>
     <string name="preferences_only_copy_summary">Wenn aktiviert, erscheint beim Verlassen des ESRScanners eine Benachrichtigung,
          über die Scans direkt in die Zwischenablage gelangen.</string>
+    <string name="preferences_password_title">Passwort</string>
+    <string name="preferences_password_summary">Passwort um die Codierzeile zu verschlüsseln</string>
     <string name="preferences_show_ocr_result_title">OCR Ergebnis zeigen</string>
     <string name="preferences_show_scan_result_summary">Wenn diese Option deaktiviert ist, bleibt der ESR Scanner im scan mode und verliert nicht den Fokus. 
         Aber bitte überprüfen Sie die Zahlung noch, bevor Sie sie in Auftrag geben!</string>
     <string name="preferences_show_scan_result_title">Verlauf nach jedem Scan öffnen</string>
+    <string name="preferences_username_title">Benutzername</string>
+    <string name="preferences_username_summary">Bitte verwenden Sie ihre E-Mail-Adresse als Benutzername</string>
     <string name="result_account">Konto</string>
     <string name="result_address">Empfänger</string>
     <string name="result_amount_not_set">0.00</string>
