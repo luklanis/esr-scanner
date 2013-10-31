@@ -341,10 +341,10 @@ public final class CaptureActivity extends Activity
 
         if (mEnableStreamMode) {
             showHistory.setVisible(false);
-            streamMode.setChecked(true);
+            streamMode.setIcon(R.drawable.ic_menu_edit_activated);
         } else {
             showHistory.setVisible(true);
-            streamMode.setChecked(false);
+            streamMode.setIcon(R.drawable.ic_menu_edit);
         }
 
         return true;
@@ -418,7 +418,7 @@ public final class CaptureActivity extends Activity
 
     @Override
     public IEsrSender getEsrSender() {
-            return mEsrSenderHttp;
+        return mEsrSenderHttp;
     }
 
     public Handler getHandler() {

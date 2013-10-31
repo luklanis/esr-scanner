@@ -29,6 +29,8 @@ public final class HistoryItem {
     private String dtaFile;
     private boolean exported;
     private String address;
+    private int bankProfileId;
+    private BankProfile bankProfile;
 
     public HistoryItem(PsResult result) {
         this.result = result;
@@ -37,15 +39,19 @@ public final class HistoryItem {
         this.dtaFile = null;
         this.exported = false;
         this.address = "";
+        this.bankProfileId = -1;
+        this.bankProfile = null;
     }
 
-    HistoryItem(PsResult result, String amount, int addressId, String dtaFile) {
+    HistoryItem(PsResult result, String amount, int addressId, String dtaFile, int bankProfileId) {
         this.result = result;
         this.addressId = addressId;
         this.amount = amount;
         this.dtaFile = dtaFile;
         this.exported = false;
         this.address = "";
+        this.bankProfileId = bankProfileId;
+        this.bankProfile = null;
     }
 
     public PsResult getResult() {
@@ -92,6 +98,22 @@ public final class HistoryItem {
 
     public String getAddress() {
         return address;
+    }
+
+    public int getBankProfileId() {
+        return bankProfileId;
+    }
+
+    public void setBankProfileId(int bankId) {
+        this.bankProfileId = bankProfileId;
+    }
+
+    public BankProfile getBankProfile() {
+        return bankProfile;
+    }
+
+    public void setBankProfile(BankProfile bankProfile) {
+        this.bankProfile = bankProfile;
     }
 
     public void setAddress(String address) {
