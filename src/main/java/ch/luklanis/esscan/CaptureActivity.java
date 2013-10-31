@@ -24,24 +24,16 @@ import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.text.ClipboardManager;
@@ -68,17 +60,12 @@ import java.io.File;
 import java.io.IOException;
 import java.security.Security;
 
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceInfo;
-
 import ch.luklanis.esscan.camera.CameraManager;
-import ch.luklanis.esscan.codesend.ESRSender;
 import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.history.HistoryActivity;
 import ch.luklanis.esscan.history.HistoryManager;
-import ch.luklanis.esscan.paymentslip.EsIbanValidation;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
@@ -116,16 +103,9 @@ public final class CaptureActivity extends Activity
     private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE;
     private static final String CHARACTER_WHITELIST = "0123456789>+";
 
-    private static final String SERVICE_TYPE = "_esr._tcp.local.";
-
     private static final int NOTIFICATION_ID = 1;
 
     private static final String COPY_AND_RETURN = "copy_and_return";
-
-    private static JmDNS mJmDns = null;
-    private static ServiceInfo mServiceInfo;
-
-    private static MulticastLock mMusticastLock;
 
     private static boolean sCopyAndReturn;
 
@@ -140,7 +120,6 @@ public final class CaptureActivity extends Activity
     private TessBaseAPI mBaseApi; // Java interface for the Tesseract OCR engine
 
     private SharedPreferences mSharedPreferences;
-    private OnSharedPreferenceChangeListener mOnSharedPreferenceChangeListener;
     private ProgressDialog mInitOcrProgressDialog; // for initOcr - language
     // download & unzip
     private HistoryManager mHistoryManager;
@@ -152,99 +131,13 @@ public final class CaptureActivity extends Activity
     private boolean mShowOcrResult;
     private boolean mEnableStreamMode;
 
-    private boolean mServiceIsBound;
-
     private TextView mStatusViewBottomRight;
 
-    private Intent mServiceIntent;
-
-    private ESRSender mEsrSenderService = null;
     private ESRSenderHttp mEsrSenderHttp = null;
 
     private ProgressDialog mSendingProgressDialog = null;
 
-    // From
-    // http://developer.android.com/training/basics/network-ops/managing.html#detect-changes
-    private final BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
-
-        @SuppressLint("NewApi")
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (mEsrSenderService == null) {
-                return;
-            }
-
-            if (!ESRSender.isConnectedLocal(true)) {
-                closeJmDns();
-
-                if (mEnableStreamMode) {
-                    if (mEsrSenderHttp == null) {
-                        setOKAlert(R.string.msg_stream_mode_not_available);
-                    }
-
-                    clearIPAddresses();
-                    if (mPsValidation.getSpokenType().equals(EsResult.PS_TYPE_NAME)) {
-                        mPsValidation = new EsrValidation();
-                    }
-                    resetStatusView();
-                    invalidateOptionsMenu();
-                }
-            } else {
-                new Thread(new Runnable() {
-                    public void run() {
-                        setUpJmDNS(mEsrSenderService.getServerPort());
-                    }
-                }).start();
-
-                if (mEnableStreamMode) {
-                    showIPAddresses();
-                    invalidateOptionsMenu();
-                }
-            }
-        }
-    };
-
     private boolean mShowScanResult;
-
-    private ServiceConnection mServiceConnection = new ServiceConnection() {
-
-        @SuppressLint("NewApi")
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            mEsrSenderService = ((ESRSender.LocalBinder) service).getService();
-            mEsrSenderService.registerDataSentHandler(getHandler());
-
-            if (ESRSender.isConnectedLocal()) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        setUpJmDNS(mEsrSenderService.getServerPort());
-                    }
-                }).start();
-
-                if (mEnableStreamMode) {
-                    showIPAddresses();
-                    invalidateOptionsMenu();
-                }
-            } else {
-                if (mEnableStreamMode && mEsrSenderHttp == null) {
-                    setOKAlert(R.string.msg_stream_mode_not_available);
-                }
-            }
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-            if (mEnableStreamMode) {
-                setOKAlert(R.string.msg_stream_mode_not_available);
-            }
-
-            clearIPAddresses();
-        }
-    };
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -272,13 +165,6 @@ public final class CaptureActivity extends Activity
         mSendingProgressDialog = new ProgressDialog(this);
         mSendingProgressDialog.setTitle(R.string.msg_wait_title);
         mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
-
-        // Registers BroadcastReceiver to track network connection changes.
-        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(mNetworkReceiver, filter);
-
-        mServiceIntent = new Intent(this, ESRSender.class);
-        startService(mServiceIntent);
     }
 
     @Override
@@ -342,8 +228,6 @@ public final class CaptureActivity extends Activity
             mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
 
-        doBindService();
-
         String username = mSharedPreferences.getString(PreferencesActivity.KEY_USERNAME, "");
         String password = mSharedPreferences.getString(PreferencesActivity.KEY_PASSWORD, "");
         try {
@@ -402,8 +286,6 @@ public final class CaptureActivity extends Activity
             surfaceHolder.removeCallback(this);
         }
 
-        doUnbindService();
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         if (prefs.getBoolean(PreferencesActivity.KEY_ONLY_COPY, false)) {
             CreateCopyNotification();
@@ -415,27 +297,10 @@ public final class CaptureActivity extends Activity
     }
 
     @Override
-    protected void onStop() {
-        closeJmDns();
-
-        super.onStop();
-    }
-
-    @Override
     protected void onDestroy() {
-        if (mEsrSenderService != null) {
-            mEsrSenderService.stopServer();
-        }
-
         if (mBaseApi != null) {
             mBaseApi.end();
             mBaseApi = null;
-        }
-
-        try {
-            unregisterReceiver(mNetworkReceiver);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
         }
 
         super.onDestroy();
@@ -471,17 +336,15 @@ public final class CaptureActivity extends Activity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.capture_menu, menu);
 
-        MenuItem psSwitch = menu.findItem(R.id.menu_switch_ps);
+        MenuItem streamMode = menu.findItem(R.id.menu_stream_mode);
         MenuItem showHistory = menu.findItem(R.id.menu_history);
 
-        psSwitch.setVisible(false);
-
         if (mEnableStreamMode) {
-            //psSwitch.setVisible(true);
             showHistory.setVisible(false);
+            streamMode.setChecked(true);
         } else {
-            //psSwitch.setVisible(false);
             showHistory.setVisible(true);
+            streamMode.setChecked(false);
         }
 
         return true;
@@ -492,16 +355,7 @@ public final class CaptureActivity extends Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent;
         switch (item.getItemId()) {
-            case R.id.menu_switch_ps: {
-                if (this.mPsValidation.getSpokenType().equals(EsrResult.PS_TYPE_NAME)) {
-                    this.mPsValidation = new EsIbanValidation();
-                } else {
-                    this.mPsValidation = new EsrValidation();
-                }
-                resetStatusView();
-                break;
-            }
-            case R.id.menu_switch_mode: {
+            case R.id.menu_stream_mode: {
                 // seperate if to exclude complete statement in compiled code
                 if (mEnableStreamMode) {
                     mEnableStreamMode = false;
@@ -525,7 +379,6 @@ public final class CaptureActivity extends Activity
                             .apply();
 
                     if (mEnableStreamMode) {
-                        showIPAddresses();
                         invalidateOptionsMenu();
                     }
                 }
@@ -565,11 +418,7 @@ public final class CaptureActivity extends Activity
 
     @Override
     public IEsrSender getEsrSender() {
-        if (mEsrSenderHttp != null) {
             return mEsrSenderHttp;
-        } else {
-            return mEsrSenderService;
-        }
     }
 
     public Handler getHandler() {
@@ -582,20 +431,6 @@ public final class CaptureActivity extends Activity
 
     public PsValidation getValidation() {
         return mPsValidation;
-    }
-
-    private void doBindService() {
-        if (!mServiceIsBound) {
-            bindService(mServiceIntent, mServiceConnection, 0);
-            mServiceIsBound = true;
-        }
-    }
-
-    private void doUnbindService() {
-        if (mServiceIsBound) {
-            unbindService(mServiceConnection);
-            mServiceIsBound = false;
-        }
     }
 
     /**
@@ -664,16 +499,6 @@ public final class CaptureActivity extends Activity
         }
     }
 
-    private void showIPAddresses() {
-        // mStatusViewBottomRight.setText(getResources().getString(
-        // R.string.status_view_ip_address,
-        // mEsrSenderService.getLocalIpAddress()));
-        mStatusViewBottomRight.setText(getResources().getString(R.string.status_stream_mode_active,
-                ESRSender.getLocalIpAddress(),
-                mEsrSenderService.getServerPort()));
-        mStatusViewBottomRight.setVisibility(View.VISIBLE);
-    }
-
     private void clearIPAddresses() {
         mStatusViewBottomRight.setText("");
         mStatusViewBottomRight.setVisibility(View.GONE);
@@ -693,7 +518,7 @@ public final class CaptureActivity extends Activity
         // Log.d(TAG, "getStorageDirectory(): API level is " +
         // Integer.valueOf(android.os.Build.VERSION.SDK_INT));
 
-        String state = null;
+        String state;
         try {
             state = Environment.getExternalStorageState();
         } catch (RuntimeException e) {
@@ -988,16 +813,6 @@ public final class CaptureActivity extends Activity
     }
 
     /**
-     * Returns a string that represents which OCR engine(s) are currently set to
-     * be run.
-     *
-     * @return OCR engine mode
-     */
-    String getOcrEngineModeName() {
-        return DEFAULT_OCR_ENGINE_MODE;
-    }
-
-    /**
      * Gets values from shared preferences and sets the corresponding data
      * members in this activity.
      */
@@ -1005,9 +820,6 @@ public final class CaptureActivity extends Activity
         // Retrieve from preferences, and set in this Activity, the language
         // preferences
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(
-                mOnSharedPreferenceChangeListener);
 
         mShowOcrResult = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_OCR_RESULT_PREFERENCE,
                 false);
@@ -1081,52 +893,6 @@ public final class CaptureActivity extends Activity
 
     public void setBaseApi(TessBaseAPI baseApi) {
         this.mBaseApi = baseApi;
-    }
-
-    private void setUpJmDNS(int port) {
-        if (mJmDns == null) {
-            android.net.wifi.WifiManager wifi = (android.net.wifi.WifiManager) getSystemService(
-                    android.content.Context.WIFI_SERVICE);
-            mMusticastLock = wifi.createMulticastLock("LockForServiceRegister");
-            mMusticastLock.setReferenceCounted(true);
-            mMusticastLock.acquire();
-
-            try {
-                String name = android.os.Build.MODEL.toLowerCase();
-                mJmDns = JmDNS.create(ESRSender.getLocalInterface(), name);
-                mServiceInfo = ServiceInfo.create(SERVICE_TYPE,
-                        name,
-                        port,
-                        "ESR Scanner of " + android.os.Build.MODEL);
-                mJmDns.registerService(mServiceInfo);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void closeJmDns() {
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                if (mJmDns != null) {
-                    mJmDns.unregisterAllServices();
-
-                    try {
-                        mJmDns.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    mJmDns = null;
-                }
-
-                if (mMusticastLock != null && mMusticastLock.isHeld()) {
-                    mMusticastLock.release();
-                }
-            }
-        }).start();
     }
 
     @Override

@@ -3,14 +3,11 @@ package ch.luklanis.esscan.history;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -26,7 +23,6 @@ import android.widget.Toast;
 import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
-import ch.luklanis.esscan.codesend.ESRSender;
 import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
@@ -34,34 +30,11 @@ import ch.luklanis.esscan.codesend.IEsrSender;
 public class PsDetailActivity extends FragmentActivity
         implements Handler.Callback, GetSendServiceCallback {
 
-    private FragmentActivity callerActivity;
-
     private HistoryManager historyManager;
-    private Intent serviceIntent;
-    private boolean serviceIsBound;
-
-    private ESRSender boundService = null;
     private ESRSenderHttp mEsrSenderHttp;
 
     private final Handler mDataSentHandler = new Handler(this);
     private ProgressDialog mSendingProgressDialog;
-
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            boundService = ((ESRSender.LocalBinder) service).getService();
-            boundService.registerDataSentHandler(mDataSentHandler);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-        }
-    };
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -97,9 +70,6 @@ public class PsDetailActivity extends FragmentActivity
                 getIntent().getIntExtra(PsDetailFragment.ARG_POSITION, ListView.INVALID_POSITION));
         setResult(Activity.RESULT_OK, intent);
 
-        serviceIntent = new Intent(this, ESRSender.class);
-        doBindService();
-
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         String username = prefs.getString(PreferencesActivity.KEY_USERNAME, "");
@@ -112,28 +82,6 @@ public class PsDetailActivity extends FragmentActivity
         } catch (Exception e) {
             setOkAlert(R.string.msg_send_over_http_not_possible);
             e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-
-        doUnbindService();
-
-        super.onPause();
-    }
-
-    private void doBindService() {
-        if (!serviceIsBound) {
-            bindService(serviceIntent, serviceConnection, 0);
-            serviceIsBound = true;
-        }
-    }
-
-    private void doUnbindService() {
-        if (serviceIsBound) {
-            unbindService(serviceConnection);
-            serviceIsBound = false;
         }
     }
 
@@ -284,10 +232,6 @@ public class PsDetailActivity extends FragmentActivity
 
     @Override
     public IEsrSender getEsrSender() {
-        if (mEsrSenderHttp != null) {
-            return mEsrSenderHttp;
-        } else {
-            return boundService;
-        }
+        return mEsrSenderHttp;
     }
 }

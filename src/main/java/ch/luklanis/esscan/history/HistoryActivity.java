@@ -20,15 +20,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
@@ -52,7 +49,6 @@ import ch.luklanis.esscan.CaptureActivity;
 import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
-import ch.luklanis.esscan.codesend.ESRSender;
 import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
@@ -79,11 +75,9 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
 
     private int[] tmpPositions;
 
-    private Intent serviceIntent;
-
-    private boolean serviceIsBound;
-
-    private ESRSender boundService = null;
+    private HistoryFragment historyFragment;
+    private ESRSenderHttp mEsrSenderHttp;
+    private ProgressDialog mSendingProgressDialog;
 
     final private SearchView.OnQueryTextListener queryListener = new SearchView.OnQueryTextListener() {
 
@@ -110,27 +104,6 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
             return true;
         }
     };
-
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            boundService = ((ESRSender.LocalBinder) service).getService();
-            boundService.registerDataSentHandler(mDataSentHandler);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-        }
-    };
-
-    private HistoryFragment historyFragment;
-    private ESRSenderHttp mEsrSenderHttp;
-    private ProgressDialog mSendingProgressDialog;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -433,9 +406,6 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
         super.onResume();
 
         if (twoPane) {
-            serviceIntent = new Intent(this, ESRSender.class);
-            doBindService();
-
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
             String username = prefs.getString(PreferencesActivity.KEY_USERNAME, "");
@@ -457,14 +427,6 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
             setOptionalOkAlert(error);
         } else {
         }
-    }
-
-    @Override
-    protected void onPause() {
-
-        doUnbindService();
-
-        super.onPause();
     }
 
     @Override
@@ -515,11 +477,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
 
     @Override
     public IEsrSender getEsrSender() {
-        if (mEsrSenderHttp != null) {
             return mEsrSenderHttp;
-        } else {
-            return boundService;
-        }
     }
 
     private void setNewDetails(int position) {
@@ -531,20 +489,6 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.ps_detail_container, fragment)
                 .commit();
-    }
-
-    private void doBindService() {
-        if (!serviceIsBound) {
-            bindService(serviceIntent, serviceConnection, 0);
-            serviceIsBound = true;
-        }
-    }
-
-    private void doUnbindService() {
-        if (serviceIsBound) {
-            unbindService(serviceConnection);
-            serviceIsBound = false;
-        }
     }
 
     private Intent createShareIntent(Uri dtaFileUri) {

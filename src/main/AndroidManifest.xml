@@ -79,11 +79,6 @@
             android:stateNotNeeded="true"
             android:uiOptions="splitActionBarWhenNarrow"></activity>
 
-        <service
-            android:name=".codesend.ESRSender"
-            android:exported="false"
-            android:label="Code row send service"></service>
-
         <!-- Declares the input method service -->
         <service
             android:name=".ime.ScannerIME"

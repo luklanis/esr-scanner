@@ -82,7 +82,7 @@
     <string name="msg_stream_mode_not_available">Mode de lecteur de document n\'est possible que sur le réseau local.</string>
     <string name="msg_coderow_saved">La ligne de code a été sauvegardée !</string>
     <string name="msg_coderow_sent">La ligne de code a été envoyée !</string>
-    <string name="msg_coderow_not_sent">La ligne de code ne peut pas être envoyée. Nom d'utilisateur et mot de passe sont corrects?</string>
+    <string name="msg_coderow_not_sent">La ligne de code ne peut pas être envoyée. Nom d\'utilisateur et mot de passe sont corrects?</string>
     <string name="msg_confirm_delete_payment_title">Supprimer le paiement</string>
     <string name="msg_confirm_delete_message">Le paiement doit-il être effacé ?</string>
     <string name="msg_reason_line_to_long">Le format DTA permet seulement 28 caractères par ligne et 4 lignes en tout. Le surplus sera coupé lors de l\'exportation.</string>
@@ -126,8 +126,8 @@
     <string name="preferences_show_scan_result_summary">Si cette option est désactivée, le scanner ESR reste en mode de scanner et de ne perdra pas la mise au point. 
         Veuillez vérifier le paiement avant de l\'effectuer !</string>
     <string name="preferences_show_scan_result_title">Ouvrir l\'historique après chaque scan</string>
-    <string name="preferences_username_title">Nom d'utilisateur</string>
-    <string name="preferences_username_summary">S'il vous plaît utilisez votre adresse électronique comme nom d'utilisateur</string>
+    <string name="preferences_username_title">Nom d\'utilisateur</string>
+    <string name="preferences_username_summary">S\'il vous plaît utilisez votre adresse électronique comme nom d\'utilisateur</string>
     <string name="result_account">Compte</string>
     <string name="result_address">Destinataire</string>
     <string name="result_amount_not_set">0.00</string>
