@@ -81,12 +81,12 @@
     <string name="msg_stream_mode_not_available">Beleglesermodus nur im lokalen Netzwerk möglich.</string>
     <string name="msg_coderow_saved">Codierzeile wurde gespeichert!</string>
     <string name="msg_coderow_sent">Codierzeile wurde gesendet!</string>
-    <string name="msg_coderow_not_sent">Codierzeile senden nicht möglich. ESR Receiver ist nicht verbunden!</string>
+    <string name="msg_coderow_not_sent">Codierzeile senden nicht möglich. Sind Benutzername und Passwort korrekt?</string>
     <string name="msg_confirm_delete_payment_title">Lösche Zahlung</string>
     <string name="msg_confirm_delete_message">Soll die Zahlung gelöscht werden?</string>
     <string name="msg_reason_line_to_long">Das DTA Format erlaubt nur 28 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
-    <string name="msg_unsupported_orientation">ESRScanner only works in landscape orientation. Please rotate!</string>
+    <string name="msg_unsupported_orientation">ESRScanner funktioniert nur Horizontal! Bitte drehen Sie ihr Smartphone.</string>
     <string name="msg_touch_to_focus">Zum Fokussieren bitte Display berühren!</string>
     <string name="msg_wait_title">Bitte warten.</string>
     <string name="msg_wait_sending">Verschlüssele und sende die Codierzeile&#8230;</string>

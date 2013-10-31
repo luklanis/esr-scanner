@@ -94,7 +94,7 @@
     </string>
     <string name="msg_coderow_saved">Code row saved!</string>
     <string name="msg_coderow_sent">Code row sent!</string>
-    <string name="msg_coderow_not_sent">Unable to send code row. ESR Receiver is not connected!
+    <string name="msg_coderow_not_sent">Unable to send code row. Did you set username/password correctly?
     </string>
     <string name="msg_confirm_delete_payment_title">Delete payment</string>
     <string name="msg_confirm_delete_message">You are about to delete the payment, OK to proceed?
