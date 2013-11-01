@@ -23,6 +23,7 @@ import java.util.List;
 import ch.luklanis.esscan.CaptureActivity;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
+import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.HistoryItem;
 
 public class DTAFileCreator {
@@ -66,14 +67,13 @@ public class DTAFileCreator {
      * <li>Paid timespamp</li>
      * </ul>
      */
-    public CharSequence buildDTA(List<HistoryItem> historyItems) {
+    public CharSequence buildDTA(BankProfile bankProfile, List<HistoryItem> historyItems) {
         StringBuilder dtaText = new StringBuilder(1000);
 
         String today = getDateFormated(new Date(System.currentTimeMillis()));
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        String iban = prefs.getString(PreferencesActivity.KEY_IBAN, "")
-                .replaceAll(SPACE_PATTERN, "");
+        String iban = bankProfile.getIban("").replaceAll(SPACE_PATTERN, "");
 
         String[] ownAddress = prefs.getString(PreferencesActivity.KEY_ADDRESS, "")
                 .split(NEWLINE_PATTERN);
@@ -139,7 +139,7 @@ public class DTAFileCreator {
 
             // HEADER for ESR/ES
             dtaText.append("01") // Segment number
-                    .append(getExecutionDateFormated()) // desired execution
+                    .append(getExecutionDateFormated(bankProfile.getExecutionDay(26))) // desired execution
                             // date
                     .append(spacePaddedEnd(clearing, 12)) // Clearing number of the
                             // target bank (on ESR = ""; on ES = "07...")
@@ -514,19 +514,16 @@ public class DTAFileCreator {
         return sdf.format(date);
     }
 
-    private String getExecutionDateFormated() {
+    private String getExecutionDateFormated(int day) {
         Date now = new Date(System.currentTimeMillis());
         SimpleDateFormat sdf = new SimpleDateFormat("yyMMdd");
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String day = prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "26");
 
         Calendar nowCalendar = Calendar.getInstance();
         nowCalendar.setTime(now);
 
         Calendar expectedCalendar = Calendar.getInstance();
         expectedCalendar.setTime(now);
-        expectedCalendar.set(Calendar.DAY_OF_MONTH, Integer.parseInt(day));
+        expectedCalendar.set(Calendar.DAY_OF_MONTH, day);
 
         if (!expectedCalendar.after(nowCalendar)) {
             // int month = expectedCalendar.get(Calendar.MONTH);

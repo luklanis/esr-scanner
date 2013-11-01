@@ -43,6 +43,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ch.luklanis.esscan.CaptureActivity;
@@ -56,29 +57,11 @@ import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
 public final class HistoryActivity extends FragmentActivity
-implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCallback {
+        implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCallback {
 
     public static final String ACTION_SHOW_RESULT = "action_show_result";
-
     public static final String EXTRA_CODE_ROW = "extra_code_row";
-
     private static final int DETAILS_REQUEST_CODE = 0;
-
-    private boolean twoPane;
-
-    private HistoryManager historyManager;
-    private int lastAlertId;
-    private DTAFileCreator dtaFileCreator;
-    private CheckBox dontShowAgainCheckBox;
-
-    private Handler mDataSentHandler = new Handler(this);
-
-    private int[] tmpPositions;
-
-    private HistoryFragment historyFragment;
-    private ESRSenderHttp mEsrSenderHttp;
-    private ProgressDialog mSendingProgressDialog;
-
     final private SearchView.OnQueryTextListener queryListener = new SearchView.OnQueryTextListener() {
 
         @Override
@@ -104,6 +87,16 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
             return true;
         }
     };
+    private boolean twoPane;
+    private HistoryManager mHistoryManager;
+    private int lastAlertId;
+    private DTAFileCreator dtaFileCreator;
+    private CheckBox dontShowAgainCheckBox;
+    private Handler mDataSentHandler = new Handler(this);
+    private int[] tmpPositions;
+    private HistoryFragment historyFragment;
+    private ESRSenderHttp mEsrSenderHttp;
+    private ProgressDialog mSendingProgressDialog;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -124,7 +117,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
         tmpPositions[1] = ListView.INVALID_POSITION; // new position
 
         dtaFileCreator = new DTAFileCreator(this);
-        historyManager = new HistoryManager(this);
+        mHistoryManager = new HistoryManager(this);
 
         mSendingProgressDialog = new ProgressDialog(this);
         mSendingProgressDialog.setTitle(R.string.msg_wait_title);
@@ -135,7 +128,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
         if (intent.getAction() != null && intent.getAction().equals(ACTION_SHOW_RESULT)) {
             String codeRow = intent.getStringExtra(EXTRA_CODE_ROW);
             PsResult psResult = PsResult.getInstance(codeRow);
-            this.historyManager.addHistoryItem(psResult);
+            this.mHistoryManager.addHistoryItem(psResult);
 
             if (twoPane) {
                 setNewDetails(0);
@@ -150,7 +143,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (historyManager.hasHistoryItems()) {
+        if (mHistoryManager.hasHistoryItems()) {
             getMenuInflater().inflate(R.menu.history_menu, menu);
 
             SearchView searchView = (SearchView) menu.findItem(R.id.history_menu_search)
@@ -184,41 +177,15 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.history_menu_send_dta_wlan: {
-                Uri dtaFileUri = createDTAFile();
-                if (dtaFileUri != null) {
-                }
-            }
-            break;
+            case R.id.history_menu_send_dta_save:
+            case R.id.history_menu_send_dta_other:
             case R.id.history_menu_send_dta_email: {
-                Uri dtaFileUri = createDTAFile();
-                if (dtaFileUri != null) {
-                    try {
-                        startActivity(createMailIntent(dtaFileUri));
-                    } catch (Exception ex) {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                R.string.msg_no_email_client,
-                                Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.BOTTOM, 0, 0);
-                        toast.show();
-                    }
-                }
-            }
-            break;
-            case R.id.history_menu_send_dta_other: {
-                Uri dtaFileUri = createDTAFile();
-                if (dtaFileUri != null) {
-                    startActivity(Intent.createChooser(createShareIntent(dtaFileUri),
-                            "Send with..."));
-                }
-            }
-            break;
-            case R.id.history_menu_send_dta_save: {
-                createDTAFile();
+                Message message = Message.obtain(mDataSentHandler, item.getItemId());
+                createDTAFile(message);
             }
             break;
             case R.id.history_menu_send_csv: {
-                CharSequence history = historyManager.buildHistory();
+                CharSequence history = mHistoryManager.buildHistory();
                 Uri historyFile = HistoryManager.saveHistory(history.toString());
 
                 String[] recipients = new String[]{PreferenceManager.getDefaultSharedPreferences(
@@ -247,7 +214,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int i2) {
-                                historyManager.clearHistory();
+                                mHistoryManager.clearHistory();
                                 dialog.dismiss();
                                 finish();
                             }
@@ -269,7 +236,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
                 return true;
             }
             case R.id.history_menu_copy_code_row: {
-                PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager().findFragmentById(
+                PsDetailFragment fragment = (PsDetailFragment) getFragmentManager().findFragmentById(
                         R.id.ps_detail_container);
 
                 if (fragment != null) {
@@ -293,7 +260,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
             }
             break;
             case R.id.history_menu_send_code_row: {
-                PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager().findFragmentById(
+                PsDetailFragment fragment = (PsDetailFragment) getFragmentManager().findFragmentById(
                         R.id.ps_detail_container);
 
                 if (fragment != null) {
@@ -349,12 +316,12 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
         if (twoPane) {
             tmpPositions[0] = ListView.INVALID_POSITION;
             tmpPositions[1] = ListView.INVALID_POSITION;
-            PsDetailFragment oldFragment = (PsDetailFragment) getSupportFragmentManager().findFragmentById(
+            PsDetailFragment oldFragment = (PsDetailFragment) getFragmentManager().findFragmentById(
                     R.id.ps_detail_container);
             if (oldPosition != ListView.INVALID_POSITION && oldFragment != null) {
                 int error = oldFragment.save();
 
-                HistoryItem item = historyManager.buildHistoryItem(oldPosition);
+                HistoryItem item = mHistoryManager.buildHistoryItem(oldPosition);
                 this.historyFragment.updatePosition(oldPosition, item);
 
                 if (error > 0) {
@@ -378,8 +345,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
 
     @Override
     public int getPositionToActivate() {
-        PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager().findFragmentById(
-                R.id.ps_detail_container);
+        PsDetailFragment fragment = (PsDetailFragment) getFragmentManager().findFragmentById(R.id.ps_detail_container);
         if (fragment != null) {
             return fragment.getListPosition();
         }
@@ -394,7 +360,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
             if (intent.hasExtra(Intents.History.ITEM_NUMBER)) {
                 int position = intent.getIntExtra(Intents.History.ITEM_NUMBER, -1);
 
-                HistoryItem item = historyManager.buildHistoryItem(position);
+                HistoryItem item = mHistoryManager.buildHistoryItem(position);
 
                 this.historyFragment.updatePosition(position, item);
             }
@@ -432,7 +398,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            PsDetailFragment oldFragment = (PsDetailFragment) getSupportFragmentManager().findFragmentById(
+            PsDetailFragment oldFragment = (PsDetailFragment) getFragmentManager().findFragmentById(
                     R.id.ps_detail_container);
             if (oldFragment != null) {
                 int error = oldFragment.save();
@@ -451,18 +417,46 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
     public boolean handleMessage(Message message) {
         int msgId = 0;
 
-        mSendingProgressDialog.dismiss();
 
-        if (message.what == R.id.es_send_succeeded) {
-            historyManager.updateHistoryItemFileName((String) message.obj,
-                    getResources().getString(R.string.history_item_sent));
+        switch (message.what) {
+            case R.id.history_menu_send_dta_email: {
+                Uri dtaFileUri = (Uri) message.obj;
+                if (dtaFileUri != null) {
+                    try {
+                        startActivity(createMailIntent(dtaFileUri));
+                        return true;
+                    } catch (Exception ex) {
+                        msgId = R.string.msg_no_email_client;
+                    }
+                }
+            }
+            break;
+            case R.id.history_menu_send_dta_other: {
+                Uri dtaFileUri = (Uri) message.obj;
+                if (dtaFileUri != null) {
+                    startActivity(Intent.createChooser(createShareIntent(dtaFileUri),
+                            "Send with..."));
+                    return true;
+                }
+            }
+            break;
+            case R.id.history_menu_send_dta_save:
+                break;
+            case R.id.es_send_succeeded: {
+                mSendingProgressDialog.dismiss();
+                mHistoryManager.updateHistoryItemFileName((String) message.obj,
+                        getResources().getString(R.string.history_item_sent));
 
-            HistoryItem historyItem = historyManager.buildHistoryItem(message.arg1);
-            this.historyFragment.updatePosition(message.arg1, historyItem);
+                HistoryItem historyItem = mHistoryManager.buildHistoryItem(message.arg1);
+                this.historyFragment.updatePosition(message.arg1, historyItem);
 
-            msgId = R.string.msg_coderow_sent;
-        } else {
-            msgId = R.string.msg_coderow_not_sent;
+                msgId = R.string.msg_coderow_sent;
+            }
+            break;
+            case R.id.es_send_failed:
+                mSendingProgressDialog.dismiss();
+                msgId = R.string.msg_coderow_not_sent;
+                break;
         }
 
         if (msgId != 0) {
@@ -477,7 +471,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
 
     @Override
     public IEsrSender getEsrSender() {
-            return mEsrSenderHttp;
+        return mEsrSenderHttp;
     }
 
     private void setNewDetails(int position) {
@@ -486,8 +480,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
         PsDetailFragment fragment = new PsDetailFragment();
         fragment.setArguments(arguments);
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.ps_detail_container, fragment)
+        getFragmentManager().beginTransaction().replace(R.id.ps_detail_container, fragment)
                 .commit();
     }
 
@@ -601,8 +594,47 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
         }
     }
 
-    private Uri createDTAFile() {
-        List<HistoryItem> historyItems = historyManager.buildHistoryItemsForDTA();
+    private void createDTAFile(final Message message) {
+        List<String> jsonBankProfiles = mHistoryManager.getAddresses("BP");
+
+        if (jsonBankProfiles.size() == 0) {
+            Uri uri = createDTAFile(-1);
+            message.obj = uri;
+            message.sendToTarget();
+            return;
+        }
+
+        List<String> banks = new ArrayList<String>();
+
+        for (String json : jsonBankProfiles) {
+            banks.add(new BankProfile(json).getName());
+        }
+        banks.add(0, getResources().getString(R.string.bank_profile_default));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.bank_profile_dialog_title)
+                .setItems(banks.toArray(new String[banks.size()]),
+                        new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                int bankProfileId = mHistoryManager.getAddressId("BP", which - 1);
+                                Uri uri = createDTAFile(bankProfileId);
+                                message.obj = uri;
+                                message.sendToTarget();
+                            }
+                        })
+                .setNeutralButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .show();
+    }
+
+    private Uri createDTAFile(int bankProfileId) {
+        List<HistoryItem> historyItems = mHistoryManager.buildHistoryItemsForDTA(bankProfileId);
         String error = dtaFileCreator.getFirstError(historyItems);
 
         if (error != "") {
@@ -610,7 +642,17 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
             return null;
         }
 
-        CharSequence dta = dtaFileCreator.buildDTA(historyItems);
+        BankProfile bankProfile;
+        if (bankProfileId != -1) {
+            bankProfile = mHistoryManager.getBankProfile(bankProfileId);
+        } else {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            bankProfile = new BankProfile(getResources().getString(R.string.bank_profile_default),
+                    prefs.getString(PreferencesActivity.KEY_IBAN, ""),
+                    prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "26"));
+        }
+
+        CharSequence dta = dtaFileCreator.buildDTA(bankProfile, historyItems);
 
         if (!dtaFileCreator.saveDTAFile(dta.toString())) {
             setOkAlert(R.string.msg_unmount_usb);
@@ -619,8 +661,7 @@ implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCal
             Uri dtaFileUri = dtaFileCreator.getDTAFileUri();
             String dtaFileName = dtaFileUri.getLastPathSegment();
 
-            new HistoryExportUpdateAsyncTask(historyManager,
-                    dtaFileName).execute(historyItems.toArray(new HistoryItem[historyItems.size()]));
+            new HistoryExportUpdateAsyncTask(mHistoryManager, dtaFileName).execute(historyItems.toArray(new HistoryItem[historyItems.size()]));
 
             this.dtaFileCreator = new DTAFileCreator(getApplicationContext());
 

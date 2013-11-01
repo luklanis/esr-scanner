@@ -140,5 +140,7 @@
     <string name="status_view_ip_address">IP Adresse(n):%s</string>
     <string name="status_stream_mode_active">Beleglesermodus aktiv an\n%1$s:%2$d</string>
     <string name="subtype_esr_label">ESR Scanner IME</string>
+    <string name="bank_profile_name">Name</string>
+    <string name="bank_profile_iban">IBAN</string>
 
 </resources>

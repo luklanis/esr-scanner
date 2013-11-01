@@ -685,8 +685,8 @@ public final class HistoryManager {
         return new BankProfile(getAddress(bankProfileId));
     }
 
-    public void addBankProfile(BankProfile bankProfile) {
-        addAddress("BP", bankProfile.toString());
+    public int addBankProfile(BankProfile bankProfile) {
+        return addAddress("BP", bankProfile.toString());
     }
 
     public void updateBankProfile(int bankProfileId, BankProfile bankProfile) {

@@ -2,10 +2,12 @@ package ch.luklanis.esscan.history;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -25,6 +27,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
@@ -50,7 +53,7 @@ public class PsDetailFragment extends Fragment {
         public void onClick(View v) {
             ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(
                     Activity.CLIPBOARD_SERVICE);
-            clipboardManager.setText(historyItem.getResult().getCompleteCode());
+            clipboardManager.setText(mHistoryItem.getResult().getCompleteCode());
 
             // clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult",
             // ocrResultView.getText()));
@@ -74,7 +77,7 @@ public class PsDetailFragment extends Fragment {
                     .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            historyManager.updateHistoryItemFileName(historyItem.getResult()
+                            mHistoryManager.updateHistoryItemFileName(mHistoryItem.getResult()
                                     .getCompleteCode(), null);
 
                             TextView dtaFilenameTextView = (TextView) getView().findViewById(R.id.result_dta_file);
@@ -84,30 +87,22 @@ public class PsDetailFragment extends Fragment {
                     .show();
         }
     };
-    private HistoryManager historyManager;
-    private HistoryItem historyItem;
-    private int listPosition;
-    private View.OnClickListener mBankProfileClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            showBankProfileDialog(view);
-        }
-    };
-
-    public PsDetailFragment() {
-    }
+    private HistoryManager mHistoryManager;
+    private HistoryItem mHistoryItem;
+    private int mListPosition;
+    private boolean isNewBankProfile;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        historyManager = new HistoryManager(getActivity());
+        mHistoryManager = new HistoryManager(getActivity());
 
         if (getArguments().containsKey(ARG_POSITION)) {
-            listPosition = getArguments().getInt(ARG_POSITION);
-            historyItem = historyManager.buildHistoryItem(listPosition);
+            mListPosition = getArguments().getInt(ARG_POSITION);
+            mHistoryItem = mHistoryManager.buildHistoryItem(mListPosition);
         } else {
-            historyItem = null;
+            mHistoryItem = null;
         }
     }
 
@@ -117,11 +112,11 @@ public class PsDetailFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_ps_detail, container, false);
 
-        if (historyItem == null) {
+        if (mHistoryItem == null) {
             return rootView;
         }
 
-        PsResult psResult = historyItem.getResult();
+        PsResult psResult = mHistoryItem.getResult();
 
         ImageView bitmapImageView = (ImageView) rootView.findViewById(R.id.image_view);
 
@@ -153,7 +148,7 @@ public class PsDetailFragment extends Fragment {
             } else {
                 amountTextView.setVisibility(View.GONE);
                 amountEditText.setVisibility(View.VISIBLE);
-                String amountManuel = historyItem.getAmount();
+                String amountManuel = mHistoryItem.getAmount();
                 if (amountManuel == null || amountManuel == "" || amountManuel.length() == 0) {
                     amountEditText.setText(R.string.result_amount_not_set);
                     amountEditText.selectAll();
@@ -188,7 +183,7 @@ public class PsDetailFragment extends Fragment {
 
             amountTextView.setVisibility(View.GONE);
             amountEditText.setVisibility(View.VISIBLE);
-            String amountManuel = historyItem.getAmount();
+            String amountManuel = mHistoryItem.getAmount();
             if (amountManuel == null || amountManuel == "" || amountManuel.length() == 0) {
                 amountEditText.setText(R.string.result_amount_not_set);
                 amountEditText.selectAll();
@@ -205,7 +200,7 @@ public class PsDetailFragment extends Fragment {
             reasonEditText.setText(result.getReason());
         }
 
-        String dtaFilename = historyItem.getDTAFilename();
+        String dtaFilename = mHistoryItem.getDTAFilename();
 
         TextView dtaFilenameTextView = (TextView) rootView.findViewById(R.id.result_dta_file);
         dtaFilenameTextView.setOnClickListener(exportAgainListener);
@@ -213,7 +208,7 @@ public class PsDetailFragment extends Fragment {
         TextView dtaFilenameTextTextView = (TextView) rootView.findViewById(R.id.result_dta_file_text);
 
         if (dtaFilename != null && dtaFilename != "") {
-            SpannableString content = new SpannableString(historyItem.getDTAFilename());
+            SpannableString content = new SpannableString(mHistoryItem.getDTAFilename());
             content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
             dtaFilenameTextView.setText(content);
             dtaFilenameTextTextView.setVisibility(View.VISIBLE);
@@ -229,18 +224,23 @@ public class PsDetailFragment extends Fragment {
         EditText addressEditText = (EditText) rootView.findViewById(R.id.result_address);
         addressEditText.setText("");
 
-        if (historyItem.getAddressId() != -1) {
-            addressEditText.setText(historyItem.getAddress());
+        if (mHistoryItem.getAddressId() != -1) {
+            addressEditText.setText(mHistoryItem.getAddress());
         } else {
             showAddressDialog(rootView);
         }
 
         EditText bankEditText = (EditText) rootView.findViewById(R.id.result_dta_bank_profile);
         bankEditText.setText(R.string.bank_profile_default);
-        bankEditText.setOnClickListener(mBankProfileClickListener);
+        bankEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showBankProfileEditDialog();
+            }
+        });
 
-        if (historyItem.getBankProfileId() != -1) {
-            bankEditText.setText(historyItem.getBankProfile().getName());
+        if (mHistoryItem.getBankProfileId() != -1) {
+            bankEditText.setText(mHistoryItem.getBankProfile().getName());
         }
 
         SpannableString content = new SpannableString(addressEditText.getText());
@@ -251,20 +251,20 @@ public class PsDetailFragment extends Fragment {
     }
 
     public HistoryItem getHistoryItem() {
-        return historyItem;
+        return mHistoryItem;
     }
 
     public int getListPosition() {
-        return listPosition;
+        return mListPosition;
     }
 
     public int save() {
 
-        if (historyItem == null || historyItem.getResult() == null) {
+        if (mHistoryItem == null || mHistoryItem.getResult() == null) {
             return 0;
         }
 
-        PsResult result = PsResult.getInstance(historyItem.getResult().getCompleteCode());
+        PsResult result = PsResult.getInstance(mHistoryItem.getResult().getCompleteCode());
 
         if (result instanceof EsResult || TextUtils.isEmpty(((EsrResult) result).getAmount())) {
             EditText amountEditText = (EditText) getView().findViewById(R.id.result_amount_edit);
@@ -281,12 +281,12 @@ public class PsDetailFragment extends Fragment {
                     newAmount += "0";
                 }
 
-                if (historyManager == null) {
-                    Log.e(TAG, "onClick: historyManager is null!");
+                if (mHistoryManager == null) {
+                    Log.e(TAG, "onClick: mHistoryManager is null!");
                     return 0;
                 }
 
-                historyManager.updateHistoryItemAmount(historyItem.getResult().getCompleteCode(),
+                mHistoryManager.updateHistoryItemAmount(mHistoryItem.getResult().getCompleteCode(),
                         newAmount);
                 amountEditText.setText(newAmount);
 
@@ -300,16 +300,16 @@ public class PsDetailFragment extends Fragment {
         String address = addressEditText.getText().toString();
         if (address.length() > 0) {
 
-            addressStatus = DTAFileCreator.validateAddress(address, historyItem.getResult());
+            addressStatus = DTAFileCreator.validateAddress(address, mHistoryItem.getResult());
 
-            if (historyItem.getAddressId() == -1) {
-                String account = historyItem.getResult().getAccount();
-                int addressId = historyManager.getAddressId(account,
-                        historyManager.addAddress(historyItem.getResult().getAccount(), address));
-                historyManager.updateHistoryItemAddressId(historyItem.getResult().getCompleteCode(),
-                        addressId);
+            if (mHistoryItem.getAddressId() == -1) {
+                String account = mHistoryItem.getResult().getAccount();
+                int addressId = mHistoryManager.getAddressId(account,
+                        mHistoryManager.addAddress(mHistoryItem.getResult().getAccount(), address));
+                mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getResult()
+                        .getCompleteCode(), addressId);
             } else {
-                historyManager.updateAddress(historyItem.getAddressId(), address);
+                mHistoryManager.updateAddress(mHistoryItem.getAddressId(), address);
             }
         }
 
@@ -319,7 +319,7 @@ public class PsDetailFragment extends Fragment {
         if (reason.length() > 0) {
             reasonStatus = DTAFileCreator.validateReason(reason);
 
-            historyManager.updateHistoryItemReason(historyItem.getResult().getCompleteCode(),
+            mHistoryManager.updateHistoryItemReason(mHistoryItem.getResult().getCompleteCode(),
                     reason);
         }
 
@@ -349,61 +349,10 @@ public class PsDetailFragment extends Fragment {
         boundService.sendToListener(completeCode, position);
     }
 
-    private void showBankProfileDialog(View view) {
-        PsResult result = historyItem.getResult();
-        List<String> banks = new ArrayList<String>();
-        banks.addAll(historyManager.getAddresses("BP"));
-        banks.add(0, getResources().getString(R.string.bank_profile_default));
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.bank_profile_dialog_title)
-                .setItems(banks.toArray(new String[banks.size()]),
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                                EditText bankProfileEditText = (EditText) getView().findViewById(R.id.result_dta_bank_profile);
-                                int bankProfileId = historyManager.getAddressId("BP", which - 1);
-                                BankProfile bankProfile = historyManager.getBankProfile(
-                                        bankProfileId);
-
-                                if (bankProfile != null) {
-                                    historyManager.updateHistoryItemBankProfileId(historyItem.getResult()
-                                            .getCompleteCode(), bankProfileId);
-
-                                    historyItem.setBankProfile(bankProfile);
-                                    historyItem.setBankProfileId(bankProfileId);
-                                    bankProfileEditText.setText(historyItem.getBankProfile()
-                                            .getName());
-
-                                    Toast toast = Toast.makeText(getActivity(),
-                                            R.string.msg_saved,
-                                            Toast.LENGTH_SHORT);
-                                    toast.setGravity(Gravity.BOTTOM, 0, 0);
-                                    toast.show();
-                                }
-                            }
-                        })
-                .setNeutralButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.bank_profile_new,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                // TODO start create bank profile dialog
-                                historyItem.setBankProfile(null);
-                                historyItem.setBankProfileId(-1);
-                                EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
-                                addressEditText.setText(historyItem.getAddress());
-                            }
-                        })
-                .show();
-    }
-
     private void showAddressDialog(View view) {
-        PsResult result = historyItem.getResult();
+        PsResult result = mHistoryItem.getResult();
         List<String> addresses = new ArrayList<String>();
-        addresses.addAll(historyManager.getAddresses(result.getAccount()));
+        addresses.addAll(mHistoryManager.getAddresses(result.getAccount()));
 
         if (addresses.size() <= 0) {
             ImageButton addressChangeButton = (ImageButton) view.findViewById(R.id.button_address_change);
@@ -413,24 +362,23 @@ public class PsDetailFragment extends Fragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.address_dialog_title)
-                .setItems(addresses.toArray(new String[addresses.size()]),
-                        new DialogInterface.OnClickListener() {
+                .setItems(addresses.toArray(new String[addresses.size()]), new DialogInterface.OnClickListener() {
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
                                 EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
-                                int addressId = historyManager.getAddressId(historyItem.getResult()
+                                int addressId = mHistoryManager.getAddressId(mHistoryItem.getResult()
                                         .getAccount(), which);
-                                String address = historyManager.getAddress(addressId);
+                                String address = mHistoryManager.getAddress(addressId);
 
                                 if (address != "") {
-                                    historyManager.updateHistoryItemAddressId(historyItem.getResult()
+                                    mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getResult()
                                             .getCompleteCode(), addressId);
 
-                                    historyItem.setAddress(address);
-                                    historyItem.setAddressId(addressId);
-                                    addressEditText.setText(historyItem.getAddress());
+                                    mHistoryItem.setAddress(address);
+                                    mHistoryItem.setAddressId(addressId);
+                                    addressEditText.setText(mHistoryItem.getAddress());
 
                                     Toast toast = Toast.makeText(getActivity(),
                                             R.string.msg_saved,
@@ -444,12 +392,132 @@ public class PsDetailFragment extends Fragment {
                 .setPositiveButton(R.string.address_new, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        historyItem.setAddress("");
-                        historyItem.setAddressId(-1);
+                        mHistoryItem.setAddress("");
+                        mHistoryItem.setAddressId(-1);
                         EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
-                        addressEditText.setText(historyItem.getAddress());
+                        addressEditText.setText(mHistoryItem.getAddress());
                     }
                 })
+                .show();
+    }
+
+    private void showBankProfileEditDialog() {
+        BankProfile bankProfile = mHistoryItem.getBankProfile();
+
+        if (!isNewBankProfile && mHistoryItem.getBankProfileId() == -1) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            bankProfile = new BankProfile(getResources().getString(R.string.bank_profile_default),
+                    prefs.getString(PreferencesActivity.KEY_IBAN, ""),
+                    prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "26"));
+        }
+
+        final BankProfileDialogFragment bankProfileDialogFragment = isNewBankProfile ? new BankProfileDialogFragment() : new BankProfileDialogFragment(
+                bankProfile);
+        bankProfileDialogFragment.setOnChooseBankClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                showBankProfileChoiceDialog();
+            }
+        });
+        bankProfileDialogFragment.setOnSaveBankClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                BankProfile bankProfile = bankProfileDialogFragment.getBankProfile();
+                mHistoryItem.setBankProfile(bankProfile);
+
+                if (isNewBankProfile) {
+                    isNewBankProfile = false;
+                    int bankProfileId = mHistoryManager.addBankProfile(bankProfile);
+                    mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
+                            .getCompleteCode(), bankProfileId);
+                    mHistoryItem.setBankProfileId(bankProfileId);
+                } else if (mHistoryItem.getBankProfileId() == -1) {
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
+                            getActivity());
+                    prefs.edit()
+                            .putString(PreferencesActivity.KEY_IBAN, bankProfile.getIban(""))
+                            .putString(PreferencesActivity.KEY_EXECUTION_DAY,
+                                    String.valueOf(bankProfile.getExecutionDay(26)))
+                            .apply();
+                } else {
+                    mHistoryManager.updateBankProfile(mHistoryItem.getBankProfileId(), bankProfile);
+                }
+            }
+        });
+        bankProfileDialogFragment.setOnCancelClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (isNewBankProfile) {
+                    isNewBankProfile = false;
+                }
+            }
+        });
+        bankProfileDialogFragment.show(getFragmentManager(), "bankProfile");
+    }
+
+    private void showBankProfileChoiceDialog() {
+        List<String> jsonBankProfiles = mHistoryManager.getAddresses("BP");
+
+        List<String> banks = new ArrayList<String>();
+
+        for (String json : jsonBankProfiles) {
+            banks.add(new BankProfile(json).getName());
+        }
+        banks.add(0, getResources().getString(R.string.bank_profile_default));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.bank_profile_dialog_title)
+                .setItems(banks.toArray(new String[banks.size()]), new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                EditText bankProfileEditText = (EditText) getView().findViewById(R.id.result_dta_bank_profile);
+
+                                int bankProfileId = -1;
+                                if (which != 0) {
+
+                                    bankProfileId = mHistoryManager.getAddressId("BP", which - 1);
+                                    BankProfile bankProfile = mHistoryManager.getBankProfile(
+                                            bankProfileId);
+
+                                    if (bankProfile == null) {
+                                        return;
+                                    }
+
+                                    mHistoryItem.setBankProfile(bankProfile);
+                                    bankProfileEditText.setText(mHistoryItem.getBankProfile()
+                                            .getName());
+                                } else {
+                                    bankProfileEditText.setText(R.string.bank_profile_default);
+                                }
+
+                                mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
+                                        .getCompleteCode(), bankProfileId);
+
+                                mHistoryItem.setBankProfileId(bankProfileId);
+
+                                Toast toast = Toast.makeText(getActivity(),
+                                        R.string.msg_saved,
+                                        Toast.LENGTH_SHORT);
+                                toast.setGravity(Gravity.BOTTOM, 0, 0);
+                                toast.show();
+                            }
+                        })
+                .setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        showBankProfileEditDialog();
+                    }
+                })
+                .setNeutralButton(R.string.button_create_new,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                isNewBankProfile = true;
+                                showBankProfileEditDialog();
+                            }
+                        })
                 .show();
     }
 }

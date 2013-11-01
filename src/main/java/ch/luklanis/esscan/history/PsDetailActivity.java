@@ -49,8 +49,7 @@ public class PsDetailActivity extends FragmentActivity
                     getIntent().getIntExtra(PsDetailFragment.ARG_POSITION, 0));
             PsDetailFragment fragment = new PsDetailFragment();
             fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.ps_detail_container, fragment)
+            getFragmentManager().beginTransaction().add(R.id.ps_detail_container, fragment)
                     .commit();
         }
 
@@ -108,7 +107,7 @@ public class PsDetailActivity extends FragmentActivity
                 return true;
             }
             case R.id.details_menu_copy_code_row: {
-                PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager().findFragmentById(
+                PsDetailFragment fragment = (PsDetailFragment) getFragmentManager().findFragmentById(
                         R.id.ps_detail_container);
 
                 if (fragment != null) {
@@ -132,7 +131,7 @@ public class PsDetailActivity extends FragmentActivity
             }
             break;
             case R.id.details_menu_send_code_row: {
-                PsDetailFragment fragment = (PsDetailFragment) getSupportFragmentManager().findFragmentById(
+                PsDetailFragment fragment = (PsDetailFragment) getFragmentManager().findFragmentById(
                         R.id.ps_detail_container);
 
                 if (fragment != null) {
@@ -171,7 +170,7 @@ public class PsDetailActivity extends FragmentActivity
     }
 
     public static int savePaymentSlip(FragmentActivity activity) {
-        PsDetailFragment oldFragment = (PsDetailFragment) activity.getSupportFragmentManager()
+        PsDetailFragment oldFragment = (PsDetailFragment) activity.getFragmentManager()
                 .findFragmentById(R.id.ps_detail_container);
 
         if (oldFragment != null) {

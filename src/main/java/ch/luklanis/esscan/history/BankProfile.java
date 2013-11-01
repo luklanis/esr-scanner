@@ -21,9 +21,22 @@ public class BankProfile {
 
     private String name;
     private String iban;
-    private int execution;
+    private int executionDay;
+
+    public BankProfile() {
+        this(null);
+    }
 
     public BankProfile(String jsonBankProfile) {
+
+        name = "Default";
+        iban = null;
+        executionDay = -1;
+
+        if (jsonBankProfile == null) {
+            return;
+        }
+
         JSONObject jsonObject;
         try {
             jsonObject = new JSONObject(jsonBankProfile);
@@ -32,7 +45,6 @@ public class BankProfile {
             return;
         }
 
-        name = "Default";
         if (jsonObject.has("name")) {
             try {
                 this.name = jsonObject.getString("name");
@@ -41,7 +53,6 @@ public class BankProfile {
             }
         }
 
-        iban = null;
         if (jsonObject.has("iban")) {
             try {
                 this.iban = jsonObject.getString("iban");
@@ -50,14 +61,19 @@ public class BankProfile {
             }
         }
 
-        execution = -1;
-        if (jsonObject.has("execution")) {
+        if (jsonObject.has("execDay")) {
             try {
-                this.execution = jsonObject.getInt("execution");
+                this.executionDay = jsonObject.getInt("execDay");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public BankProfile(String name, String iban, String executionDay) {
+        this.name = name;
+        this.iban = iban;
+        this.executionDay = Integer.parseInt(executionDay);
     }
 
     public String getName() {
@@ -68,8 +84,8 @@ public class BankProfile {
         return iban == null ? ifNotSet : iban;
     }
 
-    public int getExecution(int ifNotSet) {
-        return execution == -1 ? ifNotSet : execution;
+    public int getExecutionDay(int ifNotSet) {
+        return executionDay == -1 ? ifNotSet : executionDay;
     }
 
     @Override
@@ -78,7 +94,7 @@ public class BankProfile {
         try {
             jsonObject.put("name", name);
             jsonObject.put("iban", iban);
-            jsonObject.put("execution", execution);
+            jsonObject.put("execDay", executionDay);
         } catch (JSONException e) {
             e.printStackTrace();
         }
