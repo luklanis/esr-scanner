@@ -101,17 +101,26 @@ public class BankProfileDialogFragment extends DialogFragment {
                             mOnCancelClickListener.onClick(dialog, id);
                         }
                     }
-                })
-                .setPositiveButton(R.string.button_save, null)
-                .setNeutralButton(R.string.button_choose_another,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                if (mOnChooseBankClickListener != null) {
-                                    mOnChooseBankClickListener.onClick(dialogInterface, i);
-                                }
-                            }
-                        });
+                }).setPositiveButton(R.string.button_save, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (mOnSaveBankClickListener != null) {
+                    if (bankProfile == null) {
+                        bankProfile = new BankProfile(name.getText().toString(),
+                                iban.getText().toString(),
+                                execution.getText().toString());
+                    }
+                    mOnSaveBankClickListener.onClick(dialogInterface, i);
+                }
+            }
+        }).setNeutralButton(R.string.button_choose_another, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if (mOnChooseBankClickListener != null) {
+                    mOnChooseBankClickListener.onClick(dialogInterface, i);
+                }
+            }
+        });
         return builder.create();
     }
 }

@@ -195,10 +195,6 @@ public final class HistoryManager {
                     item.setAddress(cursor.getString(7));
                 }
 
-                if (bankProfileId >= 0) {
-                    item.setBankProfile(new BankProfile(cursor.getString(8)));
-                }
-
                 items.add(item);
             }
         } finally {
@@ -233,7 +229,7 @@ public final class HistoryManager {
                 HistoryItem item = new HistoryItem(result, amount, addressId, dtaFile, bankProfileId);
 
                 if (addressId != -1) {
-                    item.setAddress(cursor.getString(6));
+                    item.setAddress(cursor.getString(7));
                 }
 
                 if (bankProfileId >= 0) {

@@ -23,7 +23,7 @@
         android:id="@+id/bank_profile_execution"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:text="@string/preferences_execution_day_title"
+        android:hint="@string/preferences_execution_day_title"
         />
 
 </LinearLayout>

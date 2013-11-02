@@ -230,9 +230,15 @@ public class PsDetailFragment extends Fragment {
             showAddressDialog(rootView);
         }
 
-        EditText bankEditText = (EditText) rootView.findViewById(R.id.result_dta_bank_profile);
-        bankEditText.setText(R.string.bank_profile_default);
-        bankEditText.setOnClickListener(new View.OnClickListener() {
+        setBankProfile(rootView);
+
+        return rootView;
+    }
+
+    private void setBankProfile(View rootView) {
+        TextView bankViewText = (TextView) rootView.findViewById(R.id.result_dta_bank_profile);
+        bankViewText.setText(R.string.bank_profile_default);
+        bankViewText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showBankProfileEditDialog();
@@ -240,14 +246,12 @@ public class PsDetailFragment extends Fragment {
         });
 
         if (mHistoryItem.getBankProfileId() != -1) {
-            bankEditText.setText(mHistoryItem.getBankProfile().getName());
+            bankViewText.setText(mHistoryItem.getBankProfile().getName());
         }
 
-        SpannableString content = new SpannableString(addressEditText.getText());
+        SpannableString content = new SpannableString(bankViewText.getText());
         content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
-        bankEditText.setText(content);
-
-        return rootView;
+        bankViewText.setText(content);
     }
 
     public HistoryItem getHistoryItem() {
@@ -442,6 +446,8 @@ public class PsDetailFragment extends Fragment {
                 } else {
                     mHistoryManager.updateBankProfile(mHistoryItem.getBankProfileId(), bankProfile);
                 }
+
+                setBankProfile(getView());
             }
         });
         bankProfileDialogFragment.setOnCancelClickListener(new DialogInterface.OnClickListener() {
@@ -472,7 +478,7 @@ public class PsDetailFragment extends Fragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
-                                EditText bankProfileEditText = (EditText) getView().findViewById(R.id.result_dta_bank_profile);
+                                TextView bankProfileTextView = (TextView) getView().findViewById(R.id.result_dta_bank_profile);
 
                                 int bankProfileId = -1;
                                 if (which != 0) {
@@ -486,10 +492,10 @@ public class PsDetailFragment extends Fragment {
                                     }
 
                                     mHistoryItem.setBankProfile(bankProfile);
-                                    bankProfileEditText.setText(mHistoryItem.getBankProfile()
+                                    bankProfileTextView.setText(mHistoryItem.getBankProfile()
                                             .getName());
                                 } else {
-                                    bankProfileEditText.setText(R.string.bank_profile_default);
+                                    bankProfileTextView.setText(R.string.bank_profile_default);
                                 }
 
                                 mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
