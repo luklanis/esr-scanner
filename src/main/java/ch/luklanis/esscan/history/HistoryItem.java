@@ -39,7 +39,7 @@ public final class HistoryItem {
         this.dtaFile = null;
         this.exported = false;
         this.address = "";
-        this.bankProfileId = -1;
+        this.bankProfileId = BankProfile.DEFAULT_BANK_PROFILE_ID;
         this.bankProfile = null;
     }
 

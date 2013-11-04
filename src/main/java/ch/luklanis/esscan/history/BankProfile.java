@@ -17,8 +17,11 @@ package ch.luklanis.esscan.history;/*
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ch.luklanis.esscan.R;
+
 public class BankProfile {
 
+    public static final int DEFAULT_BANK_PROFILE_ID = -1;
     private String name;
     private String iban;
     private int executionDay;
@@ -31,7 +34,7 @@ public class BankProfile {
 
         name = "Default";
         iban = null;
-        executionDay = -1;
+        executionDay = 26;
 
         if (jsonBankProfile == null) {
             return;
@@ -76,18 +79,6 @@ public class BankProfile {
         this.executionDay = Integer.parseInt(executionDay);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getIban(String ifNotSet) {
-        return iban == null ? ifNotSet : iban;
-    }
-
-    public int getExecutionDay(int ifNotSet) {
-        return executionDay == -1 ? ifNotSet : executionDay;
-    }
-
     @Override
     public String toString() {
         JSONObject jsonObject = new JSONObject();
@@ -100,5 +91,85 @@ public class BankProfile {
         }
 
         return jsonObject.toString();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getIban(String ifNotSet) {
+        return iban == null ? ifNotSet : iban;
+    }
+
+    public int getExecutionDay(int ifNotSet) {
+        return executionDay == 26 ? ifNotSet : executionDay;
+    }
+
+    public static int validateIBAN(String iban) {
+        iban = iban.replaceAll("[\\s\\r\\n]+", "");
+
+        if (iban == "") {
+            return R.string.msg_own_iban_is_not_valid;
+        }
+
+        if (iban.length() != 21) {
+            return R.string.msg_own_iban_is_not_valid;
+        }
+
+        iban = iban.substring(4, 21) + iban.substring(0, 4);
+
+        StringBuilder ibanNumber = new StringBuilder(1000);
+
+        for (int i = 0; i < iban.length(); i++) {
+            char ibanChar = iban.charAt(i);
+
+            if (ibanChar < '0' || ibanChar > '9') {
+                int ibanLetter = 10 + (ibanChar - 'A');
+
+                if (ibanLetter < 10 || ibanLetter > (('Z' - 'A') + 10)) {
+                    return R.string.msg_own_iban_is_not_valid;
+                }
+
+                ibanNumber.append(ibanLetter);
+            } else {
+                ibanNumber.append(ibanChar);
+            }
+        }
+
+        int lastEnd = 0;
+        int subIbanLength = 9;
+        int subIbanLengthWithModulo = subIbanLength - 2;
+        int modulo97 = 97;
+
+        int subIban = Integer.parseInt(ibanNumber.substring(lastEnd, subIbanLength));
+        int lastModulo = subIban % modulo97;
+        lastEnd = subIbanLength;
+
+        try {
+            while (lastEnd < ibanNumber.length()) {
+                if ((lastEnd + subIbanLengthWithModulo) < ibanNumber.length()) {
+                    int newEnd = lastEnd + subIbanLengthWithModulo;
+                    subIban = Integer.parseInt(String.format("%s%s",
+                            lastModulo,
+                            ibanNumber.substring(lastEnd, newEnd)));
+                    lastEnd = newEnd;
+                } else {
+                    subIban = Integer.parseInt(String.format("%s%s",
+                            lastModulo,
+                            ibanNumber.substring(lastEnd)));
+                    lastEnd = ibanNumber.length();
+                }
+
+                lastModulo = subIban % modulo97;
+            }
+        } catch (NumberFormatException ex) {
+            return R.string.msg_own_iban_is_not_valid;
+        }
+
+        if (lastModulo != 1) {
+            return R.string.msg_own_iban_is_not_valid;
+        }
+
+        return 0;
     }
 }

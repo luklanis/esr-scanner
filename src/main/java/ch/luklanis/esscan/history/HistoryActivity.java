@@ -598,7 +598,7 @@ public final class HistoryActivity extends FragmentActivity
         List<String> jsonBankProfiles = mHistoryManager.getAddresses("BP");
 
         if (jsonBankProfiles.size() == 0) {
-            Uri uri = createDTAFile(-1);
+            Uri uri = createDTAFile(BankProfile.DEFAULT_BANK_PROFILE_ID);
             message.obj = uri;
             message.sendToTarget();
             return;
@@ -643,7 +643,7 @@ public final class HistoryActivity extends FragmentActivity
         }
 
         BankProfile bankProfile;
-        if (bankProfileId != -1) {
+        if (bankProfileId != BankProfile.DEFAULT_BANK_PROFILE_ID) {
             bankProfile = mHistoryManager.getBankProfile(bankProfileId);
         } else {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);

@@ -178,8 +178,8 @@
     <string name="bank_profile_default">Default</string>
     <string name="bank_profile_dialog_title">Bank profiles</string>
     <string name="bank_profile_name">Name</string>
-    <string name="button_create_new">Create new</string>
-    <string name="button_choose_another">Choose another</string>
+    <string name="button_new">New</string>
+    <string name="button_choose">Choose</string>
     <string name="bank_profile_iban">IBAN</string>
 
 </resources>

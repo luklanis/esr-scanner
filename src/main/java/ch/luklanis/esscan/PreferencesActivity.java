@@ -42,6 +42,7 @@ import java.nio.channels.FileChannel;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.DBHelper;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 
@@ -65,6 +66,7 @@ public class PreferencesActivity extends PreferenceActivity
     public static final String KEY_IBAN = "preferences_iban";
     public static final String KEY_EXECUTION_DAY = "preferences_execution_day";
     public static final String KEY_EMAIL_ADDRESS = "preferences_email_address";
+    public static final String KEY_DEFAULT_BANK_PROFILE_NAME = "preferences_default_bank_profile_name";
 
     public static final String KEY_ONLY_COPY = "preferences_only_copy";
     public static final String KEY_COPY_PART = "preferences_copy_part";
@@ -165,7 +167,7 @@ public class PreferencesActivity extends PreferenceActivity
             String iban = sharedPreferences.getString(key, "").toUpperCase();
             sharedPreferences.edit().putString(key, iban).commit();
 
-            int warning = DTAFileCreator.validateIBAN(iban);
+            int warning = BankProfile.validateIBAN(iban);
             if (warning != 0) {
                 setOKAlert(warning);
             }

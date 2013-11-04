@@ -5,25 +5,51 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
+    <TextView
+        android:text="@string/bank_profile_dialog_title"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:hint="@string/bank_profile_name"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_marginTop="8dip"
+        android:layout_marginLeft="8dip"/>
+
     <EditText
         android:id="@+id/bank_profile_name"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:hint="@string/bank_profile_name"
-        />
+        android:layout_marginTop="8dip"
+        android:layout_marginLeft="8dip"/>
 
     <EditText
         android:id="@+id/bank_profile_iban"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:hint="@string/bank_profile_iban"
-        />
+        android:layout_marginTop="8dip"
+        android:layout_marginLeft="8dip"/>
 
-    <TextView
-        android:id="@+id/bank_profile_execution"
+    <LinearLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:hint="@string/preferences_execution_day_title"
-        />
+        android:orientation="horizontal"
+        android:layout_marginLeft="8dip">
+
+        <TextView
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:text="@string/preferences_execution_day_title"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:gravity="center_vertical"/>
+
+        <NumberPicker
+            android:id="@+id/bank_profile_execution"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="6dip"
+            android:layout_marginTop="8dip"/>
+    </LinearLayout>
 
 </LinearLayout>

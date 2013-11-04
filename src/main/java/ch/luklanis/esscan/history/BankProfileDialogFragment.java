@@ -22,7 +22,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.NumberPicker;
 
 import ch.luklanis.esscan.R;
 
@@ -65,30 +65,19 @@ public class BankProfileDialogFragment extends DialogFragment {
 
         View view = inflater.inflate(R.layout.fragment_bank, null);
 
-        final EditText name = (EditText) view.findViewById(R.id.bank_profile_name);
+        final EditText nameEditText = (EditText) view.findViewById(R.id.bank_profile_name);
 
-        final EditText iban = (EditText) view.findViewById(R.id.bank_profile_iban);
+        final EditText ibanEditText = (EditText) view.findViewById(R.id.bank_profile_iban);
 
-        final TextView execution = (TextView) view.findViewById(R.id.bank_profile_execution);
+        final NumberPicker executionDayEditText = (NumberPicker) view.findViewById(R.id.bank_profile_execution);
+        executionDayEditText.setMinValue(1);
+        executionDayEditText.setMaxValue(28);
 
         if (bankProfile != null) {
-            name.setText(bankProfile.getName());
-            iban.setText(bankProfile.getIban(""));
-            execution.setText(String.valueOf(bankProfile.getExecutionDay(26)));
+            nameEditText.setText(bankProfile.getName());
+            ibanEditText.setText(bankProfile.getIban(""));
+            executionDayEditText.setValue(26);
         }
-
-        execution.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final AlertDialog.Builder dayPicker = new AlertDialog.Builder(getActivity());
-                dayPicker.setItems(R.array.execution_day, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        execution.setText(String.format("%d", i + 1));
-                    }
-                }).show();
-            }
-        });
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
@@ -105,15 +94,26 @@ public class BankProfileDialogFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (mOnSaveBankClickListener != null) {
+                    String iban = ibanEditText.getText().toString();
+                    int result = BankProfile.validateIBAN(iban);
+                    if (result != 0) {
+                        AlertDialog.Builder beforeSave = new AlertDialog.Builder(getActivity());
+                        beforeSave.setTitle(R.string.alert_title_information)
+                                .setMessage(result)
+                                .setNeutralButton(R.string.button_ok, null)
+                                .show();
+
+                        return;
+                    }
                     if (bankProfile == null) {
-                        bankProfile = new BankProfile(name.getText().toString(),
-                                iban.getText().toString(),
-                                execution.getText().toString());
+                        bankProfile = new BankProfile(nameEditText.getText().toString(),
+                                iban,
+                                String.valueOf(executionDayEditText.getValue()));
                     }
                     mOnSaveBankClickListener.onClick(dialogInterface, i);
                 }
             }
-        }).setNeutralButton(R.string.button_choose_another, new DialogInterface.OnClickListener() {
+        }).setNeutralButton(R.string.button_choose, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 if (mOnChooseBankClickListener != null) {

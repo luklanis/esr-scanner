@@ -317,7 +317,7 @@ public final class HistoryManager {
                 values.put(DBHelper.HISTORY_CODE_ROW_COL, result.getCompleteCode());
                 values.put(DBHelper.HISTORY_TIMESTAMP_COL, result.getTimestamp());
                 values.put(DBHelper.HISTORY_ADDRESS_ID_COL, -1);
-                values.put(DBHelper.HISTORY_BANK_ID_COL, -1);
+                values.put(DBHelper.HISTORY_BANK_ID_COL, BankProfile.DEFAULT_BANK_PROFILE_ID);
 
                 // Insert the new entry into the DB.
                 db.insert(DBHelper.HISTORY_TABLE_NAME, DBHelper.HISTORY_TIMESTAMP_COL, values);
