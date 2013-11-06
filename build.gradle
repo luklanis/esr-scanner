@@ -29,6 +29,9 @@ android {
     defaultConfig {
         minSdkVersion 11
         targetSdkVersion 18
+
+        testPackageName "ch.luklanis.esscan.test"
+        testInstrumentationRunner "android.test.InstrumentationTestRunner"
     }
 
     signingConfigs {

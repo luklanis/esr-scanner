@@ -105,9 +105,9 @@ public abstract class PsValidation {
 
     public abstract String getRelatedText(String text);
 
-    public abstract void resetCompleteCode();
-
     public abstract String getSpokenType();
+
+    protected abstract void resetCompleteCode();
 
     protected abstract boolean additionalStepTest(String related);
 }

@@ -63,7 +63,7 @@ public final class HistoryManager {
             "hi." + DBHelper.HISTORY_REASON_COL + ", " +
             "hi." + DBHelper.HISTORY_FILE_NAME_COL + ", " +
             "hi." + DBHelper.HISTORY_BANK_ID_COL + ", " +
-            "ad." + DBHelper.ADDRESS_ADDRESS_COL + " " +
+            "ad." + DBHelper.ADDRESS_ADDRESS_COL + ", " +
             "bp." + DBHelper.ADDRESS_ADDRESS_COL + " " +
             "FROM " + DBHelper.HISTORY_TABLE_NAME + " AS hi " +
             "LEFT OUTER JOIN " + DBHelper.ADDRESS_TABLE_NAME + " AS ad " +
@@ -167,8 +167,7 @@ public final class HistoryManager {
 
             cursor = db.rawQuery(bankId == -2 ? BUILD_ITEMS_QUERY : String.format(
                     BUILD_UNEXPORTED_ITEMS_QUERY,
-                    bankId),
-                    null);
+                    bankId), null);
 
             while (cursor.moveToNext()) {
                 String code_row = cursor.getString(0);
@@ -226,7 +225,11 @@ public final class HistoryManager {
                     ((EsResult) result).setReason(reason);
                 }
 
-                HistoryItem item = new HistoryItem(result, amount, addressId, dtaFile, bankProfileId);
+                HistoryItem item = new HistoryItem(result,
+                        amount,
+                        addressId,
+                        dtaFile,
+                        bankProfileId);
 
                 if (addressId != -1) {
                     item.setAddress(cursor.getString(7));
@@ -292,7 +295,9 @@ public final class HistoryManager {
                 int bankProfileId = cursor.getInt(6);
                 HistoryItem item = new HistoryItem(result,
                         cursor.getString(3),
-                        addressId, cursor.getString(4), bankProfileId);
+                        addressId,
+                        cursor.getString(4),
+                        bankProfileId);
 
                 if (addressId != -1) {
                     item.setAddress(cursor.getString(7));
@@ -352,7 +357,8 @@ public final class HistoryManager {
         Cursor cursor = null;
         try {
             db = helper.getWritableDatabase();
-            cursor = db.query(DBHelper.HISTORY_TABLE_NAME, projection,
+            cursor = db.query(DBHelper.HISTORY_TABLE_NAME,
+                    projection,
                     DBHelper.HISTORY_CODE_ROW_COL + "=?",
                     new String[]{code_row},
                     null,
