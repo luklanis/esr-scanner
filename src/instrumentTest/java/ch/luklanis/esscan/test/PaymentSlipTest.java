@@ -17,7 +17,10 @@ package ch.luklanis.esscan.test;/*
 import junit.framework.TestCase;
 
 import ch.luklanis.esscan.paymentslip.EsIbanValidation;
+import ch.luklanis.esscan.paymentslip.EsResult;
+import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
+import ch.luklanis.esscan.paymentslip.PsResult;
 
 public class PaymentSlipTest extends TestCase {
     public static void testEsIbanValidation() {
@@ -106,5 +109,25 @@ public class PaymentSlipTest extends TestCase {
         }
 
         assertEquals("5 Should be finished", esrValidation.finished(), true);
+    }
+
+    public static void testPsResult() {
+        PsResult esrResult = PsResult.getInstance(
+                "1100003949754>210000000003139471430009017+ 010001628>");
+        assertTrue("Should be an instance of EsrResult", esrResult instanceof EsrResult);
+        assertEquals("Account", "01-162-8", esrResult.getAccount());
+        assertEquals("Currency", "3949.75", ((EsrResult) esrResult).getAmount());
+        assertEquals("Reference",
+                "21 00000 00003 13947 14300 09017",
+                ((EsrResult) esrResult).getReference());
+
+        PsResult esResult = PsResult.getInstance(
+                "000000000000001234567890128+ 070888854>\n800009393>");
+        assertTrue("Should be an instance of EsResult", esResult instanceof EsResult);
+        assertEquals("Account", "80-939-3", esResult.getAccount());
+        assertEquals("Reference",
+                "000000000000001234567890128",
+                ((EsResult) esResult).getReference());
+        assertEquals("Clearing", "070888854", ((EsResult) esResult).getClearing());
     }
 }
