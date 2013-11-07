@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,7 +24,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
@@ -160,16 +157,23 @@ public class PsDetailFragment extends Fragment {
             currencyTextView.setText(result.getCurrency());
 
             TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
-            referenceTextView.setTypeface(null, Typeface.BOLD | Typeface.ITALIC);
             referenceTextView.setText(result.getReference());
 
-            final GetSendServiceCallback getSendServiceCallback = (GetSendServiceCallback) getActivity();
-            referenceTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    send(SEND_COMPONENT_REFERENCE, getSendServiceCallback.getEsrSender());
-                }
-            });
+            GetSendServiceCallback getSendServiceCallback = (GetSendServiceCallback) getActivity();
+            final IEsrSender esrSender = getSendServiceCallback.getEsrSender();
+            if (esrSender != null) {
+                referenceTextView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        send(SEND_COMPONENT_REFERENCE, esrSender);
+                    }
+                });
+
+                referenceTextView.setTypeface(null, Typeface.BOLD | Typeface.ITALIC);
+            } else {
+                referenceTextView.setTextAppearance(getActivity(),
+                        android.R.attr.textAppearanceSmall);
+            }
 
             reasonTextView.setVisibility(View.GONE);
             reasonEditText.setVisibility(View.GONE);
@@ -231,9 +235,10 @@ public class PsDetailFragment extends Fragment {
         bankViewText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showBankProfileEditDialog();
+                showBankProfileChoiceDialog();
             }
         });
+
         setBankProfileText(bankViewText);
 
         return rootView;
@@ -242,9 +247,7 @@ public class PsDetailFragment extends Fragment {
     private void setBankProfileText(TextView bankViewText) {
         bankViewText.setText(R.string.bank_profile_default);
 
-        if (mHistoryItem.getBankProfileId() != BankProfile.DEFAULT_BANK_PROFILE_ID) {
-            bankViewText.setText(mHistoryItem.getBankProfile().getName());
-        }
+        bankViewText.setText(mHistoryItem.getBankProfile().getName());
     }
 
     public HistoryItem getHistoryItem() {
@@ -399,64 +402,64 @@ public class PsDetailFragment extends Fragment {
                 .show();
     }
 
-    private void showBankProfileEditDialog() {
-        BankProfile bankProfile = mHistoryItem.getBankProfile();
-
-        if (!isNewBankProfile && mHistoryItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            bankProfile = new BankProfile(prefs.getString(PreferencesActivity.KEY_DEFAULT_BANK_PROFILE_NAME,
-                    getResources().getString(R.string.bank_profile_default)),
-                    prefs.getString(PreferencesActivity.KEY_IBAN, ""),
-                    prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "26"));
-        }
-
-        final BankProfileDialogFragment bankProfileDialogFragment = isNewBankProfile ? new BankProfileDialogFragment() : new BankProfileDialogFragment(
-                bankProfile);
-        bankProfileDialogFragment.setOnChooseBankClickListener(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                showBankProfileChoiceDialog();
-            }
-        });
-        bankProfileDialogFragment.setOnSaveBankClickListener(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                BankProfile bankProfile = bankProfileDialogFragment.getBankProfile();
-                mHistoryItem.setBankProfile(bankProfile);
-
-                if (isNewBankProfile) {
-                    isNewBankProfile = false;
-                    int bankProfileId = mHistoryManager.addBankProfile(bankProfile);
-                    mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
-                            .getCompleteCode(), bankProfileId);
-                    mHistoryItem.setBankProfileId(bankProfileId);
-                } else if (mHistoryItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
-                            getActivity());
-                    prefs.edit()
-                            .putString(PreferencesActivity.KEY_DEFAULT_BANK_PROFILE_NAME,
-                                    bankProfile.getName())
-                            .putString(PreferencesActivity.KEY_IBAN, bankProfile.getIban(""))
-                            .putString(PreferencesActivity.KEY_EXECUTION_DAY,
-                                    String.valueOf(bankProfile.getExecutionDay(26)))
-                            .apply();
-                } else {
-                    mHistoryManager.updateBankProfile(mHistoryItem.getBankProfileId(), bankProfile);
-                }
-
-                setBankProfileText((TextView) getView().findViewById(R.id.result_dta_bank_profile));
-            }
-        });
-        bankProfileDialogFragment.setOnCancelClickListener(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (isNewBankProfile) {
-                    isNewBankProfile = false;
-                }
-            }
-        });
-        bankProfileDialogFragment.show(getFragmentManager(), "bankProfile");
-    }
+//    private void showBankProfileEditDialog() {
+//        BankProfile bankProfile = mHistoryItem.getBankProfile();
+//
+//        if (!isNewBankProfile && mHistoryItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
+//            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+//            bankProfile = new BankProfile(prefs.getString(PreferencesActivity.KEY_BANK_PROFILE_NAME,
+//                    getResources().getString(R.string.bank_profile_default)),
+//                    prefs.getString(PreferencesActivity.KEY_IBAN, ""),
+//                    prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "26"));
+//        }
+//
+//        final BankProfileDialogFragment bankProfileDialogFragment = isNewBankProfile ? new BankProfileDialogFragment() : new BankProfileDialogFragment(
+//                bankProfile);
+//        bankProfileDialogFragment.setOnChooseBankClickListener(new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                showBankProfileChoiceDialog();
+//            }
+//        });
+//        bankProfileDialogFragment.setOnSaveBankClickListener(new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                BankProfile bankProfile = bankProfileDialogFragment.getBankProfile();
+//                mHistoryItem.setBankProfile(bankProfile);
+//
+//                if (isNewBankProfile) {
+//                    isNewBankProfile = false;
+//                    int bankProfileId = mHistoryManager.addBankProfile(bankProfile);
+//                    mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
+//                            .getCompleteCode(), bankProfileId);
+//                    mHistoryItem.setBankProfileId(bankProfileId);
+//                } else if (mHistoryItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
+//                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
+//                            getActivity());
+//                    prefs.edit()
+//                            .putString(PreferencesActivity.KEY_BANK_PROFILE_NAME,
+//                                    bankProfile.getName())
+//                            .putString(PreferencesActivity.KEY_IBAN, bankProfile.getIban(""))
+//                            .putString(PreferencesActivity.KEY_EXECUTION_DAY,
+//                                    String.valueOf(bankProfile.getExecutionDay(26)))
+//                            .apply();
+//                } else {
+//                    mHistoryManager.updateBankProfile(mHistoryItem.getBankProfileId(), bankProfile);
+//                }
+//
+//                setBankProfileText((TextView) getView().findViewById(R.id.result_dta_bank_profile));
+//            }
+//        });
+//        bankProfileDialogFragment.setOnCancelClickListener(new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialogInterface, int i) {
+//                if (isNewBankProfile) {
+//                    isNewBankProfile = false;
+//                }
+//            }
+//        });
+//        bankProfileDialogFragment.show(getFragmentManager(), "bankProfile");
+//    }
 
     private void showBankProfileChoiceDialog() {
         List<String> jsonBankProfiles = mHistoryManager.getAddresses("BP");
@@ -476,19 +479,15 @@ public class PsDetailFragment extends Fragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
-                                int bankProfileId = BankProfile.DEFAULT_BANK_PROFILE_ID;
-                                if (which != 0) {
+                                int bankProfileId = mHistoryManager.getBankProfileId(which);
+                                BankProfile bankProfile = mHistoryManager.getBankProfile(
+                                        bankProfileId);
 
-                                    bankProfileId = mHistoryManager.getAddressId("BP", which - 1);
-                                    BankProfile bankProfile = mHistoryManager.getBankProfile(
-                                            bankProfileId);
-
-                                    if (bankProfile == null) {
-                                        return;
-                                    }
-
-                                    mHistoryItem.setBankProfile(bankProfile);
+                                if (bankProfile == null) {
+                                    return;
                                 }
+
+                                mHistoryItem.setBankProfile(bankProfile);
 
                                 mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
                                         .getCompleteCode(), bankProfileId);
@@ -503,20 +502,6 @@ public class PsDetailFragment extends Fragment {
                                 toast.setGravity(Gravity.BOTTOM, 0, 0);
                                 toast.show();
                             }
-                        })
-                .setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        showBankProfileEditDialog();
-                    }
-                })
-                .setNeutralButton(R.string.button_new, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        isNewBankProfile = true;
-                        showBankProfileEditDialog();
-                    }
-                })
-                .show();
+                        }).setNegativeButton(R.string.button_cancel, null).show();
     }
 }

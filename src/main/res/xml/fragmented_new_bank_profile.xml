@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="preferences_bank_profile_name_new"
+        android:title="@string/bank_profile_name"/>
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="preferences_iban_new"
+        android:title="@string/preferences_iban_title"/>
+
+    <ListPreference
+        android:key="preferences_execution_day_new"
+        android:defaultValue="26"
+        android:entries="@array/execution_day"
+        android:entryValues="@array/execution_day"
+        android:title="@string/preferences_execution_day_title"
+        android:summary="@string/preferences_execution_day_summary"/>
+
+</PreferenceScreen>

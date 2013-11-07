@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- DTA FORMAT SETTINGS -->
+    <PreferenceCategory android:title="@string/preferences_dta_format_title">
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="preferences_address"
+            android:summary="@string/preferences_address_summary"
+            android:title="@string/preferences_address_title"/>
+
+        <EditTextPreference
+            android:defaultValue=""
+            android:key="preferences_email_address"
+            android:title="@string/preferences_email_address_title"
+            android:summary="@string/preferences_email_address_summary"
+            android:inputType="textEmailAddress"/>
+
+    </PreferenceCategory>
+
+    <!-- BANK PROFILE SETTINGS -->
+    <PreferenceCategory android:title="@string/preferences_bank_profile_title">
+
+        <ListPreference
+            android:key="preferences_default_bank_profile_number"
+            android:title="@string/preferences_default_bank_title"
+            android:summary="@string/preferences_default_bank_summary"
+            android:defaultValue="0"/>
+
+        <PreferenceScreen
+            android:fragment="ch.luklanis.esscan.PreferencesActivity$NewBankProfile"
+            android:title="@string/preferences_new_bank_profile"/>
+
+        <PreferenceScreen
+            android:key="preferences_bank_profile_edit"
+            android:fragment="ch.luklanis.esscan.PreferencesActivity$EditBankProfile"
+            android:title="@string/preferences_edit_bank_profile"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

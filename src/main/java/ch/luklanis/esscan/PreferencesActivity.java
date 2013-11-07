@@ -25,9 +25,13 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
@@ -39,11 +43,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.channels.FileChannel;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.DBHelper;
+import ch.luklanis.esscan.history.HistoryManager;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 
 /**
@@ -63,10 +69,15 @@ public class PreferencesActivity extends PreferenceActivity
     public static final String KEY_NO_CONTINUES_AUTO_FOCUS = "preferences_no_continous_auto_focus";
     public static final String KEY_ENABLE_TORCH = "preferences_enable_torch";
     public static final String KEY_ADDRESS = "preferences_address";
+    public static final String KEY_EMAIL_ADDRESS = "preferences_email_address";
+    public static final String KEY_BANK_PROFILE_NAME = "preferences_bank_profile_name";
     public static final String KEY_IBAN = "preferences_iban";
     public static final String KEY_EXECUTION_DAY = "preferences_execution_day";
-    public static final String KEY_EMAIL_ADDRESS = "preferences_email_address";
-    public static final String KEY_DEFAULT_BANK_PROFILE_NAME = "preferences_default_bank_profile_name";
+    public static final String KEY_BANK_PROFILE_NAME_NEW = "preferences_bank_profile_name_new";
+    public static final String KEY_IBAN_NEW = "preferences_iban_new";
+    public static final String KEY_EXECUTION_DAY_NEW = "preferences_execution_day_new";
+    public static final String KEY_DEFAULT_BANK_PROFILE_NUMBER = "preferences_default_bank_profile_number";
+    public static final String KEY_BANK_PROFILE_EDIT = "preferences_bank_profile_edit";
 
     public static final String KEY_ONLY_COPY = "preferences_only_copy";
     public static final String KEY_COPY_PART = "preferences_copy_part";
@@ -99,33 +110,15 @@ public class PreferencesActivity extends PreferenceActivity
      * @param savedInstanceState the current Activity's state, as passed by
      *                           Android
      */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Hide Icon in ActionBar
-        getActionBar().setDisplayShowHomeEnabled(false);
-
-        addPreferencesFromResource(R.xml.preferences);
-
-        Preference backupButton = findPreference(KEY_BUTTON_BACKUP);
-        backupButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference arg0) {
-                backupData();
-                return true;
-            }
-        });
-
-        Preference restoreButton = findPreference(KEY_BUTTON_RESTORE);
-        restoreButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference arg0) {
-                restoreData();
-                return true;
-            }
-        });
-    }
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//        super.onCreate(savedInstanceState);
+//
+//        // Hide Icon in ActionBar
+//        getActionBar().setDisplayShowHomeEnabled(false);
+//
+//        addPreferencesFromResource(R.xml.preferences);
+//    }
 
     /**
      * Interface definition for a callback to be invoked when a shared
@@ -163,7 +156,7 @@ public class PreferencesActivity extends PreferenceActivity
         //      // Set the summary text
         //      editTextPreferenceCharacterWhitelist.setSummary(sharedPreferences.getString(key, OcrCharacterHelper.getDefaultWhitelist(listPreferenceSourceLanguage.getValue())));
 
-        if (key.equals(KEY_IBAN)) {
+        if (key.equals(KEY_IBAN) || key.equals(KEY_IBAN_NEW)) {
             String iban = sharedPreferences.getString(key, "").toUpperCase();
             sharedPreferences.edit().putString(key, iban).commit();
 
@@ -178,11 +171,23 @@ public class PreferencesActivity extends PreferenceActivity
             if (warning != 0) {
                 setOKAlert(warning);
             }
-        } else if (key.equals(KEY_ONLY_MACRO_FOCUS)) {
-            Preference continuesFocusPref = findPreference(KEY_NO_CONTINUES_AUTO_FOCUS);
-            continuesFocusPref.setEnabled(!sharedPreferences.getBoolean(KEY_ONLY_MACRO_FOCUS,
-                    false));
         }
+    }
+
+    private void setOKAlert(int id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(id);
+        builder.setPositiveButton(R.string.button_ok, new OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                reload();
+            }
+        });
+        builder.show();
+    }
+
+    private void reload() {
+        startActivity(getIntent());
+        finish();
     }
 
     /**
@@ -209,196 +214,422 @@ public class PreferencesActivity extends PreferenceActivity
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
 
-    private void backupData() {
-        FileChannel src = null;
-        FileChannel dst = null;
-        FileInputStream inputStream = null;
-        FileOutputStream outputStream = null;
-        ObjectOutputStream prefBackup = null;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
-        try {
-            File sd = Environment.getExternalStorageDirectory();
-            File data = Environment.getDataDirectory();
+    /**
+     * Populate the activity with the top-level headers.
+     */
+    @Override
+    public void onBuildHeaders(List<Header> target) {
+        loadHeadersFromResource(R.xml.preference_headers, target);
+    }
 
-            if (sd.canWrite()) {
-                File bsRoot = new File(Environment.getExternalStorageDirectory(),
-                        CaptureActivity.EXTERNAL_STORAGE_DIRECTORY);
-                if (!bsRoot.exists() && !bsRoot.mkdirs()) {
-                    Log.w(TAG, "Couldn't make dir " + bsRoot);
-                    return;
+    /**
+     * This fragment shows the preferences for the first header.
+     */
+    public static class StreamFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            // Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.fragmented_stream);
+        }
+    }
+
+    /**
+     * This fragment shows the preferences for the second header.
+     */
+    public static class DtaFormatFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            // Can retrieve arguments from headers XML.
+            Log.i("args", "Arguments: " + getArguments());
+
+            // Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.fragmented_dta_format);
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+
+            HistoryManager historyManager = new HistoryManager(getActivity());
+            List<BankProfile> banks = historyManager.getBankProfiles();
+
+            ListPreference defaultBankProfileList = (ListPreference) findPreference(
+                    KEY_DEFAULT_BANK_PROFILE_NUMBER);
+            PreferenceScreen editBankProfile = (PreferenceScreen) findPreference(
+                    KEY_BANK_PROFILE_EDIT);
+
+            if (banks.isEmpty()) {
+                defaultBankProfileList.setEnabled(false);
+                editBankProfile.setEnabled(false);
+            } else {
+                CharSequence[] entries = new CharSequence[banks.size()];
+                CharSequence[] values = new CharSequence[banks.size()];
+                for (int i = 0; i < banks.size(); i++) {
+                    entries[i] = banks.get(i).getName();
+                    values[i] = String.valueOf(i);
                 }
 
-                String currentDBPath = "data/" + this.getPackageName() + "/databases/" + DBHelper.DB_NAME;
-                String backupDBPath = CaptureActivity.EXTERNAL_STORAGE_DIRECTORY + File.separator + DBHelper.DB_NAME;
+                defaultBankProfileList.setEntries(entries);
+                defaultBankProfileList.setEntryValues(values);
+
+                defaultBankProfileList.setEnabled(true);
+                editBankProfile.setEnabled(true);
+            }
+        }
+    }
+
+    /**
+     * This fragment contains a second-level set of preference that you
+     * can get to by tapping an item in the first preferences fragment.
+     */
+    public static class NewBankProfile extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            // Can retrieve arguments from preference XML.
+            Log.i("args", "Arguments: " + getArguments());
+
+            // Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.fragmented_new_bank_profile);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+
+            EditTextPreference namePreference = (EditTextPreference) findPreference(
+                    KEY_BANK_PROFILE_NAME_NEW);
+            EditTextPreference ibanPreference = (EditTextPreference) findPreference(KEY_IBAN_NEW);
+            ListPreference executionDayPreference = (ListPreference) findPreference(
+                    KEY_EXECUTION_DAY_NEW);
+
+            HistoryManager historyManager = new HistoryManager(getActivity());
+
+            historyManager.addBankProfile(new BankProfile(namePreference.getText(),
+                    ibanPreference.getText(),
+                    executionDayPreference.getValue()));
+        }
+    }
+
+    /**
+     * This fragment contains a second-level set of preference that you
+     * can get to by tapping an item in the first preferences fragment.
+     */
+    public static class EditBankProfile extends PreferenceFragment {
+        private EditTextPreference mBankProfileNumberPreference;
+        private EditTextPreference mNamePreference;
+        private EditTextPreference mIbanPreference;
+        private ListPreference mExecutionDayPreference;
+        private int mBankId;
+        private HistoryManager mHistoryManager;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            // Can retrieve arguments from preference XML.
+            Log.i("args", "Arguments: " + getArguments());
+
+            // Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.fragmented_edit_bank_profile);
+
+            mBankProfileNumberPreference = (EditTextPreference) findPreference(
+                    KEY_DEFAULT_BANK_PROFILE_NUMBER);
+            mNamePreference = (EditTextPreference) findPreference(KEY_BANK_PROFILE_NAME);
+            mIbanPreference = (EditTextPreference) findPreference(KEY_IBAN);
+            mExecutionDayPreference = (ListPreference) findPreference(KEY_EXECUTION_DAY);
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+
+            mHistoryManager = new HistoryManager(getActivity());
+
+            mBankId = mHistoryManager.getBankProfileId(Integer.valueOf(mBankProfileNumberPreference.getText()));
+            BankProfile bankProfile = mHistoryManager.getBankProfile(mBankId);
+
+            mNamePreference.setText(bankProfile.getName());
+            mIbanPreference.setText(bankProfile.getIban(""));
+            mExecutionDayPreference.setValue(String.valueOf(bankProfile.getExecutionDay(26)));
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+
+            mHistoryManager.updateBankProfile(mBankId,
+                    new BankProfile(mNamePreference.getText(),
+                            mIbanPreference.getText(),
+                            mExecutionDayPreference.getValue()));
+        }
+    }
+
+    /**
+     * This fragment shows the preferences for the second header.
+     */
+    public static class AdvancedFragment extends PreferenceFragment
+            implements OnSharedPreferenceChangeListener {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            // Can retrieve arguments from headers XML.
+            Log.i("args", "Arguments: " + getArguments());
+
+            // Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.fragmented_advanced);
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+
+            // Set up a listener whenever a key changes
+            PreferenceManager.getDefaultSharedPreferences(getActivity())
+                    .registerOnSharedPreferenceChangeListener(this);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+
+            PreferenceManager.getDefaultSharedPreferences(getActivity())
+                    .unregisterOnSharedPreferenceChangeListener(this);
+        }
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (key.equals(KEY_ONLY_MACRO_FOCUS)) {
+                Preference continuesFocusPref = findPreference(KEY_NO_CONTINUES_AUTO_FOCUS);
+                continuesFocusPref.setEnabled(!sharedPreferences.getBoolean(KEY_ONLY_MACRO_FOCUS,
+                        false));
+            }
+        }
+    }
+
+    /**
+     * This fragment shows the preferences for the second header.
+     */
+    public static class BackupFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+
+            // Can retrieve arguments from headers XML.
+            Log.i("args", "Arguments: " + getArguments());
+
+            // Load the preferences from an XML resource
+            addPreferencesFromResource(R.xml.fragmented_backup_restore);
+
+            Preference backupButton = findPreference(KEY_BUTTON_BACKUP);
+            backupButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference arg0) {
+                    backupData();
+                    return true;
+                }
+            });
+
+            Preference restoreButton = findPreference(KEY_BUTTON_RESTORE);
+            restoreButton.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference arg0) {
+                    restoreData();
+                    return true;
+                }
+            });
+        }
+
+        private void backupData() {
+            FileChannel src = null;
+            FileChannel dst = null;
+            FileInputStream inputStream = null;
+            FileOutputStream outputStream = null;
+            ObjectOutputStream prefBackup = null;
+
+            try {
+                File sd = Environment.getExternalStorageDirectory();
+                File data = Environment.getDataDirectory();
+
+                if (sd.canWrite()) {
+                    File bsRoot = new File(Environment.getExternalStorageDirectory(),
+                            CaptureActivity.EXTERNAL_STORAGE_DIRECTORY);
+                    if (!bsRoot.exists() && !bsRoot.mkdirs()) {
+                        Log.w(TAG, "Couldn't make dir " + bsRoot);
+                        return;
+                    }
+
+                    String currentDBPath = "data/" + getActivity().getPackageName() + "/databases/" + DBHelper.DB_NAME;
+                    String backupDBPath = CaptureActivity.EXTERNAL_STORAGE_DIRECTORY + File.separator + DBHelper.DB_NAME;
+                    String backupPrefsPath = CaptureActivity.EXTERNAL_STORAGE_DIRECTORY + "/preferences.xml";
+                    File currentDB = new File(data, currentDBPath);
+                    File backupDB = new File(sd, backupDBPath);
+                    File backupPrefs = new File(sd, backupPrefsPath);
+
+                    if (currentDB.exists()) {
+                        inputStream = new FileInputStream(currentDB);
+                        outputStream = new FileOutputStream(backupDB);
+
+                        src = inputStream.getChannel();
+                        dst = outputStream.getChannel();
+                        dst.transferFrom(src, 0, src.size());
+
+                        prefBackup = new ObjectOutputStream(new FileOutputStream(backupPrefs));
+                        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(
+                                getActivity());
+                        prefBackup.writeObject(pref.getAll());
+
+                        Toast toast = Toast.makeText(getActivity(),
+                                getResources().getString(R.string.msg_database_saved),
+                                Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.BOTTOM, 0, 0);
+                        toast.show();
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "restore failed", e);
+            } finally {
+                try {
+                    if (prefBackup != null) {
+                        prefBackup.close();
+                    }
+                } catch (IOException ex) {
+                }
+
+                try {
+                    if (src != null) {
+                        src.close();
+                    }
+                } catch (IOException ex) {
+                }
+
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (IOException ex) {
+                }
+
+                try {
+                    if (dst != null) {
+                        dst.close();
+                    }
+                } catch (IOException ex) {
+                }
+
+                try {
+                    if (outputStream != null) {
+                        outputStream.close();
+                    }
+                } catch (IOException ex) {
+                }
+            }
+        }
+
+        private void restoreData() {
+            ObjectInputStream input = null;
+            FileChannel src = null;
+            FileChannel dst = null;
+            FileInputStream inputStream = null;
+            FileOutputStream outputStream = null;
+
+            try {
+                File sd = Environment.getExternalStorageDirectory();
+                File data = Environment.getDataDirectory();
+
+                String currentDBPath = "data/" + getActivity().getPackageName() + "/databases/" + DBHelper.DB_NAME;
+                String backupDBPath = CaptureActivity.EXTERNAL_STORAGE_DIRECTORY + "/" + DBHelper.DB_NAME;
                 String backupPrefsPath = CaptureActivity.EXTERNAL_STORAGE_DIRECTORY + "/preferences.xml";
                 File currentDB = new File(data, currentDBPath);
                 File backupDB = new File(sd, backupDBPath);
                 File backupPrefs = new File(sd, backupPrefsPath);
 
-                if (currentDB.exists()) {
-                    inputStream = new FileInputStream(currentDB);
-                    outputStream = new FileOutputStream(backupDB);
-
+                if (currentDB.canWrite() && backupDB.exists()) {
+                    inputStream = new FileInputStream(backupDB);
+                    outputStream = new FileOutputStream(currentDB);
                     src = inputStream.getChannel();
                     dst = outputStream.getChannel();
                     dst.transferFrom(src, 0, src.size());
 
-                    prefBackup = new ObjectOutputStream(new FileOutputStream(backupPrefs));
-                    SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-                    prefBackup.writeObject(pref.getAll());
+                    input = new ObjectInputStream(new FileInputStream(backupPrefs));
+                    Editor prefEdit = PreferenceManager.getDefaultSharedPreferences(getActivity())
+                            .edit();
+                    prefEdit.clear();
 
-                    Toast toast = Toast.makeText(getApplicationContext(),
-                            getResources().getString(R.string.msg_database_saved),
+                    @SuppressWarnings("unchecked") Map<String, ?> entries = (Map<String, ?>) input.readObject();
+                    for (Entry<String, ?> entry : entries.entrySet()) {
+                        Object v = entry.getValue();
+                        String key = entry.getKey();
+
+                        if (v instanceof Boolean)
+                            prefEdit.putBoolean(key, ((Boolean) v).booleanValue());
+                        else if (v instanceof Float)
+                            prefEdit.putFloat(key, ((Float) v).floatValue());
+                        else if (v instanceof Integer)
+                            prefEdit.putInt(key, ((Integer) v).intValue());
+                        else if (v instanceof Long) prefEdit.putLong(key, ((Long) v).longValue());
+                        else if (v instanceof String) prefEdit.putString(key, ((String) v));
+                    }
+                    prefEdit.commit();
+
+                    Toast toast = Toast.makeText(getActivity(),
+                            getResources().getString(R.string.msg_database_restored),
                             Toast.LENGTH_SHORT);
                     toast.setGravity(Gravity.BOTTOM, 0, 0);
                     toast.show();
-                }
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "restore failed", e);
-        } finally {
-            try {
-                if (prefBackup != null) {
-                    prefBackup.close();
-                }
-            } catch (IOException ex) {
-            }
 
-            try {
-                if (src != null) {
-                    src.close();
+                    getActivity().finish();
                 }
-            } catch (IOException ex) {
-            }
+            } catch (Exception e) {
+                Log.w(TAG, "restore failed", e);
+            } finally {
+                try {
+                    if (input != null) {
+                        input.close();
+                    }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
 
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
+                try {
+                    if (src != null) {
+                        src.close();
+                    }
+                } catch (IOException ex) {
                 }
-            } catch (IOException ex) {
-            }
 
-            try {
-                if (dst != null) {
-                    dst.close();
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (IOException ex) {
                 }
-            } catch (IOException ex) {
-            }
 
-            try {
-                if (outputStream != null) {
-                    outputStream.close();
+                try {
+                    if (dst != null) {
+                        dst.close();
+                    }
+                } catch (IOException ex) {
                 }
-            } catch (IOException ex) {
+
+                try {
+                    if (outputStream != null) {
+                        outputStream.close();
+                    }
+                } catch (IOException ex) {
+                }
             }
         }
-    }
-
-    private void restoreData() {
-        ObjectInputStream input = null;
-        FileChannel src = null;
-        FileChannel dst = null;
-        FileInputStream inputStream = null;
-        FileOutputStream outputStream = null;
-
-        try {
-            File sd = Environment.getExternalStorageDirectory();
-            File data = Environment.getDataDirectory();
-
-            String currentDBPath = "data/" + this.getPackageName() + "/databases/" + DBHelper.DB_NAME;
-            String backupDBPath = CaptureActivity.EXTERNAL_STORAGE_DIRECTORY + "/" + DBHelper.DB_NAME;
-            String backupPrefsPath = CaptureActivity.EXTERNAL_STORAGE_DIRECTORY + "/preferences.xml";
-            File currentDB = new File(data, currentDBPath);
-            File backupDB = new File(sd, backupDBPath);
-            File backupPrefs = new File(sd, backupPrefsPath);
-
-            if (currentDB.canWrite() && backupDB.exists()) {
-                inputStream = new FileInputStream(backupDB);
-                outputStream = new FileOutputStream(currentDB);
-                src = inputStream.getChannel();
-                dst = outputStream.getChannel();
-                dst.transferFrom(src, 0, src.size());
-
-                input = new ObjectInputStream(new FileInputStream(backupPrefs));
-                Editor prefEdit = PreferenceManager.getDefaultSharedPreferences(this).edit();
-                prefEdit.clear();
-
-                @SuppressWarnings("unchecked") Map<String, ?> entries = (Map<String, ?>) input.readObject();
-                for (Entry<String, ?> entry : entries.entrySet()) {
-                    Object v = entry.getValue();
-                    String key = entry.getKey();
-
-                    if (v instanceof Boolean)
-                        prefEdit.putBoolean(key, ((Boolean) v).booleanValue());
-                    else if (v instanceof Float) prefEdit.putFloat(key, ((Float) v).floatValue());
-                    else if (v instanceof Integer) prefEdit.putInt(key, ((Integer) v).intValue());
-                    else if (v instanceof Long) prefEdit.putLong(key, ((Long) v).longValue());
-                    else if (v instanceof String) prefEdit.putString(key, ((String) v));
-                }
-                prefEdit.commit();
-
-                Toast toast = Toast.makeText(getApplicationContext(),
-                        getResources().getString(R.string.msg_database_restored),
-                        Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.BOTTOM, 0, 0);
-                toast.show();
-
-                this.finish();
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "restore failed", e);
-        } finally {
-            try {
-                if (input != null) {
-                    input.close();
-                }
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-
-            try {
-                if (src != null) {
-                    src.close();
-                }
-            } catch (IOException ex) {
-            }
-
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (IOException ex) {
-            }
-
-            try {
-                if (dst != null) {
-                    dst.close();
-                }
-            } catch (IOException ex) {
-            }
-
-            try {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-            } catch (IOException ex) {
-            }
-        }
-    }
-
-    private void setOKAlert(int id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(id);
-        builder.setPositiveButton(R.string.button_ok, new OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                reload();
-            }
-        });
-        builder.show();
-    }
-
-    private void reload() {
-        startActivity(getIntent());
-        finish();
     }
 }

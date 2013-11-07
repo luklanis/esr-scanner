@@ -380,17 +380,6 @@ public class DTAFileCreator {
     public int getFirstErrorId() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-        String iban = prefs.getString(PreferencesActivity.KEY_IBAN, "").replaceAll("\\s", "");
-
-        if (TextUtils.isEmpty(iban)) {
-            return R.string.msg_own_iban_is_not_set;
-        }
-
-        int result = BankProfile.validateIBAN(iban);
-        if (result != 0) {
-            return result;
-        }
-
         String[] ownAddress = prefs.getString(PreferencesActivity.KEY_ADDRESS, "")
                 .split(NEWLINE_PATTERN);
 
@@ -401,11 +390,22 @@ public class DTAFileCreator {
         return 0;
     }
 
-    public String getFirstError(List<HistoryItem> historyItems) {
+    public String getFirstError(BankProfile bankProfile, List<HistoryItem> historyItems) {
         int error = getFirstErrorId();
 
         Resources res = context.getResources();
 
+        if (error != 0) {
+            return res.getString(error);
+        }
+
+        String iban = bankProfile.getIban("").replaceAll("\\s", "");
+
+        if (TextUtils.isEmpty(iban)) {
+            return res.getString(R.string.msg_own_iban_is_not_set);
+        }
+
+        error = BankProfile.validateIBAN(iban);
         if (error != 0) {
             return res.getString(error);
         }

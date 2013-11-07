@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<preference-headers
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <header
+        android:fragment="ch.luklanis.esscan.PreferencesActivity$StreamFragment"
+        android:title="@string/preferences_stream_title"/>
+
+    <header
+        android:fragment="ch.luklanis.esscan.PreferencesActivity$DtaFormatFragment"
+        android:title="@string/preferences_dta_format_title"/>
+
+    <header
+        android:fragment="ch.luklanis.esscan.PreferencesActivity$AdvancedFragment"
+        android:title="@string/preferences_advanced_title"/>
+
+    <header
+        android:fragment="ch.luklanis.esscan.PreferencesActivity$BackupFragment"
+        android:title="@string/preferences_backup_restore_title"/>
+
+</preference-headers>

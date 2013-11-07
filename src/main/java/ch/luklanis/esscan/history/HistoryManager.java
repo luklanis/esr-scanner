@@ -19,11 +19,13 @@ package ch.luklanis.esscan.history;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.File;
@@ -37,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 
 import ch.luklanis.esscan.CaptureActivity;
+import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
@@ -115,14 +118,14 @@ public final class HistoryManager {
 
     private static final DateFormat EXPORT_DATE_TIME_FORMAT = DateFormat.getDateTimeInstance();
 
-    private final Activity activity;
+    private final Activity mActivity;
 
     public HistoryManager(Activity activity) {
-        this.activity = activity;
+        this.mActivity = activity;
     }
 
     public boolean hasHistoryItems() {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -158,7 +161,7 @@ public final class HistoryManager {
      * @return
      */
     public List<HistoryItem> buildHistoryItems(int bankId) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         List<HistoryItem> items = new ArrayList<HistoryItem>();
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -203,7 +206,7 @@ public final class HistoryManager {
     }
 
     public HistoryItem buildHistoryItem(int number) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -249,7 +252,7 @@ public final class HistoryManager {
     }
 
     public void deleteHistoryItem(int number) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -275,15 +278,18 @@ public final class HistoryManager {
     public HistoryItem addHistoryItem(PsResult result) {
         // Do not save this item to the history if the preference is turned off, or the contents are
         // considered secure.
-        //    if (!activity.getIntent().getBooleanExtra(Intents.Scan.SAVE_HISTORY, true)) {
+        //    if (!mActivity.getIntent().getBooleanExtra(Intents.Scan.SAVE_HISTORY, true)) {
         //      return;
         //    }
 
-        //	  SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
+        int bankProfileNumber = Integer.valueOf(prefs.getString(PreferencesActivity.KEY_DEFAULT_BANK_PROFILE_NUMBER,
+                "0"));
+        int newBankProfileId = getBankProfileId(bankProfileNumber);
         //	  if (!prefs.getBoolean(PreferencesActivity.KEY_REMEMBER_DUPLICATES, false)) {
         //		  deletePrevious(result.getText());
         //	  }
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -303,12 +309,17 @@ public final class HistoryManager {
                     item.setAddress(cursor.getString(7));
                 }
 
+                ContentValues values = new ContentValues();
+                values.put(DBHelper.HISTORY_TIMESTAMP_COL, result.getTimestamp());
+
+                if (bankProfileId != newBankProfileId) {
+                    values.put(DBHelper.HISTORY_BANK_ID_COL, newBankProfileId);
+                    bankProfileId = newBankProfileId;
+                }
+
                 if (bankProfileId >= 0) {
                     item.setBankProfile(getBankProfile(bankProfileId));
                 }
-
-                ContentValues values = new ContentValues();
-                values.put(DBHelper.HISTORY_TIMESTAMP_COL, result.getTimestamp());
 
                 // Update timestamp
                 db.update(DBHelper.HISTORY_TABLE_NAME,
@@ -322,12 +333,14 @@ public final class HistoryManager {
                 values.put(DBHelper.HISTORY_CODE_ROW_COL, result.getCompleteCode());
                 values.put(DBHelper.HISTORY_TIMESTAMP_COL, result.getTimestamp());
                 values.put(DBHelper.HISTORY_ADDRESS_ID_COL, -1);
-                values.put(DBHelper.HISTORY_BANK_ID_COL, BankProfile.DEFAULT_BANK_PROFILE_ID);
+                values.put(DBHelper.HISTORY_BANK_ID_COL, newBankProfileId);
 
                 // Insert the new entry into the DB.
                 db.insert(DBHelper.HISTORY_TABLE_NAME, DBHelper.HISTORY_TIMESTAMP_COL, values);
 
-                return new HistoryItem(result);
+                HistoryItem historyItem = new HistoryItem(result);
+                historyItem.setBankProfileId(newBankProfileId);
+                return historyItem;
             }
         } finally {
             close(null, db);
@@ -341,18 +354,17 @@ public final class HistoryManager {
                 itemAddressId);
     }
 
-    public void updateHistoryItemBankProfileId(String code_row, int itemAddressId) {
+    public void updateHistoryItemBankProfileId(String code_row, int bankProfileId) {
         updateHistoryItemInteger(ID_HISTORY_BANK_COL_PROJECTION,
                 DBHelper.HISTORY_BANK_ID_COL,
-                code_row,
-                itemAddressId);
+                code_row, bankProfileId);
     }
 
     public void updateHistoryItemInteger(String[] projection, String column, String code_row,
                                          int itemAddressId) {
         // As we're going to do an update only we don't need need to worry
         // about the preferences; if the item wasn't saved it won't be updated
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -408,7 +420,7 @@ public final class HistoryManager {
                                    String item) {
         // As we're going to do an update only we don't need to worry
         // about the preferences; if the item wasn't saved it won't be updated
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -441,7 +453,7 @@ public final class HistoryManager {
 
     @SuppressWarnings("unused")
     private void deletePrevious(String text) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         try {
             db = helper.getWritableDatabase();
@@ -454,7 +466,7 @@ public final class HistoryManager {
     }
 
     public void trimHistory() {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -492,7 +504,7 @@ public final class HistoryManager {
      */
     CharSequence buildHistory() {
         StringBuilder historyText = new StringBuilder(1000);
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -536,7 +548,7 @@ public final class HistoryManager {
     }
 
     void clearHistory() {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         try {
             db = helper.getWritableDatabase();
@@ -576,7 +588,7 @@ public final class HistoryManager {
     }
 
     public void updateAddress(int addressId, String address) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
 
         try {
@@ -591,7 +603,7 @@ public final class HistoryManager {
     }
 
     public int addAddress(String account, String address) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         int number = 0;
@@ -624,7 +636,7 @@ public final class HistoryManager {
     }
 
     public List<String> getAddresses(String account) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         List<String> addresses = new ArrayList<String>();
@@ -661,7 +673,7 @@ public final class HistoryManager {
     }
 
     public String getAddress(int addressId) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -696,7 +708,7 @@ public final class HistoryManager {
     }
 
     public int getAddressId(String account, int addressNumber) {
-        SQLiteOpenHelper helper = new DBHelper(activity);
+        SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
         try {
@@ -718,4 +730,18 @@ public final class HistoryManager {
         }
     }
 
+    public List<BankProfile> getBankProfiles() {
+        List<String> addresses = getAddresses("BP");
+        List<BankProfile> banks = new ArrayList<BankProfile>();
+
+        for (String bank : addresses) {
+            banks.add(new BankProfile(bank));
+        }
+
+        return banks;
+    }
+
+    public int getBankProfileId(int bankNumber) {
+        return getAddressId("BP", bankNumber);
+    }
 }

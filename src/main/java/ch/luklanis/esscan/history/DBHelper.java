@@ -126,7 +126,9 @@ public final class DBHelper extends SQLiteOpenHelper {
             }
 
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
-        } else if (oldVersion == 7) {
+        }
+
+        if (oldVersion == 7) {
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
 
             sqLiteDatabase.execSQL("ALTER TABLE " + HISTORY_TABLE_NAME + " RENAME TO history_old");
@@ -150,7 +152,9 @@ public final class DBHelper extends SQLiteOpenHelper {
                     "FROM history_old");
 
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
-        } else if (oldVersion == 8) {
+        }
+
+        if (oldVersion == 8) {
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
 
             sqLiteDatabase.execSQL("ALTER TABLE " + HISTORY_TABLE_NAME + " RENAME TO history_old");
@@ -174,10 +178,6 @@ public final class DBHelper extends SQLiteOpenHelper {
                     "FROM history_old");
 
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
-        } else {
-            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + HISTORY_TABLE_NAME);
-            sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ADDRESS_TABLE_NAME);
-            onCreate(sqLiteDatabase);
         }
     }
 

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="preferences_only_copy"
+        android:title="@string/preferences_only_copy_title"
+        android:summary="@string/preferences_only_copy_summary"/>
+
+    <ListPreference
+        android:key="preferences_copy_part"
+        android:title="@string/preferences_copy_part_title"
+        android:entries="@array/copy_part"
+        android:entryValues="@array/copy_part_values"
+        android:defaultValue="0"
+        android:dependency="preferences_only_copy"/>
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="preferences_play_beep"
+        android:title="@string/preferences_play_beep_title"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="preferences_vibrate"
+        android:title="@string/preferences_vibrate_title"/>
+
+    <CheckBoxPreference
+        android:key="preferences_only_macro_focus"
+        android:defaultValue="false"
+        android:title="@string/preferences_only_macro_focus_title"/>
+
+    <CheckBoxPreference
+        android:key="preferences_no_continous_auto_focus"
+        android:defaultValue="true"
+        android:title="@string/preferences_no_continous_auto_focus_title"
+        android:summary="@string/preferences_no_continous_auto_focus_summary"/>
+
+    <CheckBoxPreference
+        android:key="preferences_enable_torch"
+        android:defaultValue="false"
+        android:title="@string/preferences_enable_torch_title"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="preferences_reverse_image"
+        android:title="@string/preferences_reverse_image_title"
+        android:summary="@string/preferences_reverse_image_summary"/>
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="preferences_show_ocr_result"
+        android:title="@string/preferences_show_ocr_result_title"/>
+
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="preferences_show_scan_result"
+        android:title="@string/preferences_show_scan_result_title"
+        android:summary="@string/preferences_show_scan_result_summary"/>
+
+</PreferenceScreen>

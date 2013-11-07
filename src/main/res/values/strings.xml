@@ -120,6 +120,7 @@
     <string name="preferences_no_continous_auto_focus_title">No continues auto focus</string>
     <string name="preferences_no_continous_auto_focus_summary">Use standard auto focus only</string>
     <string name="preferences_enable_torch_title">Enable front light</string>
+    <string name="preferences_default_bank_title">Default bank profile</string>
     <string name="preferences_dta_format_title">DTA format settings</string>
     <string name="preferences_advanced_title">Advanced settings</string>
     <string name="preferences_play_beep_title">Play beep</string>
@@ -181,5 +182,10 @@
     <string name="button_new">New</string>
     <string name="button_choose">Choose</string>
     <string name="bank_profile_iban">IBAN</string>
+    <string name="preferences_bank_profile_title">Bank profiles</string>
+    <string name="button_edit">Edit</string>
+    <string name="preferences_new_bank_profile">New bank profile</string>
+    <string name="preferences_edit_bank_profile">Edit default bank profile</string>
+    <string name="preferences_default_bank_summary">Select default bank profile</string>
 
 </resources>

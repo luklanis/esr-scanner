@@ -480,7 +480,8 @@ public final class HistoryActivity extends FragmentActivity
         PsDetailFragment fragment = new PsDetailFragment();
         fragment.setArguments(arguments);
 
-        getFragmentManager().beginTransaction().replace(R.id.ps_detail_container, fragment)
+        getFragmentManager().beginTransaction()
+                .replace(R.id.ps_detail_container, fragment)
                 .commit();
     }
 
@@ -595,21 +596,13 @@ public final class HistoryActivity extends FragmentActivity
     }
 
     private void createDTAFile(final Message message) {
-        List<String> jsonBankProfiles = mHistoryManager.getAddresses("BP");
-
-        if (jsonBankProfiles.size() == 0) {
-            Uri uri = createDTAFile(BankProfile.DEFAULT_BANK_PROFILE_ID);
-            message.obj = uri;
-            message.sendToTarget();
-            return;
-        }
+        List<BankProfile> bankProfiles = mHistoryManager.getBankProfiles();
 
         List<String> banks = new ArrayList<String>();
 
-        for (String json : jsonBankProfiles) {
-            banks.add(new BankProfile(json).getName());
+        for (BankProfile bankProfile : bankProfiles) {
+            banks.add(bankProfile.getName());
         }
-        banks.add(0, getResources().getString(R.string.bank_profile_default));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.bank_profile_dialog_title)
@@ -618,7 +611,7 @@ public final class HistoryActivity extends FragmentActivity
 
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                int bankProfileId = mHistoryManager.getAddressId("BP", which - 1);
+                                int bankProfileId = mHistoryManager.getBankProfileId(which - 1);
                                 Uri uri = createDTAFile(bankProfileId);
                                 message.obj = uri;
                                 message.sendToTarget();
@@ -635,21 +628,13 @@ public final class HistoryActivity extends FragmentActivity
 
     private Uri createDTAFile(int bankProfileId) {
         List<HistoryItem> historyItems = mHistoryManager.buildHistoryItemsForDTA(bankProfileId);
-        String error = dtaFileCreator.getFirstError(historyItems);
+        BankProfile bankProfile = mHistoryManager.getBankProfile(bankProfileId);
 
-        if (error != "") {
+        String error = dtaFileCreator.getFirstError(bankProfile, historyItems);
+
+        if (!TextUtils.isEmpty(error)) {
             setOkAlert(error);
             return null;
-        }
-
-        BankProfile bankProfile;
-        if (bankProfileId != BankProfile.DEFAULT_BANK_PROFILE_ID) {
-            bankProfile = mHistoryManager.getBankProfile(bankProfileId);
-        } else {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            bankProfile = new BankProfile(getResources().getString(R.string.bank_profile_default),
-                    prefs.getString(PreferencesActivity.KEY_IBAN, ""),
-                    prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "26"));
         }
 
         CharSequence dta = dtaFileCreator.buildDTA(bankProfile, historyItems);
@@ -661,7 +646,8 @@ public final class HistoryActivity extends FragmentActivity
             Uri dtaFileUri = dtaFileCreator.getDTAFileUri();
             String dtaFileName = dtaFileUri.getLastPathSegment();
 
-            new HistoryExportUpdateAsyncTask(mHistoryManager, dtaFileName).execute(historyItems.toArray(new HistoryItem[historyItems.size()]));
+            new HistoryExportUpdateAsyncTask(mHistoryManager,
+                    dtaFileName).execute(historyItems.toArray(new HistoryItem[historyItems.size()]));
 
             this.dtaFileCreator = new DTAFileCreator(getApplicationContext());
 

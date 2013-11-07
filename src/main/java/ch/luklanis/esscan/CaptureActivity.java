@@ -59,12 +59,15 @@ import com.googlecode.tesseract.android.TessBaseAPI;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
+import java.util.List;
 
 import ch.luklanis.esscan.camera.CameraManager;
 import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
+import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.HistoryActivity;
+import ch.luklanis.esscan.history.HistoryItem;
 import ch.luklanis.esscan.history.HistoryManager;
 import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
@@ -789,6 +792,20 @@ public final class CaptureActivity extends Activity
 
                 if (oldStorage != null && oldStorage.exists()) {
                     DeleteRecursive(new File(oldStorage.toString()));
+                }
+
+                if (lastVersion <= 40) {
+                    int bankProfileId = mHistoryManager.addBankProfile(new BankProfile("Default",
+                            prefs.getString(PreferencesActivity.KEY_IBAN, ""),
+                            prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "")));
+
+                    List<HistoryItem> historyItemList = mHistoryManager.buildHistoryItems(
+                            BankProfile.DEFAULT_BANK_PROFILE_ID);
+
+                    for (HistoryItem historyItem : historyItemList) {
+                        mHistoryManager.updateHistoryItemBankProfileId(historyItem.getResult()
+                                .getCompleteCode(), bankProfileId);
+                    }
                 }
 
                 // Record the last version for which we last displayed the
