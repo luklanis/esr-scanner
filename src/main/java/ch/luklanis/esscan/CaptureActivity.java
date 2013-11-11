@@ -794,17 +794,18 @@ public final class CaptureActivity extends Activity
                     DeleteRecursive(new File(oldStorage.toString()));
                 }
 
-                if (lastVersion <= 40) {
+                if (lastVersion <= 42) {
                     int bankProfileId = mHistoryManager.addBankProfile(new BankProfile("Default",
                             prefs.getString(PreferencesActivity.KEY_IBAN, ""),
                             prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "")));
 
-                    List<HistoryItem> historyItemList = mHistoryManager.buildHistoryItems(
-                            BankProfile.DEFAULT_BANK_PROFILE_ID);
+                    List<HistoryItem> historyItemList = mHistoryManager.buildAllHistoryItems();
 
                     for (HistoryItem historyItem : historyItemList) {
-                        mHistoryManager.updateHistoryItemBankProfileId(historyItem.getResult()
-                                .getCompleteCode(), bankProfileId);
+                        if (historyItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
+                            mHistoryManager.updateHistoryItemBankProfileId(historyItem.getResult()
+                                    .getCompleteCode(), bankProfileId);
+                        }
                     }
                 }
 

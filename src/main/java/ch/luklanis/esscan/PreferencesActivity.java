@@ -326,7 +326,7 @@ public class PreferencesActivity extends PreferenceActivity
      * can get to by tapping an item in the first preferences fragment.
      */
     public static class EditBankProfile extends PreferenceFragment {
-        private EditTextPreference mBankProfileNumberPreference;
+        private String mBankProfileNumber;
         private EditTextPreference mNamePreference;
         private EditTextPreference mIbanPreference;
         private ListPreference mExecutionDayPreference;
@@ -343,8 +343,9 @@ public class PreferencesActivity extends PreferenceActivity
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.fragmented_edit_bank_profile);
 
-            mBankProfileNumberPreference = (EditTextPreference) findPreference(
-                    KEY_DEFAULT_BANK_PROFILE_NUMBER);
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(
+                    getActivity());
+            mBankProfileNumber = sharedPreferences.getString(KEY_DEFAULT_BANK_PROFILE_NUMBER, "0");
             mNamePreference = (EditTextPreference) findPreference(KEY_BANK_PROFILE_NAME);
             mIbanPreference = (EditTextPreference) findPreference(KEY_IBAN);
             mExecutionDayPreference = (ListPreference) findPreference(KEY_EXECUTION_DAY);
@@ -356,7 +357,7 @@ public class PreferencesActivity extends PreferenceActivity
 
             mHistoryManager = new HistoryManager(getActivity());
 
-            mBankId = mHistoryManager.getBankProfileId(Integer.valueOf(mBankProfileNumberPreference.getText()));
+            mBankId = mHistoryManager.getBankProfileId(Integer.valueOf(mBankProfileNumber));
             BankProfile bankProfile = mHistoryManager.getBankProfile(mBankId);
 
             mNamePreference.setText(bankProfile.getName());

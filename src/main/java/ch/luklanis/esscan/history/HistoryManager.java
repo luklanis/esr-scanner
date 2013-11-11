@@ -50,14 +50,6 @@ import ch.luklanis.esscan.paymentslip.PsResult;
  */
 public final class HistoryManager {
 
-    private static final String TAG = HistoryManager.class.getSimpleName();
-
-    private static final int MAX_ITEMS = 500;
-
-    private static final String[] HISTORY_COLUMNS = {DBHelper.HISTORY_CODE_ROW_COL, DBHelper.HISTORY_TIMESTAMP_COL, DBHelper.HISTORY_ADDRESS_ID_COL, DBHelper.HISTORY_AMOUNT_COL, DBHelper.HISTORY_REASON_COL, DBHelper.HISTORY_FILE_NAME_COL};
-
-    private static final String[] ADDRESS_COLUMNS = {DBHelper.ADDRESS_ACCOUNT_COL, DBHelper.ADDRESS_TIMESTAMP_COL, DBHelper.ADDRESS_ADDRESS_COL};
-
     static final String ITEM_WHERE_CODE_ROW_QUERY = "SELECT " +
             "hi." + DBHelper.HISTORY_CODE_ROW_COL + ", " +
             "hi." + DBHelper.HISTORY_TIMESTAMP_COL + ", " +
@@ -84,8 +76,11 @@ public final class HistoryManager {
             "hi." + DBHelper.HISTORY_REASON_COL + ", " +
             "hi." + DBHelper.HISTORY_FILE_NAME_COL + ", " +
             "hi." + DBHelper.HISTORY_BANK_ID_COL + ", " +
+            "bp." + DBHelper.ADDRESS_ADDRESS_COL + ", " +
             "ad." + DBHelper.ADDRESS_ADDRESS_COL + " " +
             "FROM " + DBHelper.HISTORY_TABLE_NAME + " AS hi " +
+            "LEFT OUTER JOIN " + DBHelper.ADDRESS_TABLE_NAME + " AS bp " +
+            "ON hi." + DBHelper.HISTORY_BANK_ID_COL + " = bp.id " +
             "LEFT OUTER JOIN " + DBHelper.ADDRESS_TABLE_NAME + " AS ad " +
             "ON hi." + DBHelper.HISTORY_ADDRESS_ID_COL + " = ad.id " +
             "ORDER BY hi." + DBHelper.HISTORY_TIMESTAMP_COL + " DESC";
@@ -98,30 +93,75 @@ public final class HistoryManager {
             "hi." + DBHelper.HISTORY_REASON_COL + ", " +
             "hi." + DBHelper.HISTORY_FILE_NAME_COL + ", " +
             "hi." + DBHelper.HISTORY_BANK_ID_COL + ", " +
+            "bp." + DBHelper.ADDRESS_ADDRESS_COL + ", " +
             "ad." + DBHelper.ADDRESS_ADDRESS_COL + " " +
             "FROM " + DBHelper.HISTORY_TABLE_NAME + " AS hi " +
+            "LEFT OUTER JOIN " + DBHelper.ADDRESS_TABLE_NAME + " AS bp " +
+            "ON hi." + DBHelper.HISTORY_BANK_ID_COL + " = bp.id " +
             "LEFT OUTER JOIN " + DBHelper.ADDRESS_TABLE_NAME + " AS ad " +
             "ON hi." + DBHelper.HISTORY_ADDRESS_ID_COL + " = ad.id " +
             "WHERE hi." + DBHelper.HISTORY_FILE_NAME_COL + " IS NULL " +
             "AND hi." + DBHelper.HISTORY_BANK_ID_COL + " = %d " +
             "ORDER BY hi." + DBHelper.HISTORY_TIMESTAMP_COL + " DESC";
 
+    private static final String TAG = HistoryManager.class.getSimpleName();
+    private static final int MAX_ITEMS = 500;
+    private static final String[] HISTORY_COLUMNS = {DBHelper.HISTORY_CODE_ROW_COL, DBHelper.HISTORY_TIMESTAMP_COL, DBHelper.HISTORY_ADDRESS_ID_COL, DBHelper.HISTORY_AMOUNT_COL, DBHelper.HISTORY_REASON_COL, DBHelper.HISTORY_FILE_NAME_COL};
+    private static final String[] ADDRESS_COLUMNS = {DBHelper.ADDRESS_ACCOUNT_COL, DBHelper.ADDRESS_TIMESTAMP_COL, DBHelper.ADDRESS_ADDRESS_COL};
     private static final String[] COUNT_COLUMN = {"COUNT(1)"};
-
     private static final String[] ID_COL_PROJECTION = {DBHelper.ID_COL};
     private static final String[] ID_HISTORY_BANK_COL_PROJECTION = {DBHelper.ID_COL, DBHelper.HISTORY_BANK_ID_COL};
     private static final String[] ID_HISTORY_ADDRESS_COL_PROJECTION = {DBHelper.ID_COL, DBHelper.HISTORY_ADDRESS_ID_COL};
     private static final String[] ID_HISTORY_AMOUNT_COL_PROJECTION = {DBHelper.ID_COL, DBHelper.HISTORY_AMOUNT_COL};
     private static final String[] ID_HISTORY_FILE_NAME_COL_PROJECTION = {DBHelper.ID_COL, DBHelper.HISTORY_FILE_NAME_COL};
-
     private static final String[] ID_ADDRESS_COUNT_PROJECTION = {"COUNT(" + DBHelper.ID_COL + ")"};
-
     private static final DateFormat EXPORT_DATE_TIME_FORMAT = DateFormat.getDateTimeInstance();
-
     private final Activity mActivity;
 
     public HistoryManager(Activity activity) {
         this.mActivity = activity;
+    }
+
+    static Uri saveHistory(String history) {
+        File bsRoot = new File(Environment.getExternalStorageDirectory(),
+                CaptureActivity.EXTERNAL_STORAGE_DIRECTORY);
+        File historyRoot = new File(bsRoot, "History");
+        if (!historyRoot.exists() && !historyRoot.mkdirs()) {
+            Log.w(TAG, "Couldn't make dir " + historyRoot);
+            return null;
+        }
+        File historyFile = new File(historyRoot, "history-" + System.currentTimeMillis() + ".csv");
+        OutputStreamWriter out = null;
+        try {
+            out = new OutputStreamWriter(new FileOutputStream(historyFile),
+                    Charset.forName("UTF-8"));
+            out.write(history);
+            return Uri.parse("file://" + historyFile.getAbsolutePath());
+        } catch (IOException ioe) {
+            Log.w(TAG, "Couldn't access file " + historyFile + " due to " + ioe);
+            return null;
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ioe) {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+    private static String messageHistoryField(String value) {
+        return value == null ? "" : value.replace("\"", "\"\"");
+    }
+
+    private static void close(Cursor cursor, SQLiteDatabase database) {
+        if (cursor != null) {
+            cursor.close();
+        }
+        if (database != null) {
+            database.close();
+        }
     }
 
     public boolean hasHistoryItems() {
@@ -193,8 +233,10 @@ public final class HistoryManager {
                         dtaFile,
                         bankProfileId);
 
+                item.setBankProfile(new BankProfile(cursor.getString(7)));
+
                 if (addressNumber != -1) {
-                    item.setAddress(cursor.getString(7));
+                    item.setAddress(cursor.getString(8));
                 }
 
                 items.add(item);
@@ -234,12 +276,10 @@ public final class HistoryManager {
                         dtaFile,
                         bankProfileId);
 
-                if (addressId != -1) {
-                    item.setAddress(cursor.getString(7));
-                }
+                item.setBankProfile(new BankProfile(cursor.getString(7)));
 
-                if (bankProfileId >= 0) {
-                    item.setBankProfile(getBankProfile(bankProfileId));
+                if (addressId != -1) {
+                    item.setAddress(cursor.getString(8));
                 }
 
                 return item;
@@ -294,54 +334,20 @@ public final class HistoryManager {
         Cursor cursor = null;
         try {
             db = helper.getWritableDatabase();
-            cursor = db.rawQuery(ITEM_WHERE_CODE_ROW_QUERY, new String[]{result.getCompleteCode()});
-            if (cursor.moveToNext()) {
+            ContentValues values = new ContentValues();
+            values.put(DBHelper.HISTORY_CODE_ROW_COL, result.getCompleteCode());
+            values.put(DBHelper.HISTORY_TIMESTAMP_COL, result.getTimestamp());
+            values.put(DBHelper.HISTORY_ADDRESS_ID_COL, -1);
+            values.put(DBHelper.HISTORY_BANK_ID_COL, newBankProfileId);
 
-                int addressId = cursor.getInt(2);
-                int bankProfileId = cursor.getInt(6);
-                HistoryItem item = new HistoryItem(result,
-                        cursor.getString(3),
-                        addressId,
-                        cursor.getString(4),
-                        bankProfileId);
+            // Insert the new entry into the DB.
+            db.insert(DBHelper.HISTORY_TABLE_NAME, DBHelper.HISTORY_TIMESTAMP_COL, values);
 
-                if (addressId != -1) {
-                    item.setAddress(cursor.getString(7));
-                }
+            HistoryItem historyItem = new HistoryItem(result);
+            historyItem.setBankProfileId(newBankProfileId);
+            historyItem.setBankProfile(getBankProfile(newBankProfileId));
 
-                ContentValues values = new ContentValues();
-                values.put(DBHelper.HISTORY_TIMESTAMP_COL, result.getTimestamp());
-
-                if (bankProfileId != newBankProfileId) {
-                    values.put(DBHelper.HISTORY_BANK_ID_COL, newBankProfileId);
-                    bankProfileId = newBankProfileId;
-                }
-
-                if (bankProfileId >= 0) {
-                    item.setBankProfile(getBankProfile(bankProfileId));
-                }
-
-                // Update timestamp
-                db.update(DBHelper.HISTORY_TABLE_NAME,
-                        values,
-                        DBHelper.HISTORY_CODE_ROW_COL + "=?",
-                        new String[]{result.getCompleteCode()});
-
-                return item;
-            } else {
-                ContentValues values = new ContentValues();
-                values.put(DBHelper.HISTORY_CODE_ROW_COL, result.getCompleteCode());
-                values.put(DBHelper.HISTORY_TIMESTAMP_COL, result.getTimestamp());
-                values.put(DBHelper.HISTORY_ADDRESS_ID_COL, -1);
-                values.put(DBHelper.HISTORY_BANK_ID_COL, newBankProfileId);
-
-                // Insert the new entry into the DB.
-                db.insert(DBHelper.HISTORY_TABLE_NAME, DBHelper.HISTORY_TIMESTAMP_COL, values);
-
-                HistoryItem historyItem = new HistoryItem(result);
-                historyItem.setBankProfileId(newBankProfileId);
-                return historyItem;
-            }
+            return historyItem;
         } finally {
             close(null, db);
         }
@@ -357,7 +363,8 @@ public final class HistoryManager {
     public void updateHistoryItemBankProfileId(String code_row, int bankProfileId) {
         updateHistoryItemInteger(ID_HISTORY_BANK_COL_PROJECTION,
                 DBHelper.HISTORY_BANK_ID_COL,
-                code_row, bankProfileId);
+                code_row,
+                bankProfileId);
     }
 
     public void updateHistoryItemInteger(String[] projection, String column, String code_row,
@@ -558,35 +565,6 @@ public final class HistoryManager {
         }
     }
 
-    static Uri saveHistory(String history) {
-        File bsRoot = new File(Environment.getExternalStorageDirectory(),
-                CaptureActivity.EXTERNAL_STORAGE_DIRECTORY);
-        File historyRoot = new File(bsRoot, "History");
-        if (!historyRoot.exists() && !historyRoot.mkdirs()) {
-            Log.w(TAG, "Couldn't make dir " + historyRoot);
-            return null;
-        }
-        File historyFile = new File(historyRoot, "history-" + System.currentTimeMillis() + ".csv");
-        OutputStreamWriter out = null;
-        try {
-            out = new OutputStreamWriter(new FileOutputStream(historyFile),
-                    Charset.forName("UTF-8"));
-            out.write(history);
-            return Uri.parse("file://" + historyFile.getAbsolutePath());
-        } catch (IOException ioe) {
-            Log.w(TAG, "Couldn't access file " + historyFile + " due to " + ioe);
-            return null;
-        } finally {
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException ioe) {
-                    // do nothing
-                }
-            }
-        }
-    }
-
     public void updateAddress(int addressId, String address) {
         SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
@@ -656,19 +634,6 @@ public final class HistoryManager {
             return addresses;
         } finally {
             close(null, db);
-        }
-    }
-
-    private static String messageHistoryField(String value) {
-        return value == null ? "" : value.replace("\"", "\"\"");
-    }
-
-    private static void close(Cursor cursor, SQLiteDatabase database) {
-        if (cursor != null) {
-            cursor.close();
-        }
-        if (database != null) {
-            database.close();
         }
     }
 
