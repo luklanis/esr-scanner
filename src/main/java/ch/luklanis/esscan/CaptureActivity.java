@@ -802,7 +802,7 @@ public final class CaptureActivity extends Activity
                     List<HistoryItem> historyItemList = mHistoryManager.buildAllHistoryItems();
 
                     for (HistoryItem historyItem : historyItemList) {
-                        if (historyItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
+                        if (historyItem.getBankProfileId() == BankProfile.INVALID_BANK_PROFILE_ID) {
                             mHistoryManager.updateHistoryItemBankProfileId(historyItem.getResult()
                                     .getCompleteCode(), bankProfileId);
                         }

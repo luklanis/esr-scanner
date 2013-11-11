@@ -95,7 +95,7 @@ public final class DBHelper extends SQLiteOpenHelper {
                     HISTORY_AMOUNT_COL + ", " +
                     "NULL, " +
                     HISTORY_FILE_NAME_COL + ", " +
-                    String.valueOf(BankProfile.DEFAULT_BANK_PROFILE_ID) + " " +
+                    String.valueOf(BankProfile.INVALID_BANK_PROFILE_ID) + " " +
                     "FROM history_old");
 
             Cursor cursor = sqLiteDatabase.query(HISTORY_TABLE_NAME,
@@ -148,7 +148,7 @@ public final class DBHelper extends SQLiteOpenHelper {
                     HISTORY_AMOUNT_COL + ", " +
                     "NULL, " +
                     HISTORY_FILE_NAME_COL + ", " +
-                    String.valueOf(BankProfile.DEFAULT_BANK_PROFILE_ID) + " " +
+                    String.valueOf(BankProfile.INVALID_BANK_PROFILE_ID) + " " +
                     "FROM history_old");
 
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");
@@ -174,7 +174,7 @@ public final class DBHelper extends SQLiteOpenHelper {
                     HISTORY_AMOUNT_COL + ", " +
                     HISTORY_REASON_COL + ", " +
                     HISTORY_FILE_NAME_COL + ", " +
-                    String.valueOf(BankProfile.DEFAULT_BANK_PROFILE_ID) + " " +
+                    String.valueOf(BankProfile.INVALID_BANK_PROFILE_ID) + " " +
                     "FROM history_old");
 
             sqLiteDatabase.execSQL("DROP TABLE IF EXISTS history_old");

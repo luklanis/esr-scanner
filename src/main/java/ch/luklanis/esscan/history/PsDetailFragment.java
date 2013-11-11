@@ -405,7 +405,7 @@ public class PsDetailFragment extends Fragment {
 //    private void showBankProfileEditDialog() {
 //        BankProfile bankProfile = mHistoryItem.getBankProfile();
 //
-//        if (!isNewBankProfile && mHistoryItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
+//        if (!isNewBankProfile && mHistoryItem.getBankProfileId() == BankProfile.INVALID_BANK_PROFILE_ID) {
 //            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
 //            bankProfile = new BankProfile(prefs.getString(PreferencesActivity.KEY_BANK_PROFILE_NAME,
 //                    getResources().getString(R.string.bank_profile_default)),
@@ -433,7 +433,7 @@ public class PsDetailFragment extends Fragment {
 //                    mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
 //                            .getCompleteCode(), bankProfileId);
 //                    mHistoryItem.setBankProfileId(bankProfileId);
-//                } else if (mHistoryItem.getBankProfileId() == BankProfile.DEFAULT_BANK_PROFILE_ID) {
+//                } else if (mHistoryItem.getBankProfileId() == BankProfile.INVALID_BANK_PROFILE_ID) {
 //                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
 //                            getActivity());
 //                    prefs.edit()

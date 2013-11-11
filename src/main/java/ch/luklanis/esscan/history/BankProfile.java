@@ -21,7 +21,7 @@ import ch.luklanis.esscan.R;
 
 public class BankProfile {
 
-    public static final int DEFAULT_BANK_PROFILE_ID = -1;
+    public static final int INVALID_BANK_PROFILE_ID = -1;
     private String name;
     private String iban;
     private int executionDay;
