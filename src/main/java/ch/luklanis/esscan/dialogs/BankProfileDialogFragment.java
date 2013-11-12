@@ -1,4 +1,4 @@
-package ch.luklanis.esscan.history;/*
+package ch.luklanis.esscan.dialogs;/*
  * Copyright 2013 Lukas Landis
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.NumberPicker;
 
 import ch.luklanis.esscan.R;
+import ch.luklanis.esscan.history.BankProfile;
 
 public class BankProfileDialogFragment extends DialogFragment {
 

@@ -18,8 +18,6 @@ package ch.luklanis.esscan.history;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,17 +26,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
-import android.text.ClipboardManager;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -47,17 +40,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ch.luklanis.esscan.CaptureActivity;
+import ch.luklanis.esscan.EsrBaseActivity;
 import ch.luklanis.esscan.Intents;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 import ch.luklanis.esscan.codesend.ESRSenderHttp;
-import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
+import ch.luklanis.esscan.dialogs.BankProfileListDialog;
+import ch.luklanis.esscan.dialogs.CancelOkDialog;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
-public final class HistoryActivity extends FragmentActivity
-        implements HistoryFragment.HistoryCallbacks, Handler.Callback, GetSendServiceCallback {
+public final class HistoryActivity extends EsrBaseActivity
+        implements HistoryFragment.HistoryCallbacks, Handler.Callback {
 
     public static final String ACTION_SHOW_RESULT = "action_show_result";
     public static final String EXTRA_CODE_ROW = "extra_code_row";
@@ -89,14 +84,10 @@ public final class HistoryActivity extends FragmentActivity
     };
     private boolean twoPane;
     private HistoryManager mHistoryManager;
-    private int lastAlertId;
     private DTAFileCreator dtaFileCreator;
-    private CheckBox dontShowAgainCheckBox;
     private Handler mDataSentHandler = new Handler(this);
     private int[] tmpPositions;
     private HistoryFragment historyFragment;
-    private ESRSenderHttp mEsrSenderHttp;
-    private ProgressDialog mSendingProgressDialog;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -105,7 +96,7 @@ public final class HistoryActivity extends FragmentActivity
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        this.historyFragment = ((HistoryFragment) getSupportFragmentManager().findFragmentById(R.id.history));
+        this.historyFragment = (HistoryFragment) getFragmentManager().findFragmentById(R.id.history);
 
         if (findViewById(R.id.ps_detail_container) != null) {
             twoPane = true;
@@ -118,10 +109,6 @@ public final class HistoryActivity extends FragmentActivity
 
         dtaFileCreator = new DTAFileCreator(this);
         mHistoryManager = new HistoryManager(this);
-
-        mSendingProgressDialog = new ProgressDialog(this);
-        mSendingProgressDialog.setTitle(R.string.msg_wait_title);
-        mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
 
         Intent intent = getIntent();
 
@@ -207,20 +194,14 @@ public final class HistoryActivity extends FragmentActivity
             }
             break;
             case R.id.history_menu_clear: {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(R.string.msg_sure);
-                builder.setCancelable(true);
-                builder.setPositiveButton(R.string.button_ok,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int i2) {
-                                mHistoryManager.clearHistory();
-                                dialog.dismiss();
-                                finish();
+                new CancelOkDialog(R.string.msg_sure).setOkClickListener(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mHistoryManager.clearHistory();
+                        dialogInterface.dismiss();
+                        finish();
                             }
-                        });
-                builder.setNegativeButton(R.string.button_cancel, null);
-                builder.show();
+                }).show(getFragmentManager(), "HistoryActivity.onOptionsItemSelected");
             }
             break;
             case android.R.id.home: {
@@ -242,20 +223,7 @@ public final class HistoryActivity extends FragmentActivity
                 if (fragment != null) {
                     String completeCode = fragment.getHistoryItem().getResult().getCompleteCode();
 
-                    ClipboardManager clipboardManager = (ClipboardManager) getSystemService(
-                            CLIPBOARD_SERVICE);
-                    clipboardManager.setText(completeCode);
-
-                    // clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult",
-                    // ocrResultView.getText()));
-                    // if (clipboardManager.hasPrimaryClip()) {
-                    if (clipboardManager.hasText()) {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                R.string.msg_copied,
-                                Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.BOTTOM, 0, 0);
-                        toast.show();
-                    }
+                    addCodeRowToClipboard(completeCode);
                 }
             }
             break;
@@ -285,21 +253,13 @@ public final class HistoryActivity extends FragmentActivity
         return true;
     }
 
-    private void setCancelOkAlert(FragmentActivity activity, int id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        final Activity caller = activity;
-
-        builder.setMessage(id)
-                .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        caller.finish();
-                    }
-                });
-
-        builder.show();
+    private void setCancelOkAlert(final Activity activity, int id) {
+        new CancelOkDialog(id).setOkClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                activity.finish();
+            }
+        }).show(getFragmentManager(), "HistoryActivity.setCancelOkAlert");
     }
 
     @Override
@@ -316,8 +276,8 @@ public final class HistoryActivity extends FragmentActivity
         if (twoPane) {
             tmpPositions[0] = ListView.INVALID_POSITION;
             tmpPositions[1] = ListView.INVALID_POSITION;
-            PsDetailFragment oldFragment = (PsDetailFragment) getFragmentManager().findFragmentById(
-                    R.id.ps_detail_container);
+            PsDetailFragment oldFragment;
+            oldFragment = (PsDetailFragment) getFragmentManager().findFragmentById(R.id.ps_detail_container);
             if (oldPosition != ListView.INVALID_POSITION && oldFragment != null) {
                 int error = oldFragment.save();
 
@@ -341,6 +301,40 @@ public final class HistoryActivity extends FragmentActivity
             detailIntent.putExtra(PsDetailFragment.ARG_POSITION, newPosition);
             startActivityForResult(detailIntent, DETAILS_REQUEST_CODE);
         }
+    }
+
+    private void setCancelOkAlert(int msgId, boolean finish) {
+        CancelOkDialog cancelOkDialog = new CancelOkDialog(msgId).setCancelClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                historyFragment.setActivatedPosition(tmpPositions[0]);
+
+                tmpPositions[0] = ListView.INVALID_POSITION;
+                tmpPositions[1] = ListView.INVALID_POSITION;
+            }
+        });
+
+        if (finish) {
+            cancelOkDialog.setOkClickListener(new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }
+            });
+        } else {
+            cancelOkDialog.setOkClickListener(new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    setNewDetails(tmpPositions[1]);
+
+                    tmpPositions[0] = ListView.INVALID_POSITION;
+                    tmpPositions[1] = ListView.INVALID_POSITION;
+                }
+            });
+        }
+        cancelOkDialog.show(getFragmentManager(), "HistoryActivity.onItemSelected");
     }
 
     @Override
@@ -396,6 +390,11 @@ public final class HistoryActivity extends FragmentActivity
     }
 
     @Override
+    protected Handler getDataSentHandler() {
+        return mDataSentHandler;
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             PsDetailFragment oldFragment = (PsDetailFragment) getFragmentManager().findFragmentById(
@@ -448,7 +447,7 @@ public final class HistoryActivity extends FragmentActivity
                         getResources().getString(R.string.history_item_sent));
 
                 HistoryItem historyItem = mHistoryManager.buildHistoryItem(message.arg1);
-                this.historyFragment.updatePosition(message.arg1, historyItem);
+                historyFragment.updatePosition(message.arg1, historyItem);
 
                 msgId = R.string.msg_coderow_sent;
             }
@@ -513,88 +512,6 @@ public final class HistoryActivity extends FragmentActivity
         return intent;
     }
 
-    private void setOkAlert(int id) {
-        setOkAlert(getResources().getString(id));
-    }
-
-    private void setOkAlert(String message) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(message);
-        builder.setPositiveButton(R.string.button_ok, null);
-        builder.show();
-    }
-
-    private void setCancelOkAlert(int id, boolean finish) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setMessage(id)
-                .setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        historyFragment.setActivatedPosition(tmpPositions[0]);
-
-                        tmpPositions[0] = ListView.INVALID_POSITION;
-                        tmpPositions[1] = ListView.INVALID_POSITION;
-                    }
-                });
-
-        if (finish) {
-            builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            });
-        } else {
-            builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    setNewDetails(tmpPositions[1]);
-
-                    tmpPositions[0] = ListView.INVALID_POSITION;
-                    tmpPositions[1] = ListView.INVALID_POSITION;
-                }
-            });
-        }
-
-        builder.show();
-    }
-
-    public void setOptionalOkAlert(int id) {
-        int dontShow = PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .getInt(PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(id), 0);
-
-        if (dontShow == 0) {
-            lastAlertId = id;
-
-            LayoutInflater inflater = getLayoutInflater();
-            final View checkboxLayout = inflater.inflate(R.layout.dont_show_again, null);
-            dontShowAgainCheckBox = (CheckBox) checkboxLayout.findViewById(R.id.dont_show_again_checkbox);
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle(R.string.alert_title_information)
-                    .setMessage(lastAlertId)
-                    .setView(checkboxLayout)
-                    .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (dontShowAgainCheckBox.isChecked()) {
-                                PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                                        .edit()
-                                        .putInt(PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(
-                                                lastAlertId), 1)
-                                        .apply();
-                            }
-                        }
-                    });
-
-            builder.show();
-        }
-    }
-
     private void createDTAFile(final Message message) {
         List<BankProfile> bankProfiles = mHistoryManager.getBankProfiles();
 
@@ -604,26 +521,15 @@ public final class HistoryActivity extends FragmentActivity
             banks.add(bankProfile.getName());
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.bank_profile_dialog_title)
-                .setItems(banks.toArray(new String[banks.size()]),
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                int bankProfileId = mHistoryManager.getBankProfileId(which - 1);
-                                Uri uri = createDTAFile(bankProfileId);
-                                message.obj = uri;
-                                message.sendToTarget();
-                            }
-                        })
-                .setNeutralButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                })
-                .show();
+        new BankProfileListDialog(banks).setItemClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                int bankProfileId = mHistoryManager.getBankProfileId(which - 1);
+                Uri uri = createDTAFile(bankProfileId);
+                message.obj = uri;
+                message.sendToTarget();
+            }
+        }).show(getFragmentManager(), "HistoryActivity.createDTAFile");
     }
 
     private Uri createDTAFile(int bankProfileId) {

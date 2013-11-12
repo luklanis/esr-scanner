@@ -1,18 +1,12 @@
 package ch.luklanis.esscan.history;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
-import android.text.ClipboardManager;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -20,21 +14,16 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import ch.luklanis.esscan.EsrBaseActivity;
 import ch.luklanis.esscan.Intents;
-import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
-import ch.luklanis.esscan.codesend.ESRSenderHttp;
-import ch.luklanis.esscan.codesend.GetSendServiceCallback;
 import ch.luklanis.esscan.codesend.IEsrSender;
+import ch.luklanis.esscan.dialogs.CancelOkDialog;
 
-public class PsDetailActivity extends FragmentActivity
-        implements Handler.Callback, GetSendServiceCallback {
+public class PsDetailActivity extends EsrBaseActivity implements Handler.Callback {
 
     private HistoryManager historyManager;
-    private ESRSenderHttp mEsrSenderHttp;
-
     private final Handler mDataSentHandler = new Handler(this);
-    private ProgressDialog mSendingProgressDialog;
 
     @Override
     protected void onCreate(Bundle icicle) {
@@ -54,10 +43,6 @@ public class PsDetailActivity extends FragmentActivity
         }
 
         historyManager = new HistoryManager(this);
-
-        mSendingProgressDialog = new ProgressDialog(this);
-        mSendingProgressDialog.setTitle(R.string.msg_wait_title);
-        mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
     }
 
     @Override
@@ -68,20 +53,11 @@ public class PsDetailActivity extends FragmentActivity
         intent.putExtra(Intents.History.ITEM_NUMBER,
                 getIntent().getIntExtra(PsDetailFragment.ARG_POSITION, ListView.INVALID_POSITION));
         setResult(Activity.RESULT_OK, intent);
+    }
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        String username = prefs.getString(PreferencesActivity.KEY_USERNAME, "");
-        String password = prefs.getString(PreferencesActivity.KEY_PASSWORD, "");
-        try {
-            if (!username.isEmpty() && !password.isEmpty()) {
-                mEsrSenderHttp = new ESRSenderHttp(getApplicationContext(), username, password);
-                mEsrSenderHttp.registerDataSentHandler(mDataSentHandler);
-            }
-        } catch (Exception e) {
-            setOkAlert(R.string.msg_send_over_http_not_possible);
-            e.printStackTrace();
-        }
+    @Override
+    protected Handler getDataSentHandler() {
+        return mDataSentHandler;
     }
 
     @Override
@@ -99,7 +75,9 @@ public class PsDetailActivity extends FragmentActivity
                 int error = savePaymentSlip(this);
 
                 if (error > 0) {
-                    setCancelOkAlert(this, error);
+                    setCancelOkAlertDialog(error);
+                    new CancelOkDialog(error).show(getFragmentManager(),
+                            "PsDetailActivity.setCancelOkAlert");
                     return true;
                 }
 
@@ -113,20 +91,7 @@ public class PsDetailActivity extends FragmentActivity
                 if (fragment != null) {
                     String completeCode = fragment.getHistoryItem().getResult().getCompleteCode();
 
-                    ClipboardManager clipboardManager = (ClipboardManager) getSystemService(
-                            CLIPBOARD_SERVICE);
-                    clipboardManager.setText(completeCode);
-
-                    // clipboardManager.setPrimaryClip(ClipData.newPlainText("ocrResult",
-                    // ocrResultView.getText()));
-                    // if (clipboardManager.hasPrimaryClip()) {
-                    if (clipboardManager.hasText()) {
-                        Toast toast = Toast.makeText(getApplicationContext(),
-                                R.string.msg_copied,
-                                Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.BOTTOM, 0, 0);
-                        toast.show();
-                    }
+                    addCodeRowToClipboard(completeCode);
                 }
             }
             break;
@@ -155,13 +120,24 @@ public class PsDetailActivity extends FragmentActivity
         return true;
     }
 
+    private void setCancelOkAlertDialog(int msgId) {
+        new CancelOkDialog(msgId).setOkClickListener(new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).show(getFragmentManager(), "PsDetailActivity.setCancelOkAlertDialog");
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             int error = savePaymentSlip(this);
 
             if (error > 0) {
-                setCancelOkAlert(this, error);
+                new CancelOkDialog(error).show(getFragmentManager(),
+                        "PsDetailActivity.setCancelOkAlert");
                 return true;
             }
         }
@@ -169,7 +145,7 @@ public class PsDetailActivity extends FragmentActivity
         return super.onKeyDown(keyCode, event);
     }
 
-    public static int savePaymentSlip(FragmentActivity activity) {
+    public static int savePaymentSlip(Activity activity) {
         PsDetailFragment oldFragment = (PsDetailFragment) activity.getFragmentManager()
                 .findFragmentById(R.id.ps_detail_container);
 
@@ -178,30 +154,6 @@ public class PsDetailActivity extends FragmentActivity
         }
 
         return 0;
-    }
-
-    private void setOkAlert(int id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setMessage(id).setPositiveButton(R.string.button_ok, null);
-
-        builder.show();
-    }
-
-    private void setCancelOkAlert(final FragmentActivity activity, int id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-
-        builder.setMessage(id)
-                .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        activity.finish();
-                    }
-                });
-
-        builder.show();
     }
 
     @Override
@@ -227,10 +179,5 @@ public class PsDetailActivity extends FragmentActivity
         }
 
         return false;
-    }
-
-    @Override
-    public IEsrSender getEsrSender() {
-        return mEsrSenderHttp;
     }
 }

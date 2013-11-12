@@ -19,8 +19,10 @@
 package ch.luklanis.esscan;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -35,12 +37,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.text.ClipboardManager;
 import android.text.SpannableStringBuilder;
 import android.text.style.CharacterStyle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,7 +51,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
 
@@ -62,9 +60,6 @@ import java.security.Security;
 import java.util.List;
 
 import ch.luklanis.esscan.camera.CameraManager;
-import ch.luklanis.esscan.codesend.ESRSenderHttp;
-import ch.luklanis.esscan.codesend.GetSendServiceCallback;
-import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.HistoryActivity;
 import ch.luklanis.esscan.history.HistoryItem;
@@ -86,8 +81,8 @@ import ch.luklanis.esscan.paymentslip.PsValidation;
  * The code for this class was adapted from the ZXing project:
  * http://code.google.com/p/zxing/
  */
-public final class CaptureActivity extends Activity
-        implements SurfaceHolder.Callback, IBase, GetSendServiceCallback {
+public final class CaptureActivity extends EsrBaseActivity
+        implements SurfaceHolder.Callback, IBase {
 
     private static final String TAG = CaptureActivity.class.getSimpleName();
 
@@ -122,7 +117,6 @@ public final class CaptureActivity extends Activity
     private BeepManager mBeepManager;
     private TessBaseAPI mBaseApi; // Java interface for the Tesseract OCR engine
 
-    private SharedPreferences mSharedPreferences;
     private ProgressDialog mInitOcrProgressDialog; // for initOcr - language
     // download & unzip
     private HistoryManager mHistoryManager;
@@ -135,10 +129,6 @@ public final class CaptureActivity extends Activity
     private boolean mEnableStreamMode;
 
     private TextView mStatusViewBottomRight;
-
-    private ESRSenderHttp mEsrSenderHttp = null;
-
-    private ProgressDialog mSendingProgressDialog = null;
 
     private boolean mShowScanResult;
 
@@ -162,12 +152,6 @@ public final class CaptureActivity extends Activity
         mHistoryManager.trimHistory();
 
         mBeepManager = new BeepManager(this);
-
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        mSendingProgressDialog = new ProgressDialog(this);
-        mSendingProgressDialog.setTitle(R.string.msg_wait_title);
-        mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
     }
 
     @Override
@@ -231,18 +215,6 @@ public final class CaptureActivity extends Activity
             mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         }
 
-        String username = mSharedPreferences.getString(PreferencesActivity.KEY_USERNAME, "");
-        String password = mSharedPreferences.getString(PreferencesActivity.KEY_PASSWORD, "");
-        try {
-            if (!username.isEmpty() && !password.isEmpty()) {
-                mEsrSenderHttp = new ESRSenderHttp(getContext(), username, password);
-                mEsrSenderHttp.registerDataSentHandler(mCaptureActivityHandler);
-            }
-        } catch (Exception e) {
-            setOKAlert(R.string.msg_send_over_http_not_possible);
-            e.printStackTrace();
-        }
-
         Intent intent = getIntent();
 
         if (intent != null && intent.getBooleanExtra(COPY_AND_RETURN, false)) {
@@ -253,6 +225,11 @@ public final class CaptureActivity extends Activity
         }
 
         checkAndRunFirstLaunch();
+    }
+
+    @Override
+    protected Handler getDataSentHandler() {
+        return mCaptureActivityHandler;
     }
 
     @Override
@@ -417,11 +394,6 @@ public final class CaptureActivity extends Activity
     public void setValidation(PsValidation validation) {
         this.mPsValidation = validation;
         resetStatusView();
-    }
-
-    @Override
-    public IEsrSender getEsrSender() {
-        return mEsrSenderHttp;
     }
 
     public Handler getHandler() {
@@ -592,15 +564,7 @@ public final class CaptureActivity extends Activity
                     .getString(PreferencesActivity.KEY_COPY_PART, "0")
                     .equals("0") ? esrResult.getCompleteCode() : esrResult.getReference();
 
-            ClipboardManager clipboardManager = (ClipboardManager) getSystemService(
-                    CLIPBOARD_SERVICE);
-            clipboardManager.setText(toCopy);
-
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    getResources().getString(clipboardManager.hasText() ? R.string.msg_copied : R.string.msg_not_copied),
-                    Toast.LENGTH_SHORT);
-            toast.setGravity(Gravity.BOTTOM, 0, 0);
-            toast.show();
+            addCodeRowToClipboard(toCopy);
 
             finish();
             return;
@@ -621,18 +585,34 @@ public final class CaptureActivity extends Activity
     public void showDialogAndRestartScan(int resourceId) {
         mSendingProgressDialog.dismiss();
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(CaptureActivity.this);
-        builder.setMessage(resourceId);
-        builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+        new RestartScanAlertDialog(resourceId).show(getFragmentManager(),
+                "CaptureActivity.showDialogAndRestartScan");
+    }
 
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mPsValidation.gotoBeginning(false);
-                mLastValidationStep = mPsValidation.getCurrentStep();
-                restartPreviewAfterDelay(0L);
-            }
-        });
-        builder.show();
+    public class RestartScanAlertDialog extends DialogFragment {
+        private int msgId;
+
+        public RestartScanAlertDialog(int msgId) {
+            this.msgId = msgId;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(msgId);
+            builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    mPsValidation.gotoBeginning(false);
+                    mLastValidationStep = mPsValidation.getCurrentStep();
+                    restartPreviewAfterDelay(0L);
+                }
+            });
+
+            return builder.create();
+        }
     }
 
     /**
@@ -851,35 +831,10 @@ public final class CaptureActivity extends Activity
         mBeepManager.updatePrefs();
     }
 
-    /**
-     * Displays an error message dialog box to the user on the UI thread.
-     *
-     * @param title   The title for the dialog box
-     * @param message The error message to be displayed
-     */
-    public void showErrorMessage(String title, String message) {
-        new AlertDialog.Builder(this).setTitle(title)
-                .setMessage(message)
-                .setOnCancelListener(new FinishListener(this))
-                .setPositiveButton("Done", new FinishListener(this))
-                .show();
-    }
-
-    private void setOKAlert(int id) {
-        setOKAlert(CaptureActivity.this, id);
-    }
-
-    private void setOKAlert(Context context, int id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage(id);
-        builder.setPositiveButton(R.string.button_ok, null);
-        builder.show();
-    }
-
     private void CreateCopyNotification() {
         Resources res = getResources();
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_menu_edit)
+        Notification.Builder builder = new Notification.Builder(this).setSmallIcon(R.drawable.ic_menu_edit)
                 .setContentTitle(res.getString(R.string.notif_scan_to_clipboard_title))
                 .setContentText(res.getString(R.string.notif_scan_to_clipboard_summary));
 

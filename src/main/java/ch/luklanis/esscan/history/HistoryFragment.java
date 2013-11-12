@@ -1,10 +1,9 @@
 package ch.luklanis.esscan.history;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.ListFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -12,6 +11,7 @@ import android.widget.ListView;
 import java.util.Comparator;
 
 import ch.luklanis.esscan.R;
+import ch.luklanis.esscan.dialogs.CancelOkDialog;
 
 public class HistoryFragment extends ListFragment {
 
@@ -26,8 +26,6 @@ public class HistoryFragment extends ListFragment {
         public void onItemSelected(int oldPosition, int newPosition);
 
         public int getPositionToActivate();
-
-        public void setOptionalOkAlert(int id);
     }
 
     private HistoryManager historyManager;
@@ -40,10 +38,6 @@ public class HistoryFragment extends ListFragment {
     private static HistoryCallbacks sDummyCallbacks = new HistoryCallbacks() {
         @Override
         public void onItemSelected(int oldPosition, int newPosition) {
-        }
-
-        @Override
-        public void setOptionalOkAlert(int id) {
         }
 
         @Override
@@ -124,24 +118,17 @@ public class HistoryFragment extends ListFragment {
 
                 activatedPosition = position;
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity()).setTitle(R.string.msg_confirm_delete_payment_title)
-                        .setMessage(R.string.msg_confirm_delete_message)
-                        .setPositiveButton(R.string.button_ok,
-                                new DialogInterface.OnClickListener() {
+                new CancelOkDialog(R.string.msg_confirm_delete_payment_title,
+                        R.string.msg_confirm_delete_message).setOkClickListener(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        historyManager.deleteHistoryItem(activatedPosition);
+                        historyCallbacks.selectTopInTwoPane();
 
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        historyManager.deleteHistoryItem(activatedPosition);
-                                        historyCallbacks.selectTopInTwoPane();
-
-                                        GetHistoryAsyncTask async = new GetHistoryAsyncTask(self,
-                                                historyManager);
-                                        async.execute();
-                                    }
-                                })
-                        .setNegativeButton(R.string.button_cancel, null);
-
-                builder.show();
+                        GetHistoryAsyncTask async = new GetHistoryAsyncTask(self, historyManager);
+                        async.execute();
+                    }
+                }).show(getFragmentManager(), "HistoryFragment.onViewCreated");
                 return true;
             }
         });

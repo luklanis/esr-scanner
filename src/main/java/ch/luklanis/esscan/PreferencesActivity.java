@@ -17,9 +17,6 @@
 package ch.luklanis.esscan;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -47,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ch.luklanis.esscan.dialogs.OkAlertDialog;
 import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.DBHelper;
 import ch.luklanis.esscan.history.HistoryManager;
@@ -162,27 +160,16 @@ public class PreferencesActivity extends PreferenceActivity
 
             int warning = BankProfile.validateIBAN(iban);
             if (warning != 0) {
-                setOKAlert(warning);
+                new OkAlertDialog(warning).show(getFragmentManager(), "OkAlert");
             }
         } else if (key.equals(KEY_ADDRESS)) {
             String address = sharedPreferences.getString(key, "");
 
             int warning = DTAFileCreator.validateAddress(address);
             if (warning != 0) {
-                setOKAlert(warning);
+                new OkAlertDialog(warning).show(getFragmentManager(), "OkAlert");
             }
         }
-    }
-
-    private void setOKAlert(int id) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(id);
-        builder.setPositiveButton(R.string.button_ok, new OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                reload();
-            }
-        });
-        builder.show();
     }
 
     private void reload() {

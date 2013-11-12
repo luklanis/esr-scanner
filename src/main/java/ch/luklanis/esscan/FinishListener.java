@@ -30,7 +30,7 @@ public final class FinishListener
 
     private final Activity activityToFinish;
 
-    FinishListener(Activity activityToFinish) {
+    public FinishListener(Activity activityToFinish) {
         this.activityToFinish = activityToFinish;
     }
 
