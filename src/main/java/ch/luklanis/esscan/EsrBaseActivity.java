@@ -30,40 +30,70 @@ import android.widget.Toast;
 
 import ch.luklanis.esscan.codesend.ESRSenderHttp;
 import ch.luklanis.esscan.codesend.IEsrSender;
-import ch.luklanis.esscan.dialogs.OkAlertDialog;
-import ch.luklanis.esscan.dialogs.OptionalOkAlertDialog;
+import ch.luklanis.esscan.dialogs.OkDialog;
+import ch.luklanis.esscan.dialogs.OptionalOkDialog;
 
-public abstract class EsrBaseActivity extends Activity {
+public abstract class EsrBaseActivity extends Activity
+        implements SharedPreferences.OnSharedPreferenceChangeListener {
     protected SharedPreferences mSharedPreferences;
     protected ProgressDialog mSendingProgressDialog;
     protected ESRSenderHttp mEsrSenderHttp;
+    private boolean mSenderSettingsChanged;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         mSendingProgressDialog = new ProgressDialog(this);
         mSendingProgressDialog.setTitle(R.string.msg_wait_title);
         mSendingProgressDialog.setMessage(getResources().getString(R.string.msg_wait_sending));
+
+        mSenderSettingsChanged = true;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
+        if (mSenderSettingsChanged) {
+            reloadEsrSenderHttp();
+            mSenderSettingsChanged = false;
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(PreferencesActivity.KEY_USERNAME) || key.equals(PreferencesActivity.KEY_PASSWORD)) {
+            mSenderSettingsChanged = true;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+        super.onDestroy();
+    }
+
+    private void reloadEsrSenderHttp() {
         String username = mSharedPreferences.getString(PreferencesActivity.KEY_USERNAME, "");
         String password = mSharedPreferences.getString(PreferencesActivity.KEY_PASSWORD, "");
         try {
+            mEsrSenderHttp = null;
             if (!username.isEmpty() && !password.isEmpty()) {
                 mEsrSenderHttp = new ESRSenderHttp(getApplicationContext(), username, password);
                 mEsrSenderHttp.registerDataSentHandler(getDataSentHandler());
+            } else {
+                setOptionalOkAlert(R.string.msg_how_to_enable_stream_mode);
             }
         } catch (Exception e) {
-            setOptionalOkAlert(R.string.msg_send_over_http_not_possible);
+            setOkAlert(R.string.msg_send_over_http_not_possible);
             e.printStackTrace();
         }
+
+        invalidateOptionsMenu();
     }
 
     /**
@@ -83,6 +113,34 @@ public abstract class EsrBaseActivity extends Activity {
 
     protected abstract Handler getDataSentHandler();
 
+    protected void setOkAlert(int id) {
+        new OkDialog(id).show(getFragmentManager(), "OkAlert");
+    }
+
+    protected void setOkAlert(String message) {
+        new OkDialog(message).show(getFragmentManager(), "OkAlert");
+    }
+
+    protected void setOptionalOkAlert(int id) {
+        int dontShow = mSharedPreferences.getInt(PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(
+                id), 0);
+
+        if (dontShow == 0) {
+            new OptionalOkDialog(id).show(getFragmentManager(), "EsrBaseActivity.setOptionalOkAlert");
+        }
+    }
+
+    protected void addCodeRowToClipboard(String toCopy) {
+        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        clipboardManager.setPrimaryClip(ClipData.newPlainText("new code row", toCopy));
+
+        Toast toast = Toast.makeText(getApplicationContext(),
+                getResources().getString(clipboardManager.hasPrimaryClip() ? R.string.msg_copied : R.string.msg_not_copied),
+                Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.BOTTOM, 0, 0);
+        toast.show();
+    }
+
     protected class ErrorAlertDialog extends DialogFragment {
         private final String title;
         private String message;
@@ -100,34 +158,5 @@ public abstract class EsrBaseActivity extends Activity {
                     .setPositiveButton("Done", new FinishListener(getActivity()))
                     .create();
         }
-    }
-
-    protected void setOkAlert(int id) {
-        new OkAlertDialog(id).show(getFragmentManager(), "OkAlert");
-    }
-
-    protected void setOkAlert(String message) {
-        new OkAlertDialog(message).show(getFragmentManager(), "OkAlert");
-    }
-
-    protected void setOptionalOkAlert(int id) {
-        int dontShow = mSharedPreferences.getInt(PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(
-                id), 0);
-
-        if (dontShow == 0) {
-            new OptionalOkAlertDialog(id).show(getFragmentManager(),
-                    "EsrBaseActivity.setOptionalOkAlert");
-        }
-    }
-
-    protected void addCodeRowToClipboard(String toCopy) {
-        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-        clipboardManager.setPrimaryClip(ClipData.newPlainText("new code row", toCopy));
-
-        Toast toast = Toast.makeText(getApplicationContext(),
-                getResources().getString(clipboardManager.hasPrimaryClip() ? R.string.msg_copied : R.string.msg_not_copied),
-                Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.BOTTOM, 0, 0);
-        toast.show();
     }
 }

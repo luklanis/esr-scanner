@@ -51,6 +51,7 @@ import ch.luklanis.esscan.paymentslip.PsResult;
 public final class HistoryManager {
 
     static final String ITEM_WHERE_CODE_ROW_QUERY = "SELECT " +
+            "hi." + DBHelper.ID_COL + ", " +
             "hi." + DBHelper.HISTORY_CODE_ROW_COL + ", " +
             "hi." + DBHelper.HISTORY_TIMESTAMP_COL + ", " +
             "hi." + DBHelper.HISTORY_ADDRESS_ID_COL + ", " +
@@ -69,6 +70,7 @@ public final class HistoryManager {
             "ORDER BY hi." + DBHelper.HISTORY_TIMESTAMP_COL + " DESC";
 
     static final String BUILD_ITEMS_QUERY = "SELECT " +
+            "hi." + DBHelper.ID_COL + ", " +
             "hi." + DBHelper.HISTORY_CODE_ROW_COL + ", " +
             "hi." + DBHelper.HISTORY_TIMESTAMP_COL + ", " +
             "hi." + DBHelper.HISTORY_ADDRESS_ID_COL + ", " +
@@ -86,6 +88,7 @@ public final class HistoryManager {
             "ORDER BY hi." + DBHelper.HISTORY_TIMESTAMP_COL + " DESC";
 
     static final String BUILD_UNEXPORTED_ITEMS_QUERY = "SELECT " +
+            "hi." + DBHelper.ID_COL + ", " +
             "hi." + DBHelper.HISTORY_CODE_ROW_COL + ", " +
             "hi." + DBHelper.HISTORY_TIMESTAMP_COL + ", " +
             "hi." + DBHelper.HISTORY_ADDRESS_ID_COL + ", " +
@@ -106,7 +109,7 @@ public final class HistoryManager {
 
     private static final String TAG = HistoryManager.class.getSimpleName();
     private static final int MAX_ITEMS = 500;
-    private static final String[] HISTORY_COLUMNS = {DBHelper.HISTORY_CODE_ROW_COL, DBHelper.HISTORY_TIMESTAMP_COL, DBHelper.HISTORY_ADDRESS_ID_COL, DBHelper.HISTORY_AMOUNT_COL, DBHelper.HISTORY_REASON_COL, DBHelper.HISTORY_FILE_NAME_COL};
+    private static final String[] HISTORY_COLUMNS = {DBHelper.ID_COL, DBHelper.HISTORY_CODE_ROW_COL, DBHelper.HISTORY_TIMESTAMP_COL, DBHelper.HISTORY_ADDRESS_ID_COL, DBHelper.HISTORY_AMOUNT_COL, DBHelper.HISTORY_REASON_COL, DBHelper.HISTORY_FILE_NAME_COL, DBHelper.HISTORY_BANK_ID_COL};
     private static final String[] ADDRESS_COLUMNS = {DBHelper.ADDRESS_ACCOUNT_COL, DBHelper.ADDRESS_TIMESTAMP_COL, DBHelper.ADDRESS_ADDRESS_COL};
     private static final String[] COUNT_COLUMN = {"COUNT(1)"};
     private static final String[] ID_COL_PROJECTION = {DBHelper.ID_COL};
@@ -184,7 +187,7 @@ public final class HistoryManager {
         }
     }
 
-    public List<HistoryItem> buildHistoryItemsForDTA(int bankId) {
+    public List<HistoryItem> buildHistoryItemsForDTA(long bankId) {
         return buildHistoryItems(bankId);
     }
 
@@ -200,7 +203,7 @@ public final class HistoryManager {
      *               others: build for specific bank profile
      * @return
      */
-    public List<HistoryItem> buildHistoryItems(int bankId) {
+    public List<HistoryItem> buildHistoryItems(long bankId) {
         SQLiteOpenHelper helper = new DBHelper(mActivity);
         List<HistoryItem> items = new ArrayList<HistoryItem>();
         SQLiteDatabase db = null;
@@ -213,13 +216,14 @@ public final class HistoryManager {
                     bankId), null);
 
             while (cursor.moveToNext()) {
-                String code_row = cursor.getString(0);
-                long timestamp = cursor.getLong(1);
-                int addressNumber = cursor.getInt(2);
-                String amount = cursor.getString(3);
-                String reason = cursor.getString(4);
-                String dtaFile = cursor.getString(5);
-                int bankProfileId = cursor.getInt(6);
+                long itemId = cursor.getLong(0);
+                String code_row = cursor.getString(1);
+                long timestamp = cursor.getLong(2);
+                long addressId = cursor.getLong(3);
+                String amount = cursor.getString(4);
+                String reason = cursor.getString(5);
+                String dtaFile = cursor.getString(6);
+                long bankProfileId = cursor.getLong(7);
 
                 PsResult result = PsResult.getInstance(code_row, timestamp);
 
@@ -227,16 +231,13 @@ public final class HistoryManager {
                     ((EsResult) result).setReason(reason);
                 }
 
-                HistoryItem item = new HistoryItem(result,
-                        amount,
-                        addressNumber,
-                        dtaFile,
+                HistoryItem item = new HistoryItem(itemId, result, amount, addressId, dtaFile,
                         bankProfileId);
 
-                item.setBankProfile(new BankProfile(cursor.getString(7)));
+                item.setBankProfile(new BankProfile(cursor.getString(8)));
 
-                if (addressNumber != -1) {
-                    item.setAddress(cursor.getString(8));
+                if (addressId != -1) {
+                    item.setAddress(cursor.getString(9));
                 }
 
                 items.add(item);
@@ -256,13 +257,14 @@ public final class HistoryManager {
             cursor = db.rawQuery(BUILD_ITEMS_QUERY + " LIMIT " + number + ", 1", null);
 
             if (cursor.moveToNext()) {
-                String text = cursor.getString(0);
-                long timestamp = cursor.getLong(1);
-                int addressId = cursor.getInt(2);
-                String amount = cursor.getString(3);
-                String reason = cursor.getString(4);
-                String dtaFile = cursor.getString(5);
-                int bankProfileId = cursor.getInt(6);
+                int itemId = cursor.getInt(0);
+                String text = cursor.getString(1);
+                long timestamp = cursor.getLong(2);
+                int addressId = cursor.getInt(3);
+                String amount = cursor.getString(4);
+                String reason = cursor.getString(5);
+                String dtaFile = cursor.getString(6);
+                int bankProfileId = cursor.getInt(7);
 
                 PsResult result = PsResult.getInstance(text, timestamp);
 
@@ -270,16 +272,15 @@ public final class HistoryManager {
                     ((EsResult) result).setReason(reason);
                 }
 
-                HistoryItem item = new HistoryItem(result,
-                        amount,
+                HistoryItem item = new HistoryItem(itemId, result, amount,
                         addressId,
                         dtaFile,
                         bankProfileId);
 
-                item.setBankProfile(new BankProfile(cursor.getString(7)));
+                item.setBankProfile(new BankProfile(cursor.getString(8)));
 
                 if (addressId != -1) {
-                    item.setAddress(cursor.getString(8));
+                    item.setAddress(cursor.getString(9));
                 }
 
                 return item;
@@ -325,7 +326,7 @@ public final class HistoryManager {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mActivity);
         int bankProfileNumber = Integer.valueOf(prefs.getString(PreferencesActivity.KEY_DEFAULT_BANK_PROFILE_NUMBER,
                 "0"));
-        int newBankProfileId = getBankProfileId(bankProfileNumber);
+        long newBankProfileId = getBankProfileId(bankProfileNumber);
         //	  if (!prefs.getBoolean(PreferencesActivity.KEY_REMEMBER_DUPLICATES, false)) {
         //		  deletePrevious(result.getText());
         //	  }
@@ -353,22 +354,22 @@ public final class HistoryManager {
         }
     }
 
-    public void updateHistoryItemAddressId(String code_row, int itemAddressId) {
-        updateHistoryItemInteger(ID_HISTORY_ADDRESS_COL_PROJECTION,
+    public void updateHistoryItemAddressId(long itemId, long itemAddressId) {
+        updateHistoryItemLong(ID_HISTORY_ADDRESS_COL_PROJECTION,
                 DBHelper.HISTORY_ADDRESS_ID_COL,
-                code_row,
+                itemId,
                 itemAddressId);
     }
 
-    public void updateHistoryItemBankProfileId(String code_row, int bankProfileId) {
-        updateHistoryItemInteger(ID_HISTORY_BANK_COL_PROJECTION,
+    public void updateHistoryItemBankProfileId(long itemId, long bankProfileId) {
+        updateHistoryItemLong(ID_HISTORY_BANK_COL_PROJECTION,
                 DBHelper.HISTORY_BANK_ID_COL,
-                code_row,
+                itemId,
                 bankProfileId);
     }
 
-    public void updateHistoryItemInteger(String[] projection, String column, String code_row,
-                                         int itemAddressId) {
+    public void updateHistoryItemLong(String[] projection, String column, long itemId,
+                                      long itemAddressId) {
         // As we're going to do an update only we don't need need to worry
         // about the preferences; if the item wasn't saved it won't be updated
         SQLiteOpenHelper helper = new DBHelper(mActivity);
@@ -377,10 +378,7 @@ public final class HistoryManager {
         try {
             db = helper.getWritableDatabase();
             cursor = db.query(DBHelper.HISTORY_TABLE_NAME,
-                    projection,
-                    DBHelper.HISTORY_CODE_ROW_COL + "=?",
-                    new String[]{code_row},
-                    null,
+                    projection, DBHelper.ID_COL + "=?", new String[]{String.valueOf(itemId)}, null,
                     null,
                     DBHelper.HISTORY_TIMESTAMP_COL + " DESC",
                     "1");
@@ -402,29 +400,22 @@ public final class HistoryManager {
         }
     }
 
-    public void updateHistoryItemAmount(String code_row, String itemAmount) {
+    public void updateHistoryItemAmount(long itemId, String itemAmount) {
         updateHistoryItem(ID_HISTORY_AMOUNT_COL_PROJECTION,
-                DBHelper.HISTORY_AMOUNT_COL,
-                code_row,
-                itemAmount);
+                DBHelper.HISTORY_AMOUNT_COL, itemId, itemAmount);
     }
 
-    public void updateHistoryItemReason(String code_row, String itemReason) {
+    public void updateHistoryItemReason(long itemId, String itemReason) {
         updateHistoryItem(ID_HISTORY_AMOUNT_COL_PROJECTION,
-                DBHelper.HISTORY_REASON_COL,
-                code_row,
-                itemReason);
+                DBHelper.HISTORY_REASON_COL, itemId, itemReason);
     }
 
-    public void updateHistoryItemFileName(String code_row, String itemFileName) {
+    public void updateHistoryItemFileName(long itemId, String itemFileName) {
         updateHistoryItem(ID_HISTORY_FILE_NAME_COL_PROJECTION,
-                DBHelper.HISTORY_FILE_NAME_COL,
-                code_row,
-                itemFileName);
+                DBHelper.HISTORY_FILE_NAME_COL, itemId, itemFileName);
     }
 
-    private void updateHistoryItem(String[] projection, String col_name, String code_row,
-                                   String item) {
+    private void updateHistoryItem(String[] projection, String col_name, long itemId, String item) {
         // As we're going to do an update only we don't need to worry
         // about the preferences; if the item wasn't saved it won't be updated
         SQLiteOpenHelper helper = new DBHelper(mActivity);
@@ -433,10 +424,7 @@ public final class HistoryManager {
         try {
             db = helper.getWritableDatabase();
             cursor = db.query(DBHelper.HISTORY_TABLE_NAME,
-                    projection,
-                    DBHelper.HISTORY_CODE_ROW_COL + "=?",
-                    new String[]{code_row},
-                    null,
+                    projection, DBHelper.ID_COL + "=?", new String[]{String.valueOf(itemId)}, null,
                     null,
                     DBHelper.HISTORY_TIMESTAMP_COL + " DESC",
                     "1");
@@ -526,8 +514,8 @@ public final class HistoryManager {
 
             while (cursor.moveToNext()) {
 
-                String code_row = cursor.getString(0);
-                long timestamp = cursor.getLong(1);
+                String code_row = cursor.getString(1);
+                long timestamp = cursor.getLong(2);
                 PsResult result = PsResult.getInstance(code_row, timestamp);
 
                 // Add timestamp, formatted
@@ -541,7 +529,7 @@ public final class HistoryManager {
                         .append("\",");
 
                 historyText.append('"')
-                        .append(messageHistoryField(cursor.getString(2)).split("[\\r\\n]+")[0])
+                        .append(messageHistoryField(cursor.getString(3)).split("[\\r\\n]+")[0])
                         .append("\",");
 
                 historyText.append('"')
@@ -565,7 +553,7 @@ public final class HistoryManager {
         }
     }
 
-    public void updateAddress(int addressId, String address) {
+    public void updateAddress(long addressId, String address) {
         SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
 
@@ -580,24 +568,12 @@ public final class HistoryManager {
         }
     }
 
-    public int addAddress(String account, String address) {
+    public long addAddress(String account, String address) {
         SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
-        Cursor cursor = null;
-        int number = 0;
+        long addressId = 0;
         try {
             db = helper.getWritableDatabase();
-
-            cursor = db.query(DBHelper.ADDRESS_TABLE_NAME,
-                    ID_ADDRESS_COUNT_PROJECTION,
-                    DBHelper.ADDRESS_ACCOUNT_COL + "=?",
-                    new String[]{account},
-                    null,
-                    null,
-                    DBHelper.ADDRESS_TIMESTAMP_COL);
-            if (cursor.moveToNext()) {
-                number = cursor.getInt(0);
-            }
 
             ContentValues values = new ContentValues();
             values.put(DBHelper.ADDRESS_ACCOUNT_COL, account);
@@ -605,12 +581,12 @@ public final class HistoryManager {
             values.put(DBHelper.ADDRESS_ADDRESS_COL, address);
 
             // Insert the new entry into the DB.
-            db.insert(DBHelper.ADDRESS_TABLE_NAME, null, values);
+            addressId = db.insert(DBHelper.ADDRESS_TABLE_NAME, null, values);
         } finally {
             close(null, db);
         }
 
-        return number;
+        return addressId;
     }
 
     public List<String> getAddresses(String account) {
@@ -637,7 +613,7 @@ public final class HistoryManager {
         }
     }
 
-    public String getAddress(int addressId) {
+    public String getAddress(long addressId) {
         SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -660,19 +636,19 @@ public final class HistoryManager {
         }
     }
 
-    public BankProfile getBankProfile(int bankProfileId) {
+    public BankProfile getBankProfile(long bankProfileId) {
         return new BankProfile(getAddress(bankProfileId));
     }
 
-    public int addBankProfile(BankProfile bankProfile) {
+    public long addBankProfile(BankProfile bankProfile) {
         return addAddress("BP", bankProfile.toString());
     }
 
-    public void updateBankProfile(int bankProfileId, BankProfile bankProfile) {
+    public void updateBankProfile(long bankProfileId, BankProfile bankProfile) {
         updateAddress(bankProfileId, bankProfile.toString());
     }
 
-    public int getAddressId(String account, int addressNumber) {
+    public long getAddressId(String account, int addressNumber) {
         SQLiteOpenHelper helper = new DBHelper(mActivity);
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -686,7 +662,7 @@ public final class HistoryManager {
                     null,
                     DBHelper.ADDRESS_TIMESTAMP_COL);
             if (cursor.move(addressNumber + 1)) {
-                return cursor.getInt(0);
+                return cursor.getLong(0);
             }
 
             return -1;
@@ -706,7 +682,7 @@ public final class HistoryManager {
         return banks;
     }
 
-    public int getBankProfileId(int bankNumber) {
+    public long getBankProfileId(int bankNumber) {
         return getAddressId("BP", bankNumber);
     }
 }

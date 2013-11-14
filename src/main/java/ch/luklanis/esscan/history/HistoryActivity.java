@@ -443,7 +443,7 @@ public final class HistoryActivity extends EsrBaseActivity
                 break;
             case R.id.es_send_succeeded: {
                 mSendingProgressDialog.dismiss();
-                mHistoryManager.updateHistoryItemFileName((String) message.obj,
+                mHistoryManager.updateHistoryItemFileName((Integer) message.obj,
                         getResources().getString(R.string.history_item_sent));
 
                 HistoryItem historyItem = mHistoryManager.buildHistoryItem(message.arg1);
@@ -524,7 +524,7 @@ public final class HistoryActivity extends EsrBaseActivity
         new BankProfileListDialog(banks).setItemClickListener(new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
-                int bankProfileId = mHistoryManager.getBankProfileId(which - 1);
+                long bankProfileId = mHistoryManager.getBankProfileId(which);
                 Uri uri = createDTAFile(bankProfileId);
                 message.obj = uri;
                 message.sendToTarget();
@@ -532,7 +532,7 @@ public final class HistoryActivity extends EsrBaseActivity
         }).show(getFragmentManager(), "HistoryActivity.createDTAFile");
     }
 
-    private Uri createDTAFile(int bankProfileId) {
+    private Uri createDTAFile(long bankProfileId) {
         List<HistoryItem> historyItems = mHistoryManager.buildHistoryItemsForDTA(bankProfileId);
         BankProfile bankProfile = mHistoryManager.getBankProfile(bankProfileId);
 

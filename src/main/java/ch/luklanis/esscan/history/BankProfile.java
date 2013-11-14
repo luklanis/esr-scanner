@@ -172,4 +172,8 @@ public class BankProfile {
 
         return 0;
     }
+
+    public interface SaveBankProfileCallback {
+        public int save();
+    }
 }

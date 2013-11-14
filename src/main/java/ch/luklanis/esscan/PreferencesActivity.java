@@ -359,7 +359,7 @@ public class PreferencesActivity extends PreferenceActivity
         private EditTextPreference mNamePreference;
         private EditTextPreference mIbanPreference;
         private ListPreference mExecutionDayPreference;
-        private int mBankId;
+        private long mBankId;
         private HistoryManager mHistoryManager;
 
         @Override

@@ -187,5 +187,7 @@
     <string name="preferences_new_bank_profile">New bank profile</string>
     <string name="preferences_edit_bank_profile">Edit default bank profile</string>
     <string name="preferences_default_bank_summary">Select default bank profile</string>
+    <string name="msg_bank_profile_needs_name">The new bank profile needs a name</string>
+    <string name="msg_how_to_enable_stream_mode">If you\'d like to use the payment stream mode, you have to set username/password in Preferences.</string>
 
 </resources>

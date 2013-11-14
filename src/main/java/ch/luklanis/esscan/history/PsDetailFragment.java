@@ -54,8 +54,7 @@ public class PsDetailFragment extends Fragment {
                     R.string.msg_click_ok_to_export_again).setOkClickListener(new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    mHistoryManager.updateHistoryItemFileName(mHistoryItem.getResult()
-                            .getCompleteCode(), null);
+                    mHistoryManager.updateHistoryItemFileName(mHistoryItem.getItemId(), null);
 
                     TextView dtaFilenameTextView = (TextView) getView().findViewById(R.id.result_dta_file);
                     dtaFilenameTextView.setText("");
@@ -266,8 +265,7 @@ public class PsDetailFragment extends Fragment {
                     return 0;
                 }
 
-                mHistoryManager.updateHistoryItemAmount(mHistoryItem.getResult().getCompleteCode(),
-                        newAmount);
+                mHistoryManager.updateHistoryItemAmount(mHistoryItem.getItemId(), newAmount);
                 amountEditText.setText(newAmount);
 
             } catch (NumberFormatException e) {
@@ -283,11 +281,9 @@ public class PsDetailFragment extends Fragment {
             addressStatus = DTAFileCreator.validateAddress(address, mHistoryItem.getResult());
 
             if (mHistoryItem.getAddressId() == -1) {
-                String account = mHistoryItem.getResult().getAccount();
-                int addressId = mHistoryManager.getAddressId(account,
-                        mHistoryManager.addAddress(mHistoryItem.getResult().getAccount(), address));
-                mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getResult()
-                        .getCompleteCode(), addressId);
+                long addressId = mHistoryManager.addAddress(mHistoryItem.getResult().getAccount(),
+                        address);
+                mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getItemId(), addressId);
             } else {
                 mHistoryManager.updateAddress(mHistoryItem.getAddressId(), address);
             }
@@ -299,8 +295,7 @@ public class PsDetailFragment extends Fragment {
         if (reason.length() > 0) {
             reasonStatus = DTAFileCreator.validateReason(reason);
 
-            mHistoryManager.updateHistoryItemReason(mHistoryItem.getResult().getCompleteCode(),
-                    reason);
+            mHistoryManager.updateHistoryItemReason(mHistoryItem.getItemId(), reason);
         }
 
         return (addressStatus != 0 ? addressStatus : reasonStatus);
@@ -361,13 +356,13 @@ public class PsDetailFragment extends Fragment {
                                 public void onClick(DialogInterface dialog, int which) {
 
                                     EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
-                                    int addressId = mHistoryManager.getAddressId(mHistoryItem.getResult()
+                                    long addressId = mHistoryManager.getAddressId(mHistoryItem.getResult()
                                             .getAccount(), which);
                                     String address = mHistoryManager.getAddress(addressId);
 
                                     if (address != "") {
-                                        mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getResult()
-                                                .getCompleteCode(), addressId);
+                                        mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getItemId(),
+                                                addressId);
 
                                         mHistoryItem.setAddress(address);
                                         mHistoryItem.setAddressId(addressId);
@@ -466,7 +461,7 @@ public class PsDetailFragment extends Fragment {
         new BankProfileListDialog(banks).setItemClickListener(new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
-                int bankProfileId = mHistoryManager.getBankProfileId(which);
+                long bankProfileId = mHistoryManager.getBankProfileId(which);
                 BankProfile bankProfile = mHistoryManager.getBankProfile(bankProfileId);
 
                 if (bankProfile == null) {
@@ -475,8 +470,8 @@ public class PsDetailFragment extends Fragment {
 
                 mHistoryItem.setBankProfile(bankProfile);
 
-                mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getResult()
-                        .getCompleteCode(), bankProfileId);
+                mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getItemId(),
+                        bankProfileId);
 
                 mHistoryItem.setBankProfileId(bankProfileId);
 

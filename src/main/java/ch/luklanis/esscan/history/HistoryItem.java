@@ -23,17 +23,19 @@ import ch.luklanis.esscan.paymentslip.PsResult;
 
 public final class HistoryItem {
 
+    private long itemId;
     private PsResult result;
-    private int addressId;
+    private long addressId;
     private String amount;
     private String dtaFile;
     private boolean exported;
     private String address;
-    private int bankProfileId;
+    private long bankProfileId;
     private BankProfile bankProfile;
 
     public HistoryItem(PsResult result) {
         this.result = result;
+        this.itemId = -1;
         this.addressId = -1;
         this.amount = "";
         this.dtaFile = null;
@@ -43,7 +45,9 @@ public final class HistoryItem {
         this.bankProfile = null;
     }
 
-    HistoryItem(PsResult result, String amount, int addressId, String dtaFile, int bankProfileId) {
+    HistoryItem(long itemId, PsResult result, String amount, long addressId, String dtaFile,
+                long bankProfileId) {
+        this.itemId = itemId;
         this.result = result;
         this.addressId = addressId;
         this.amount = amount;
@@ -88,11 +92,11 @@ public final class HistoryItem {
         return this.dtaFile;
     }
 
-    public int getAddressId() {
+    public long getAddressId() {
         return addressId;
     }
 
-    public void setAddressId(int addressId) {
+    public void setAddressId(long addressId) {
         this.addressId = addressId;
     }
 
@@ -100,11 +104,11 @@ public final class HistoryItem {
         return address;
     }
 
-    public int getBankProfileId() {
+    public long getBankProfileId() {
         return bankProfileId;
     }
 
-    public void setBankProfileId(int bankId) {
+    public void setBankProfileId(long bankProfileId) {
         this.bankProfileId = bankProfileId;
     }
 
@@ -133,5 +137,9 @@ public final class HistoryItem {
     public String toString() {
         return address.replaceAll("[\\r\\n]+",
                 ", ") + ", " + result.toString() + (!TextUtils.isEmpty(dtaFile) ? (", " + dtaFile) : "");
+    }
+
+    public long getItemId() {
+        return itemId;
     }
 }

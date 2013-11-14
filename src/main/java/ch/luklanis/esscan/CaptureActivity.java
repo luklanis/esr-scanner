@@ -325,6 +325,10 @@ public final class CaptureActivity extends EsrBaseActivity
         } else {
             showHistory.setVisible(true);
             streamMode.setIcon(R.drawable.ic_menu_edit);
+
+            if (mEsrSenderHttp == null) {
+                streamMode.setVisible(false);
+            }
         }
 
         return true;
@@ -775,7 +779,7 @@ public final class CaptureActivity extends EsrBaseActivity
                 }
 
                 if (lastVersion <= 42) {
-                    int bankProfileId = mHistoryManager.addBankProfile(new BankProfile("Default",
+                    long bankProfileId = mHistoryManager.addBankProfile(new BankProfile("Default",
                             prefs.getString(PreferencesActivity.KEY_IBAN, ""),
                             prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "")));
 
@@ -783,8 +787,8 @@ public final class CaptureActivity extends EsrBaseActivity
 
                     for (HistoryItem historyItem : historyItemList) {
                         if (historyItem.getBankProfileId() == BankProfile.INVALID_BANK_PROFILE_ID) {
-                            mHistoryManager.updateHistoryItemBankProfileId(historyItem.getResult()
-                                    .getCompleteCode(), bankProfileId);
+                            mHistoryManager.updateHistoryItemBankProfileId(historyItem.getItemId(),
+                                    bankProfileId);
                         }
                     }
                 }

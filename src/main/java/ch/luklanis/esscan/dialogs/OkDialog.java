@@ -17,27 +17,39 @@ package ch.luklanis.esscan.dialogs;/*
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import ch.luklanis.esscan.R;
 
-public class OkAlertDialog extends DialogFragment {
-    private String message;
+public class OkDialog extends DialogFragment {
+    private String mMessage;
+    private int mMsgId;
+    private DialogInterface.OnClickListener mOkClickListener;
 
-    public OkAlertDialog(String message) {
-        this.message = message;
+    public OkDialog(String message) {
+        this.mMessage = message;
+        this.mMsgId = 0;
+        mOkClickListener = null;
     }
 
-    public OkAlertDialog(int msgId) {
-        this.message = getResources().getString(msgId);
+    public OkDialog(int msgId) {
+        this.mMsgId = msgId;
+        mOkClickListener = null;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setMessage(message).setPositiveButton(R.string.button_ok, null);
+        builder.setPositiveButton(R.string.button_ok, mOkClickListener);
 
-        return builder.create();
+        return this.mMsgId == 0 ? builder.setMessage(mMessage).create() : builder.setMessage(mMsgId)
+                .create();
+    }
+
+    public OkDialog setOkClickListener(DialogInterface.OnClickListener onClickListener) {
+        this.mOkClickListener = onClickListener;
+        return this;
     }
 }

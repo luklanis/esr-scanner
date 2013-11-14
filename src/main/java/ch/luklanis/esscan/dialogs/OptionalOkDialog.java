@@ -27,10 +27,10 @@ import android.widget.CheckBox;
 import ch.luklanis.esscan.PreferencesActivity;
 import ch.luklanis.esscan.R;
 
-public class OptionalOkAlertDialog extends DialogFragment {
+public class OptionalOkDialog extends DialogFragment {
     private final int mMsgId;
 
-    public OptionalOkAlertDialog(int msgId) {
+    public OptionalOkDialog(int msgId) {
         this.mMsgId = msgId;
     }
 

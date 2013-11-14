@@ -17,8 +17,7 @@ public final class HistoryExportUpdateAsyncTask extends AsyncTask<HistoryItem, V
         if (params.length > 0) {
             for (HistoryItem item : params) {
                 if (item.getExported()) {
-                    historyManager.updateHistoryItemFileName(item.getResult().getCompleteCode(),
-                            fileName);
+                    historyManager.updateHistoryItemFileName(item.getItemId(), fileName);
                 }
             }
         }
