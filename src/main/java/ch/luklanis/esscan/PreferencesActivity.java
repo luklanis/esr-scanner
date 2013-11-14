@@ -17,6 +17,7 @@
 package ch.luklanis.esscan;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -29,8 +30,10 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.widget.Toast;
 
 import java.io.File;
@@ -44,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import ch.luklanis.esscan.dialogs.OkAlertDialog;
+import ch.luklanis.esscan.dialogs.OkDialog;
 import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.DBHelper;
 import ch.luklanis.esscan.history.HistoryManager;
@@ -76,31 +79,25 @@ public class PreferencesActivity extends PreferenceActivity
     public static final String KEY_EXECUTION_DAY_NEW = "preferences_execution_day_new";
     public static final String KEY_DEFAULT_BANK_PROFILE_NUMBER = "preferences_default_bank_profile_number";
     public static final String KEY_BANK_PROFILE_EDIT = "preferences_bank_profile_edit";
-
     public static final String KEY_ONLY_COPY = "preferences_only_copy";
     public static final String KEY_COPY_PART = "preferences_copy_part";
-
     public static final String KEY_USERNAME = "preferences_username";
     public static final String KEY_PASSWORD = "preferences_password";
-
     // Preference keys carried over from ZXing project
     public static final String KEY_REVERSE_IMAGE = "preferences_reverse_image";
     public static final String KEY_PLAY_BEEP = "preferences_play_beep";
     public static final String KEY_VIBRATE = "preferences_vibrate";
-
     public static final String KEY_HELP_VERSION_SHOWN = "preferences_help_version_shown";
     public static final String KEY_SHOW_OCR_RESULT_PREFERENCE = "preferences_show_ocr_result";
     public static final String KEY_SHOW_SCAN_RESULT_PREFERENCE = "preferences_show_scan_result";
     public static final String KEY_NOT_SHOW_ALERT = "preferences_not_show_alertid_";
     public static final String KEY_ENABLE_STREAM_MODE = "preferences_enable_stream_mode";
-
     public static final String KEY_BUTTON_BACKUP = "preferences_button_backup";
     public static final String KEY_BUTTON_RESTORE = "preferences_button_restore";
-
     public static final String KEY_SERVER_PORT = "preferences_server_port";
-
-
     private static final String TAG = PreferencesActivity.class.getName();
+
+    private static BankProfile.SaveBankProfileCallback sSaveBankProfileCallback;
 
     /**
      * Set the default preference values.
@@ -160,14 +157,14 @@ public class PreferencesActivity extends PreferenceActivity
 
             int warning = BankProfile.validateIBAN(iban);
             if (warning != 0) {
-                new OkAlertDialog(warning).show(getFragmentManager(), "OkAlert");
+                new OkDialog(warning).show(getFragmentManager(), "OkAlert");
             }
         } else if (key.equals(KEY_ADDRESS)) {
             String address = sharedPreferences.getString(key, "");
 
             int warning = DTAFileCreator.validateAddress(address);
             if (warning != 0) {
-                new OkAlertDialog(warning).show(getFragmentManager(), "OkAlert");
+                new OkDialog(warning).show(getFragmentManager(), "OkAlert");
             }
         }
     }
@@ -185,9 +182,31 @@ public class PreferencesActivity extends PreferenceActivity
     protected void onResume() {
         super.onResume();
 
+        setSaveBankProfileCallback(null);
+
         // Set up a listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && sSaveBankProfileCallback != null) {
+            int error = sSaveBankProfileCallback.save();
+
+            if (error > 0) {
+                new OkDialog(error).setOkClickListener(new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finish();
+                    }
+                }).show(getFragmentManager(), "PreferenceActivity.onKeyDown");
+
+                return true;
+            }
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
     /**
@@ -225,6 +244,11 @@ public class PreferencesActivity extends PreferenceActivity
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.fragmented_stream);
         }
+    }
+
+    public static void setSaveBankProfileCallback(
+            BankProfile.SaveBankProfileCallback saveBankProfileCallback) {
+        sSaveBankProfileCallback = saveBankProfileCallback;
     }
 
     /**
@@ -291,20 +315,38 @@ public class PreferencesActivity extends PreferenceActivity
         }
 
         @Override
-        public void onPause() {
-            super.onPause();
+        public void onResume() {
+            super.onResume();
 
-            EditTextPreference namePreference = (EditTextPreference) findPreference(
-                    KEY_BANK_PROFILE_NAME_NEW);
-            EditTextPreference ibanPreference = (EditTextPreference) findPreference(KEY_IBAN_NEW);
-            ListPreference executionDayPreference = (ListPreference) findPreference(
-                    KEY_EXECUTION_DAY_NEW);
+            setSaveBankProfileCallback(new BankProfile.SaveBankProfileCallback() {
+                @Override
+                public int save() {
+                    EditTextPreference namePreference = (EditTextPreference) findPreference(
+                            KEY_BANK_PROFILE_NAME_NEW);
+                    String name = namePreference.getText();
 
-            HistoryManager historyManager = new HistoryManager(getActivity());
+                    EditTextPreference ibanPreference = (EditTextPreference) findPreference(
+                            KEY_IBAN_NEW);
+                    String iban = ibanPreference.getText();
 
-            historyManager.addBankProfile(new BankProfile(namePreference.getText(),
-                    ibanPreference.getText(),
-                    executionDayPreference.getValue()));
+                    ListPreference executionDayPreference = (ListPreference) findPreference(
+                            KEY_EXECUTION_DAY_NEW);
+
+                    HistoryManager historyManager = new HistoryManager(getActivity());
+
+                    int msgNameIsEmpty = TextUtils.isEmpty(name) ? R.string.msg_bank_profile_needs_name : 0;
+                    int error = msgNameIsEmpty == 0 ? BankProfile.validateIBAN(iban) : msgNameIsEmpty;
+
+                    if (error > 0) {
+                        return error;
+                    }
+                    historyManager.addBankProfile(new BankProfile(namePreference.getText(),
+                            ibanPreference.getText(),
+                            executionDayPreference.getValue()));
+
+                    return 0;
+                }
+            });
         }
     }
 
@@ -350,16 +392,26 @@ public class PreferencesActivity extends PreferenceActivity
             mNamePreference.setText(bankProfile.getName());
             mIbanPreference.setText(bankProfile.getIban(""));
             mExecutionDayPreference.setValue(String.valueOf(bankProfile.getExecutionDay(26)));
-        }
 
-        @Override
-        public void onPause() {
-            super.onPause();
+            setSaveBankProfileCallback(new BankProfile.SaveBankProfileCallback() {
+                @Override
+                public int save() {
+                    String name = mNamePreference.getText();
+                    String iban = mIbanPreference.getText();
 
-            mHistoryManager.updateBankProfile(mBankId,
-                    new BankProfile(mNamePreference.getText(),
-                            mIbanPreference.getText(),
-                            mExecutionDayPreference.getValue()));
+                    int msgNameIsEmpty = TextUtils.isEmpty(name) ? R.string.msg_bank_profile_needs_name : 0;
+                    int error = msgNameIsEmpty == 0 ? BankProfile.validateIBAN(iban) : msgNameIsEmpty;
+
+                    if (error > 0) {
+                        return error;
+                    }
+
+                    mHistoryManager.updateBankProfile(mBankId,
+                            new BankProfile(name, iban, mExecutionDayPreference.getValue()));
+
+                    return 0;
+                }
+            });
         }
     }
 
