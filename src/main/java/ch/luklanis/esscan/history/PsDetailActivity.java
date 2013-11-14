@@ -136,8 +136,8 @@ public class PsDetailActivity extends EsrBaseActivity implements Handler.Callbac
             int error = savePaymentSlip(this);
 
             if (error > 0) {
-                new CancelOkDialog(error).show(getFragmentManager(),
-                        "PsDetailActivity.setCancelOkAlert");
+                setCancelOkAlertDialog(error);
+
                 return true;
             }
         }
