@@ -198,7 +198,7 @@ public class HistoryFragment extends ListFragment {
     public void setHistoryItemAdapter(HistoryItemAdapter adapter) {
 
         if (adapter.isEmpty()) {
-            adapter.add(new HistoryItem(null));
+            adapter.add(new Builder().setResult(null).createHistoryItem());
             listIsEmpty = true;
         } else {
             listIsEmpty = false;

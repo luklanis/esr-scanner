@@ -16,6 +16,7 @@
 
 package ch.luklanis.esscan.history;
 
+import android.app.Activity;
 import android.text.TextUtils;
 
 import ch.luklanis.esscan.paymentslip.EsrResult;
@@ -141,5 +142,79 @@ public final class HistoryItem {
 
     public long getItemId() {
         return itemId;
+    }
+
+    public void setItemId(long itemId) {
+        this.itemId = itemId;
+    }
+
+    public class Builder {
+        private PsResult result;
+        private long itemId;
+        private String amount;
+        private long addressId;
+        private String dtaFile;
+        private long bankProfileId;
+        private boolean exported;
+
+        public Builder() {
+            this.result = null;
+            this.itemId = -1;
+            this.addressId = -1;
+            this.amount = "";
+            this.dtaFile = null;
+            this.exported = false;
+            this.bankProfileId = BankProfile.INVALID_BANK_PROFILE_ID;
+        }
+
+        public Builder setResult(PsResult result) {
+            this.result = result;
+            return this;
+        }
+
+        public Builder setItemId(long itemId) {
+            this.itemId = itemId;
+            return this;
+        }
+
+        public Builder setAmount(String amount) {
+            this.amount = amount;
+            return this;
+        }
+
+        public Builder setAddressId(long addressId) {
+            this.addressId = addressId;
+            return this;
+        }
+
+        public Builder setDtaFile(String dtaFile) {
+            this.dtaFile = dtaFile;
+            return this;
+        }
+
+        public Builder setExported(boolean exported) {
+            this.exported = exported;
+            return this;
+        }
+
+        public Builder setBankProfileId(long bankProfileId) {
+            this.bankProfileId = bankProfileId;
+            return this;
+        }
+
+        public HistoryItem create(Activity activity) {
+            HistoryManager historyManager = new HistoryManager(activity);
+            HistoryItem historyItem = new HistoryItem(itemId,
+                    result,
+                    amount,
+                    addressId,
+                    dtaFile,
+                    bankProfileId);
+            historyItem.setExported(exported);
+            historyItem.setAddress(historyManager.getAddress(historyItem.getAddressId()));
+            historyItem.setBankProfile(historyManager.getBankProfile(historyItem.getBankProfileId()));
+
+            return historyItem;
+        }
     }
 }

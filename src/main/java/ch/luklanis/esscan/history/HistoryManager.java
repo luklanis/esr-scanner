@@ -231,8 +231,13 @@ public final class HistoryManager {
                     ((EsResult) result).setReason(reason);
                 }
 
-                HistoryItem item = new HistoryItem(itemId, result, amount, addressId, dtaFile,
-                        bankProfileId);
+                HistoryItem item = new Builder().setItemId(itemId)
+                        .setResult(result)
+                        .setAmount(amount)
+                        .setAddressId(addressId)
+                        .setDtaFile(dtaFile)
+                        .setBankProfileId(bankProfileId)
+                        .createHistoryItem();
 
                 item.setBankProfile(new BankProfile(cursor.getString(8)));
 
@@ -272,10 +277,13 @@ public final class HistoryManager {
                     ((EsResult) result).setReason(reason);
                 }
 
-                HistoryItem item = new HistoryItem(itemId, result, amount,
-                        addressId,
-                        dtaFile,
-                        bankProfileId);
+                HistoryItem item = new Builder().setItemId(itemId)
+                        .setResult(result)
+                        .setAmount(amount)
+                        .setAddressId(addressId)
+                        .setDtaFile(dtaFile)
+                        .setBankProfileId(bankProfileId)
+                        .createHistoryItem();
 
                 item.setBankProfile(new BankProfile(cursor.getString(8)));
 
@@ -342,9 +350,12 @@ public final class HistoryManager {
             values.put(DBHelper.HISTORY_BANK_ID_COL, newBankProfileId);
 
             // Insert the new entry into the DB.
-            db.insert(DBHelper.HISTORY_TABLE_NAME, DBHelper.HISTORY_TIMESTAMP_COL, values);
+            long itemId = db.insert(DBHelper.HISTORY_TABLE_NAME,
+                    DBHelper.HISTORY_TIMESTAMP_COL,
+                    values);
 
-            HistoryItem historyItem = new HistoryItem(result);
+            HistoryItem historyItem = new Builder().setResult(result).createHistoryItem();
+            historyItem.setItemId(itemId);
             historyItem.setBankProfileId(newBankProfileId);
             historyItem.setBankProfile(getBankProfile(newBankProfileId));
 
