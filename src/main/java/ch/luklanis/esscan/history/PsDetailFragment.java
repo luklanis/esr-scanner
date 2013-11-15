@@ -181,20 +181,7 @@ public class PsDetailFragment extends Fragment {
             reasonEditText.setText(result.getReason());
         }
 
-        String dtaFilename = mHistoryItem.getDTAFilename();
-
-        TextView dtaFilenameTextView = (TextView) rootView.findViewById(R.id.result_dta_file);
-        dtaFilenameTextView.setOnClickListener(exportAgainListener);
-
-        TextView dtaFilenameTextTextView = (TextView) rootView.findViewById(R.id.result_dta_file_text);
-
-        if (dtaFilename != null && dtaFilename != "") {
-            dtaFilenameTextView.setText(mHistoryItem.getDTAFilename());
-            dtaFilenameTextTextView.setVisibility(View.VISIBLE);
-        } else {
-            dtaFilenameTextTextView.setVisibility(View.GONE);
-            dtaFilenameTextView.setText("");
-        }
+        updateDtaFilename(rootView);
 
         ImageButton addressChangeButton = (ImageButton) rootView.findViewById(R.id.button_address_change);
         addressChangeButton.setOnClickListener(addressChangeListener);
@@ -372,6 +359,23 @@ public class PsDetailFragment extends Fragment {
                 toast.show();
             }
         }).show(getFragmentManager(), "PsDetailFragment.showBankProfileChoiceDialog");
+    }
+
+    public void updateDtaFilename(View view) {
+        String dtaFilename = mHistoryItem.getDTAFilename();
+
+        TextView dtaFilenameTextView = (TextView) view.findViewById(R.id.result_dta_file);
+        dtaFilenameTextView.setOnClickListener(exportAgainListener);
+
+        TextView dtaFilenameTextTextView = (TextView) view.findViewById(R.id.result_dta_file_text);
+
+        if (dtaFilename != null && dtaFilename != "") {
+            dtaFilenameTextView.setText(mHistoryItem.getDTAFilename());
+            dtaFilenameTextTextView.setVisibility(View.VISIBLE);
+        } else {
+            dtaFilenameTextTextView.setVisibility(View.GONE);
+            dtaFilenameTextView.setText("");
+        }
     }
 
 //    private void showBankProfileEditDialog() {

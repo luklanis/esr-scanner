@@ -204,6 +204,15 @@ public class HistoryFragment extends ListFragment {
         return null;
     }
 
+    public void dataChanged() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
     public void setHistoryItemAdapter(HistoryItemAdapter adapter) {
 
         if (adapter.isEmpty()) {

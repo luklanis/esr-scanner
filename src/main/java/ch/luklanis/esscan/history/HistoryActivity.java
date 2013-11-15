@@ -446,12 +446,23 @@ public final class HistoryActivity extends EsrBaseActivity
 
                 HistoryItem historyItem = historyFragment.getHistoryItemOnPosition(message.arg1);
 
-                String filename = getResources().getString(R.string.history_item_sent);
-                historyItem.update(new HistoryItem.Builder(historyItem).setDtaFile(filename)
-                        .create());
-                mHistoryManager.updateHistoryItemFileName(historyItem.getItemId(), filename);
+                if (historyItem != null) {
+                    String filename = getResources().getString(R.string.history_item_sent);
+                    historyItem.update(new HistoryItem.Builder(historyItem).setDtaFile(filename)
+                            .create());
+                    mHistoryManager.updateHistoryItemFileName(historyItem.getItemId(), filename);
 
-                //historyFragment.updatePosition(message.arg1, historyItem);
+                    //historyFragment.updatePosition(message.arg1, historyItem);
+                    historyFragment.dataChanged();
+
+                    PsDetailFragment fragment = (PsDetailFragment) getFragmentManager().findFragmentById(
+                            R.id.ps_detail_container);
+
+                    if (fragment != null) {
+                        fragment.getHistoryItem().update(historyItem);
+                        fragment.updateDtaFilename(fragment.getView());
+                    }
+                }
 
                 msgId = R.string.msg_coderow_sent;
             }

@@ -347,7 +347,7 @@ public class PreferencesActivity extends PreferenceActivity
                             ibanPreference.getText(),
                             executionDayPreference.getValue()));
 
-                    // if it's the first bank profile we update all already scanned items
+                    // if it's the first bank profile we updateDtaFilename all already scanned items
                     if (historyManager.getBankProfiles().size() == 1) {
                         List<HistoryItem> historyItems = historyManager.buildAllHistoryItems();
 

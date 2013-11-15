@@ -163,8 +163,15 @@ public class PsDetailActivity extends EsrBaseActivity implements Handler.Callbac
         mSendingProgressDialog.dismiss();
 
         if (message.what == R.id.es_send_succeeded) {
-            historyManager.updateHistoryItemFileName((Long) message.obj,
-                    getResources().getString(R.string.history_item_sent));
+            String filename = getResources().getString(R.string.history_item_sent);
+            historyManager.updateHistoryItemFileName((Long) message.obj, filename);
+
+            PsDetailFragment fragment = (PsDetailFragment) getFragmentManager().findFragmentById(R.id.ps_detail_container);
+
+            HistoryItem historyItem = fragment.getHistoryItem();
+            historyItem.update(new HistoryItem.Builder(historyItem).setDtaFile(filename).create());
+
+            fragment.updateDtaFilename(fragment.getView());
 
             msgId = R.string.msg_coderow_sent;
         } else {

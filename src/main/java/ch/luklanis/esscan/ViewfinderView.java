@@ -385,7 +385,7 @@ public final class ViewfinderView extends View {
         //    canvas.drawRect(frame.right, frame.bottom - 15, frame.right + 15, frame.bottom + 15, paint);
 
 
-        // Request another update at the animation interval, but don't repaint the entire viewfinder mask.
+        // Request another updateDtaFilename at the animation interval, but don't repaint the entire viewfinder mask.
         //postInvalidateDelayed(ANIMATION_DELAY, frame.left, frame.top, frame.right, frame.bottom);
     }
 

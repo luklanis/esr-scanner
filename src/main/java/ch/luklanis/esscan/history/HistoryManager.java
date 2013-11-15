@@ -374,7 +374,7 @@ public final class HistoryManager {
 
     public void updateHistoryItemLong(String[] projection, String column, long itemId,
                                       long itemAddressId) {
-        // As we're going to do an update only we don't need need to worry
+        // As we're going to do an updateDtaFilename only we don't need need to worry
         // about the preferences; if the item wasn't saved it won't be updated
         SQLiteDatabase db = null;
         Cursor cursor = null;
@@ -428,7 +428,7 @@ public final class HistoryManager {
     }
 
     private void updateHistoryItem(String[] projection, String col_name, long itemId, String item) {
-        // As we're going to do an update only we don't need to worry
+        // As we're going to do an updateDtaFilename only we don't need to worry
         // about the preferences; if the item wasn't saved it won't be updated
         SQLiteDatabase db = null;
         Cursor cursor = null;

@@ -860,13 +860,13 @@ public final class CaptureActivity extends EsrBaseActivity
         builder.setContentIntent(pendigIntent);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // mId allows you to update the notification later on.
+        // mId allows you to updateDtaFilename the notification later on.
         notificationManager.notify(NOTIFICATION_ID, builder.getNotification());
     }
 
     private void RemoveCopyNotification() {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        // mId allows you to update the notification later on.
+        // mId allows you to updateDtaFilename the notification later on.
         notificationManager.cancel(NOTIFICATION_ID);
     }
 
