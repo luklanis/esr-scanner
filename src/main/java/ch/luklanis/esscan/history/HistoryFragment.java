@@ -79,7 +79,7 @@ public class HistoryFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        historyManager = new HistoryManager(getActivity());
+        historyManager = new HistoryManager(getActivity().getApplicationContext());
         self = this;
 
         adapter = null;
@@ -198,7 +198,7 @@ public class HistoryFragment extends ListFragment {
     public void setHistoryItemAdapter(HistoryItemAdapter adapter) {
 
         if (adapter.isEmpty()) {
-            adapter.add(new Builder().setResult(null).createHistoryItem());
+            adapter.add(HistoryItem.Builder.createEmptyInstance());
             listIsEmpty = true;
         } else {
             listIsEmpty = false;

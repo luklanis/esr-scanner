@@ -108,7 +108,7 @@ public final class HistoryActivity extends EsrBaseActivity
         tmpPositions[1] = ListView.INVALID_POSITION; // new position
 
         dtaFileCreator = new DTAFileCreator(this);
-        mHistoryManager = new HistoryManager(this);
+        mHistoryManager = new HistoryManager(getApplicationContext());
 
         Intent intent = getIntent();
 

@@ -148,7 +148,7 @@ public final class CaptureActivity extends EsrBaseActivity
         mShowOcrResult = false;
 
         mHasSurface = false;
-        mHistoryManager = new HistoryManager(this);
+        mHistoryManager = new HistoryManager(getApplicationContext());
         mHistoryManager.trimHistory();
 
         mBeepManager = new BeepManager(this);
@@ -328,6 +328,8 @@ public final class CaptureActivity extends EsrBaseActivity
 
             if (mEsrSenderHttp == null) {
                 streamMode.setVisible(false);
+            } else {
+                streamMode.setVisible(true);
             }
         }
 

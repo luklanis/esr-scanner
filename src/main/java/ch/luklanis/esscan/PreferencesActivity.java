@@ -270,7 +270,7 @@ public class PreferencesActivity extends PreferenceActivity
         public void onResume() {
             super.onResume();
 
-            HistoryManager historyManager = new HistoryManager(getActivity());
+            HistoryManager historyManager = new HistoryManager(getActivity().getApplicationContext());
             List<BankProfile> banks = historyManager.getBankProfiles();
 
             ListPreference defaultBankProfileList = (ListPreference) findPreference(
@@ -332,7 +332,7 @@ public class PreferencesActivity extends PreferenceActivity
                     ListPreference executionDayPreference = (ListPreference) findPreference(
                             KEY_EXECUTION_DAY_NEW);
 
-                    HistoryManager historyManager = new HistoryManager(getActivity());
+                    HistoryManager historyManager = new HistoryManager(getActivity().getApplicationContext());
 
                     int msgNameIsEmpty = TextUtils.isEmpty(name) ? R.string.msg_bank_profile_needs_name : 0;
                     int error = msgNameIsEmpty == 0 ? BankProfile.validateIBAN(iban) : msgNameIsEmpty;
@@ -384,7 +384,7 @@ public class PreferencesActivity extends PreferenceActivity
         public void onResume() {
             super.onResume();
 
-            mHistoryManager = new HistoryManager(getActivity());
+            mHistoryManager = new HistoryManager(getActivity().getApplicationContext());
 
             mBankId = mHistoryManager.getBankProfileId(Integer.valueOf(mBankProfileNumber));
             BankProfile bankProfile = mHistoryManager.getBankProfile(mBankId);

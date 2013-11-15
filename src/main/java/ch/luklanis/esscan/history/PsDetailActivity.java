@@ -42,7 +42,7 @@ public class PsDetailActivity extends EsrBaseActivity implements Handler.Callbac
                     .commit();
         }
 
-        historyManager = new HistoryManager(this);
+        historyManager = new HistoryManager(getApplicationContext());
     }
 
     @Override

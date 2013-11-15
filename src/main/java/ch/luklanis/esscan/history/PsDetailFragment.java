@@ -71,7 +71,7 @@ public class PsDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mHistoryManager = new HistoryManager(getActivity());
+        mHistoryManager = new HistoryManager(getActivity().getApplicationContext());
 
         if (getArguments().containsKey(ARG_POSITION)) {
             mListPosition = getArguments().getInt(ARG_POSITION);

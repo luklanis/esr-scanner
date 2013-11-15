@@ -16,7 +16,7 @@
 
 package ch.luklanis.esscan.history;
 
-import android.app.Activity;
+import android.database.Cursor;
 import android.text.TextUtils;
 
 import ch.luklanis.esscan.paymentslip.EsrResult;
@@ -34,7 +34,7 @@ public final class HistoryItem {
     private long bankProfileId;
     private BankProfile bankProfile;
 
-    public HistoryItem(PsResult result) {
+    private HistoryItem(PsResult result) {
         this.result = result;
         this.itemId = -1;
         this.addressId = -1;
@@ -46,8 +46,8 @@ public final class HistoryItem {
         this.bankProfile = null;
     }
 
-    HistoryItem(long itemId, PsResult result, String amount, long addressId, String dtaFile,
-                long bankProfileId) {
+    private HistoryItem(long itemId, PsResult result, String amount, long addressId, String dtaFile,
+                        long bankProfileId) {
         this.itemId = itemId;
         this.result = result;
         this.addressId = addressId;
@@ -105,6 +105,10 @@ public final class HistoryItem {
         return address;
     }
 
+    public void setAddress(String address) {
+        this.address = address == null ? "" : address;
+    }
+
     public long getBankProfileId() {
         return bankProfileId;
     }
@@ -121,17 +125,16 @@ public final class HistoryItem {
         this.bankProfile = bankProfile;
     }
 
-    public void setAddress(String address) {
-        this.address = address == null ? "" : address;
-    }
-
     public void update(HistoryItem item) {
+        this.itemId = item.getItemId();
         this.result = item.getResult();
         this.addressId = item.getAddressId();
         this.amount = item.getAmount();
         this.dtaFile = item.getDTAFilename();
         this.exported = item.getExported();
         this.address = item.getAddress();
+        this.bankProfileId = item.getBankProfileId();
+        this.bankProfile = item.getBankProfile();
     }
 
     @Override
@@ -148,7 +151,7 @@ public final class HistoryItem {
         this.itemId = itemId;
     }
 
-    public class Builder {
+    public static class Builder {
         private PsResult result;
         private long itemId;
         private String amount;
@@ -156,6 +159,10 @@ public final class HistoryItem {
         private String dtaFile;
         private long bankProfileId;
         private boolean exported;
+
+        static public HistoryItem createEmptyInstance() {
+            return new Builder().create((Cursor) null);
+        }
 
         public Builder() {
             this.result = null;
@@ -202,17 +209,35 @@ public final class HistoryItem {
             return this;
         }
 
-        public HistoryItem create(Activity activity) {
-            HistoryManager historyManager = new HistoryManager(activity);
+        public HistoryItem create(HistoryManager historyManager) {
+            Cursor cursor = null;
+            try {
+                cursor = historyManager.getCursorForHistoryItem(this.itemId);
+                return this.create(cursor);
+            } finally {
+                cursor.close();
+            }
+        }
+
+        public HistoryItem create(Cursor cursor) {
             HistoryItem historyItem = new HistoryItem(itemId,
                     result,
                     amount,
                     addressId,
                     dtaFile,
                     bankProfileId);
+
             historyItem.setExported(exported);
-            historyItem.setAddress(historyManager.getAddress(historyItem.getAddressId()));
-            historyItem.setBankProfile(historyManager.getBankProfile(historyItem.getBankProfileId()));
+
+            if (cursor != null) {
+                if (addressId != -1) {
+                    historyItem.setAddress(cursor.getString(HistoryManager.ITEM_ADDRESS_POSITION));
+                }
+
+                if (bankProfileId != BankProfile.INVALID_BANK_PROFILE_ID) {
+                    historyItem.setBankProfile(new BankProfile(cursor.getString(HistoryManager.ITEM_BANK_PROFILE_POSITION)));
+                }
+            }
 
             return historyItem;
         }
