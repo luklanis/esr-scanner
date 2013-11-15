@@ -46,7 +46,6 @@ public class PsDetailFragment extends Fragment {
             showAddressDialog(view);
         }
     };
-
     private final View.OnClickListener exportAgainListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -210,15 +209,22 @@ public class PsDetailFragment extends Fragment {
             showAddressDialog(rootView);
         }
 
-        TextView bankViewText = (TextView) rootView.findViewById(R.id.result_dta_bank_profile);
-        bankViewText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showBankProfileChoiceDialog();
-            }
-        });
+        List<BankProfile> banks = mHistoryManager.getBankProfiles();
 
-        setBankProfileText(bankViewText);
+        TextView bankViewText = (TextView) rootView.findViewById(R.id.result_dta_bank_profile);
+        if (banks.size() > 0) {
+
+            bankViewText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showBankProfileChoiceDialog();
+                }
+            });
+
+            setBankProfileText(bankViewText);
+        } else {
+            bankViewText.setVisibility(View.GONE);
+        }
 
         return rootView;
     }
@@ -321,7 +327,7 @@ public class PsDetailFragment extends Fragment {
             completeCode = completeCode.substring(0, indexOfNewline);
         }
 
-        boundService.sendToListener(completeCode, position);
+        boundService.sendToListener(completeCode, getHistoryItem().getItemId(), position);
     }
 
     private void showAddressDialog(View view) {
@@ -339,55 +345,33 @@ public class PsDetailFragment extends Fragment {
                 "PsDetailFragment.showAddressDialog");
     }
 
-    protected class AddressDialog extends DialogFragment {
-        private final List<String> addresses;
+    private void showBankProfileChoiceDialog() {
+        List<BankProfile> bankProfiles = mHistoryManager.getBankProfiles();
 
-        public AddressDialog(List<String> addresses) {
-            this.addresses = addresses;
+        List<String> banks = new ArrayList<String>();
+
+        for (BankProfile bank : bankProfiles) {
+            banks.add(bank.getName());
         }
 
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            return new AlertDialog.Builder(getActivity()).setTitle(R.string.address_dialog_title)
-                    .setItems(addresses.toArray(new String[addresses.size()]),
-                            new DialogInterface.OnClickListener() {
+        new BankProfileListDialog(banks).setItemClickListener(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                long bankProfileId = mHistoryManager.getBankProfileId(which);
 
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                mHistoryItem.update(new HistoryItem.Builder(mHistoryItem).setBankProfileId(
+                        bankProfileId).create(mHistoryManager));
 
-                                    EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
-                                    long addressId = mHistoryManager.getAddressId(mHistoryItem.getResult()
-                                            .getAccount(), which);
-                                    String address = mHistoryManager.getAddress(addressId);
+                mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getItemId(),
+                        bankProfileId);
 
-                                    if (address != "") {
-                                        mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getItemId(),
-                                                addressId);
+                setBankProfileText((TextView) getView().findViewById(R.id.result_dta_bank_profile));
 
-                                        mHistoryItem.setAddress(address);
-                                        mHistoryItem.setAddressId(addressId);
-                                        addressEditText.setText(mHistoryItem.getAddress());
-
-                                        Toast toast = Toast.makeText(getActivity(),
-                                                R.string.msg_saved,
-                                                Toast.LENGTH_SHORT);
-                                        toast.setGravity(Gravity.BOTTOM, 0, 0);
-                                        toast.show();
-                                    }
-                                }
-                            })
-                    .setNeutralButton(R.string.button_cancel, null)
-                    .setPositiveButton(R.string.address_new, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            mHistoryItem.setAddress("");
-                            mHistoryItem.setAddressId(-1);
-                            EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
-                            addressEditText.setText(mHistoryItem.getAddress());
-                        }
-                    })
-                    .create();
-        }
+                Toast toast = Toast.makeText(getActivity(), R.string.msg_saved, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.BOTTOM, 0, 0);
+                toast.show();
+            }
+        }).show(getFragmentManager(), "PsDetailFragment.showBankProfileChoiceDialog");
     }
 
 //    private void showBankProfileEditDialog() {
@@ -449,38 +433,53 @@ public class PsDetailFragment extends Fragment {
 //        bankProfileDialogFragment.show(getFragmentManager(), "bankProfile");
 //    }
 
-    private void showBankProfileChoiceDialog() {
-        List<BankProfile> bankProfiles = mHistoryManager.getBankProfiles();
+    protected class AddressDialog extends DialogFragment {
+        private final List<String> addresses;
 
-        List<String> banks = new ArrayList<String>();
-
-        for (BankProfile bank : bankProfiles) {
-            banks.add(bank.getName());
+        public AddressDialog(List<String> addresses) {
+            this.addresses = addresses;
         }
 
-        new BankProfileListDialog(banks).setItemClickListener(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int which) {
-                long bankProfileId = mHistoryManager.getBankProfileId(which);
-                BankProfile bankProfile = mHistoryManager.getBankProfile(bankProfileId);
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return new AlertDialog.Builder(getActivity()).setTitle(R.string.address_dialog_title)
+                    .setItems(addresses.toArray(new String[addresses.size()]),
+                            new DialogInterface.OnClickListener() {
 
-                if (bankProfile == null) {
-                    return;
-                }
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
-                mHistoryItem.setBankProfile(bankProfile);
+                                    EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
+                                    long addressId = mHistoryManager.getAddressId(mHistoryItem.getResult()
+                                            .getAccount(), which);
 
-                mHistoryManager.updateHistoryItemBankProfileId(mHistoryItem.getItemId(),
-                        bankProfileId);
+                                    if (addressId != -1) {
+                                        mHistoryManager.updateHistoryItemAddressId(mHistoryItem.getItemId(),
+                                                addressId);
 
-                mHistoryItem.setBankProfileId(bankProfileId);
+                                        mHistoryItem.update(new HistoryItem.Builder(mHistoryItem).setAddressId(
+                                                addressId).create(mHistoryManager));
+                                        addressEditText.setText(mHistoryItem.getAddress());
 
-                setBankProfileText((TextView) getView().findViewById(R.id.result_dta_bank_profile));
-
-                Toast toast = Toast.makeText(getActivity(), R.string.msg_saved, Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.BOTTOM, 0, 0);
-                toast.show();
-            }
-        }).show(getFragmentManager(), "PsDetailFragment.showBankProfileChoiceDialog");
+                                        Toast toast = Toast.makeText(getActivity(),
+                                                R.string.msg_saved,
+                                                Toast.LENGTH_SHORT);
+                                        toast.setGravity(Gravity.BOTTOM, 0, 0);
+                                        toast.show();
+                                    }
+                                }
+                            })
+                    .setNeutralButton(R.string.button_cancel, null)
+                    .setPositiveButton(R.string.address_new, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            mHistoryItem.update(new HistoryItem.Builder(mHistoryItem).setAddressId(-1)
+                                    .create(mHistoryManager));
+                            EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
+                            addressEditText.setText(mHistoryItem.getAddress());
+                        }
+                    })
+                    .create();
+        }
     }
 }

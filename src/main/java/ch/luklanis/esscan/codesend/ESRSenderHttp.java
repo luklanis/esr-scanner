@@ -52,10 +52,10 @@ public class ESRSenderHttp implements IEsrSender {
     }
 
     public void sendToListener(final String dataToSend) {
-        sendToListener(dataToSend, -1);
+        sendToListener(dataToSend, -1, -1);
     }
 
-    public void sendToListener(final String dataToSend, final int position) {
+    public void sendToListener(final String dataToSend, final long itemId, final int position) {
 
         AsyncTask<Object, Integer, JsonObject> asyncTask = new AsyncTask<Object, Integer, JsonObject>() {
             @Override
@@ -76,8 +76,8 @@ public class ESRSenderHttp implements IEsrSender {
 
                     if (mDataSentHandler != null) {
                         Message message = Message.obtain(mDataSentHandler, R.id.es_send_failed);
+                        message.obj = itemId;
                         message.arg1 = position;
-                        message.obj = dataToSend;
                         message.sendToTarget();
                     }
 
@@ -98,8 +98,8 @@ public class ESRSenderHttp implements IEsrSender {
                                     if (mDataSentHandler != null) {
                                         Message message = Message.obtain(mDataSentHandler,
                                                 result.equals("OK") ? R.id.es_send_succeeded : R.id.es_send_failed);
+                                        message.obj = itemId;
                                         message.arg1 = position;
-                                        message.obj = dataToSend;
                                         message.sendToTarget();
                                     }
                                 }

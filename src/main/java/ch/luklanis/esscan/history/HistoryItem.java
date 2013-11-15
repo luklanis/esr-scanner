@@ -29,34 +29,20 @@ public final class HistoryItem {
     private long addressId;
     private String amount;
     private String dtaFile;
-    private boolean exported;
     private String address;
     private long bankProfileId;
     private BankProfile bankProfile;
 
-    private HistoryItem(PsResult result) {
-        this.result = result;
-        this.itemId = -1;
-        this.addressId = -1;
-        this.amount = "";
-        this.dtaFile = null;
-        this.exported = false;
-        this.address = "";
-        this.bankProfileId = BankProfile.INVALID_BANK_PROFILE_ID;
-        this.bankProfile = null;
-    }
-
-    private HistoryItem(long itemId, PsResult result, String amount, long addressId, String dtaFile,
-                        long bankProfileId) {
+    private HistoryItem(long itemId, PsResult result, String amount, long addressId, String address,
+                        String dtaFile, long bankProfileId, BankProfile bankProfile) {
         this.itemId = itemId;
         this.result = result;
         this.addressId = addressId;
         this.amount = amount;
         this.dtaFile = dtaFile;
-        this.exported = false;
-        this.address = "";
+        this.address = address;
         this.bankProfileId = bankProfileId;
-        this.bankProfile = null;
+        this.bankProfile = bankProfile;
     }
 
     public PsResult getResult() {
@@ -81,14 +67,6 @@ public final class HistoryItem {
         return amount == null ? "" : amount;
     }
 
-    public boolean getExported() {
-        return this.exported || this.dtaFile != null;
-    }
-
-    public void setExported(boolean exported) {
-        this.exported = exported;
-    }
-
     public String getDTAFilename() {
         return this.dtaFile;
     }
@@ -97,32 +75,16 @@ public final class HistoryItem {
         return addressId;
     }
 
-    public void setAddressId(long addressId) {
-        this.addressId = addressId;
-    }
-
     public String getAddress() {
         return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address == null ? "" : address;
     }
 
     public long getBankProfileId() {
         return bankProfileId;
     }
 
-    public void setBankProfileId(long bankProfileId) {
-        this.bankProfileId = bankProfileId;
-    }
-
     public BankProfile getBankProfile() {
         return bankProfile;
-    }
-
-    public void setBankProfile(BankProfile bankProfile) {
-        this.bankProfile = bankProfile;
     }
 
     public void update(HistoryItem item) {
@@ -131,7 +93,6 @@ public final class HistoryItem {
         this.addressId = item.getAddressId();
         this.amount = item.getAmount();
         this.dtaFile = item.getDTAFilename();
-        this.exported = item.getExported();
         this.address = item.getAddress();
         this.bankProfileId = item.getBankProfileId();
         this.bankProfile = item.getBankProfile();
@@ -152,26 +113,39 @@ public final class HistoryItem {
     }
 
     public static class Builder {
+        private String address;
+        private BankProfile bankProfile;
         private PsResult result;
         private long itemId;
         private String amount;
         private long addressId;
         private String dtaFile;
         private long bankProfileId;
-        private boolean exported;
+
+        public Builder() {
+            this.itemId = -1;
+            this.result = null;
+            this.addressId = -1;
+            this.address = "";
+            this.amount = "";
+            this.dtaFile = null;
+            this.bankProfileId = BankProfile.INVALID_BANK_PROFILE_ID;
+            this.bankProfile = null;
+        }
+
+        public Builder(HistoryItem historyItem) {
+            this.itemId = historyItem.getItemId();
+            this.result = historyItem.getResult();
+            this.addressId = historyItem.getAddressId();
+            this.address = historyItem.getAddress();
+            this.amount = historyItem.getAmount();
+            this.dtaFile = historyItem.getDTAFilename();
+            this.bankProfileId = historyItem.getBankProfileId();
+            this.bankProfile = historyItem.getBankProfile();
+        }
 
         static public HistoryItem createEmptyInstance() {
             return new Builder().create((Cursor) null);
-        }
-
-        public Builder() {
-            this.result = null;
-            this.itemId = -1;
-            this.addressId = -1;
-            this.amount = "";
-            this.dtaFile = null;
-            this.exported = false;
-            this.bankProfileId = BankProfile.INVALID_BANK_PROFILE_ID;
         }
 
         public Builder setResult(PsResult result) {
@@ -199,14 +173,13 @@ public final class HistoryItem {
             return this;
         }
 
-        public Builder setExported(boolean exported) {
-            this.exported = exported;
-            return this;
-        }
-
         public Builder setBankProfileId(long bankProfileId) {
             this.bankProfileId = bankProfileId;
             return this;
+        }
+
+        public HistoryItem create() {
+            return create((Cursor) null);
         }
 
         public HistoryItem create(HistoryManager historyManager) {
@@ -220,26 +193,40 @@ public final class HistoryItem {
         }
 
         public HistoryItem create(Cursor cursor) {
-            HistoryItem historyItem = new HistoryItem(itemId,
+
+            if (addressId != -1) {
+                if (TextUtils.isEmpty(address)) {
+                    if (cursor == null) {
+                        throw new RuntimeException("Could not get address because cursor is null");
+                    } else {
+                        address = cursor.getString(HistoryManager.ITEM_ADDRESS_POSITION);
+                    }
+                }
+            } else {
+                address = "";
+            }
+
+            if (bankProfileId != BankProfile.INVALID_BANK_PROFILE_ID) {
+                if (bankProfile == null) {
+                    if (cursor == null) {
+                        throw new RuntimeException(
+                                "Could not get bank profile because cursor is null");
+                    } else {
+                        bankProfile = new BankProfile(cursor.getString(HistoryManager.ITEM_BANK_PROFILE_POSITION));
+                    }
+                }
+            } else {
+                bankProfile = null;
+            }
+
+            return new HistoryItem(itemId,
                     result,
                     amount,
                     addressId,
+                    address,
                     dtaFile,
-                    bankProfileId);
-
-            historyItem.setExported(exported);
-
-            if (cursor != null) {
-                if (addressId != -1) {
-                    historyItem.setAddress(cursor.getString(HistoryManager.ITEM_ADDRESS_POSITION));
-                }
-
-                if (bankProfileId != BankProfile.INVALID_BANK_PROFILE_ID) {
-                    historyItem.setBankProfile(new BankProfile(cursor.getString(HistoryManager.ITEM_BANK_PROFILE_POSITION)));
-                }
-            }
-
-            return historyItem;
+                    bankProfileId,
+                    bankProfile);
         }
     }
 }

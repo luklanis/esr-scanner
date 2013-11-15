@@ -18,5 +18,5 @@ package ch.luklanis.esscan.codesend;
 public interface IEsrSender {
     public void sendToListener(final String dataToSend);
 
-    public void sendToListener(final String dataToSend, final int position);
+    public void sendToListener(final String dataToSend, final long itemId, final int position);
 }

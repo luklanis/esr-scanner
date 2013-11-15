@@ -200,7 +200,7 @@ public final class HistoryActivity extends EsrBaseActivity
                         mHistoryManager.clearHistory();
                         dialogInterface.dismiss();
                         finish();
-                            }
+                    }
                 }).show(getFragmentManager(), "HistoryActivity.onOptionsItemSelected");
             }
             break;
@@ -443,11 +443,15 @@ public final class HistoryActivity extends EsrBaseActivity
                 break;
             case R.id.es_send_succeeded: {
                 mSendingProgressDialog.dismiss();
-                mHistoryManager.updateHistoryItemFileName((Integer) message.obj,
-                        getResources().getString(R.string.history_item_sent));
 
-                HistoryItem historyItem = mHistoryManager.buildHistoryItem(message.arg1);
-                historyFragment.updatePosition(message.arg1, historyItem);
+                HistoryItem historyItem = historyFragment.getHistoryItemOnPosition(message.arg1);
+
+                String filename = getResources().getString(R.string.history_item_sent);
+                historyItem.update(new HistoryItem.Builder(historyItem).setDtaFile(filename)
+                        .create());
+                mHistoryManager.updateHistoryItemFileName(historyItem.getItemId(), filename);
+
+                //historyFragment.updatePosition(message.arg1, historyItem);
 
                 msgId = R.string.msg_coderow_sent;
             }

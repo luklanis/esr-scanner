@@ -1,6 +1,7 @@
 package ch.luklanis.esscan.history;
 
 import android.os.AsyncTask;
+import android.text.TextUtils;
 
 public final class HistoryExportUpdateAsyncTask extends AsyncTask<HistoryItem, Void, Void> {
 
@@ -16,7 +17,7 @@ public final class HistoryExportUpdateAsyncTask extends AsyncTask<HistoryItem, V
     protected Void doInBackground(HistoryItem... params) {
         if (params.length > 0) {
             for (HistoryItem item : params) {
-                if (item.getExported()) {
+                if (!TextUtils.isEmpty(item.getDTAFilename())) {
                     historyManager.updateHistoryItemFileName(item.getItemId(), fileName);
                 }
             }

@@ -132,11 +132,11 @@
 
         <TextView
             android:id="@+id/result_dta_file_text"
+            style="@style/marginNewSection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/result_exported_dta"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
-
 
         <TextView
             android:id="@+id/result_dta_file"

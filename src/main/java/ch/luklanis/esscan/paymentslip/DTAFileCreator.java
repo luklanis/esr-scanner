@@ -258,7 +258,9 @@ public class DTAFileCreator {
                 dtaText.append(spacePaddedEnd(reasonTemp, 126));
             }
 
-            filteredHistoryItem.get(i).setExported(true);
+            HistoryItem item = filteredHistoryItem.get(i);
+            filteredHistoryItem.get(i)
+                    .update(new HistoryItem.Builder(item).setDtaFile("exported").create());
         }
 
         // HEADER for Total Record

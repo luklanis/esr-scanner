@@ -242,17 +242,13 @@ public final class HistoryManager {
                     ((EsResult) result).setReason(reason);
                 }
 
-                HistoryItem item = new HistoryItem.Builder().setItemId(itemId).setResult(result)
+                HistoryItem item = new HistoryItem.Builder().setItemId(itemId)
+                        .setResult(result)
                         .setAmount(amount)
                         .setAddressId(addressId)
                         .setDtaFile(dtaFile)
-                        .setBankProfileId(bankProfileId).create(cursor);
-
-                item.setBankProfile(new BankProfile(cursor.getString(8)));
-
-                if (addressId != -1) {
-                    item.setAddress(cursor.getString(9));
-                }
+                        .setBankProfileId(bankProfileId)
+                        .create(cursor);
 
                 items.add(item);
             }
@@ -285,11 +281,13 @@ public final class HistoryManager {
                     ((EsResult) result).setReason(reason);
                 }
 
-                HistoryItem item = new HistoryItem.Builder().setItemId(itemId).setResult(result)
+                HistoryItem item = new HistoryItem.Builder().setItemId(itemId)
+                        .setResult(result)
                         .setAmount(amount)
                         .setAddressId(addressId)
                         .setDtaFile(dtaFile)
-                        .setBankProfileId(bankProfileId).create(this);
+                        .setBankProfileId(bankProfileId)
+                        .create(this);
 
                 return item;
             } else {
@@ -383,7 +381,10 @@ public final class HistoryManager {
         try {
             db = mHelper.getWritableDatabase();
             cursor = db.query(DBHelper.HISTORY_TABLE_NAME,
-                    projection, DBHelper.ID_COL + "=?", new String[]{String.valueOf(itemId)}, null,
+                    projection,
+                    DBHelper.ID_COL + "=?",
+                    new String[]{String.valueOf(itemId)},
+                    null,
                     null,
                     DBHelper.HISTORY_TIMESTAMP_COL + " DESC",
                     "1");
@@ -407,17 +408,23 @@ public final class HistoryManager {
 
     public void updateHistoryItemAmount(long itemId, String itemAmount) {
         updateHistoryItem(ID_HISTORY_AMOUNT_COL_PROJECTION,
-                DBHelper.HISTORY_AMOUNT_COL, itemId, itemAmount);
+                DBHelper.HISTORY_AMOUNT_COL,
+                itemId,
+                itemAmount);
     }
 
     public void updateHistoryItemReason(long itemId, String itemReason) {
         updateHistoryItem(ID_HISTORY_AMOUNT_COL_PROJECTION,
-                DBHelper.HISTORY_REASON_COL, itemId, itemReason);
+                DBHelper.HISTORY_REASON_COL,
+                itemId,
+                itemReason);
     }
 
     public void updateHistoryItemFileName(long itemId, String itemFileName) {
         updateHistoryItem(ID_HISTORY_FILE_NAME_COL_PROJECTION,
-                DBHelper.HISTORY_FILE_NAME_COL, itemId, itemFileName);
+                DBHelper.HISTORY_FILE_NAME_COL,
+                itemId,
+                itemFileName);
     }
 
     private void updateHistoryItem(String[] projection, String col_name, long itemId, String item) {
@@ -428,7 +435,10 @@ public final class HistoryManager {
         try {
             db = mHelper.getWritableDatabase();
             cursor = db.query(DBHelper.HISTORY_TABLE_NAME,
-                    projection, DBHelper.ID_COL + "=?", new String[]{String.valueOf(itemId)}, null,
+                    projection,
+                    DBHelper.ID_COL + "=?",
+                    new String[]{String.valueOf(itemId)},
+                    null,
                     null,
                     DBHelper.HISTORY_TIMESTAMP_COL + " DESC",
                     "1");

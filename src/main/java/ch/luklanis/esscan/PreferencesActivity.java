@@ -50,6 +50,7 @@ import java.util.Map.Entry;
 import ch.luklanis.esscan.dialogs.OkDialog;
 import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.DBHelper;
+import ch.luklanis.esscan.history.HistoryItem;
 import ch.luklanis.esscan.history.HistoryManager;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
 
@@ -340,9 +341,21 @@ public class PreferencesActivity extends PreferenceActivity
                     if (error > 0) {
                         return error;
                     }
-                    historyManager.addBankProfile(new BankProfile(namePreference.getText(),
+
+                    long bankProfileId = historyManager.addBankProfile(new BankProfile(
+                            namePreference.getText(),
                             ibanPreference.getText(),
                             executionDayPreference.getValue()));
+
+                    // if it's the first bank profile we update all already scanned items
+                    if (historyManager.getBankProfiles().size() == 1) {
+                        List<HistoryItem> historyItems = historyManager.buildAllHistoryItems();
+
+                        for (HistoryItem item : historyItems) {
+                            historyManager.updateHistoryItemBankProfileId(item.getItemId(),
+                                    bankProfileId);
+                        }
+                    }
 
                     return 0;
                 }

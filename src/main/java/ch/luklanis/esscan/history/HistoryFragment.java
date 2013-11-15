@@ -182,8 +182,8 @@ public class HistoryFragment extends ListFragment {
 
     public void updatePosition(int position, HistoryItem item) {
 
-        if (adapter != null && adapter.getCount() > position) {
-            HistoryItem listItem = adapter.getItem(position);
+        HistoryItem listItem = getHistoryItemOnPosition(position);
+        if (listItem != null) {
             listItem.update(item);
 
             getActivity().runOnUiThread(new Runnable() {
@@ -193,6 +193,15 @@ public class HistoryFragment extends ListFragment {
                 }
             });
         }
+    }
+
+    public HistoryItem getHistoryItemOnPosition(int position) {
+
+        if (adapter != null && adapter.getCount() > position) {
+            return adapter.getItem(position);
+        }
+
+        return null;
     }
 
     public void setHistoryItemAdapter(HistoryItemAdapter adapter) {
