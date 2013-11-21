@@ -39,10 +39,13 @@ public abstract class EsrBaseActivity extends Activity
     protected ProgressDialog mSendingProgressDialog;
     protected ESRSenderHttp mEsrSenderHttp;
     private boolean mSenderSettingsChanged;
+    private DialogFragment mCurrentDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mCurrentDialog = null;
 
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
@@ -86,7 +89,7 @@ public abstract class EsrBaseActivity extends Activity
                 mEsrSenderHttp = new ESRSenderHttp(getApplicationContext(), username, password);
                 mEsrSenderHttp.registerDataSentHandler(getDataSentHandler());
             } else {
-                setOptionalOkAlert(R.string.msg_how_to_enable_stream_mode);
+                mCurrentDialog = setOptionalOkAlert(R.string.msg_how_to_enable_stream_mode);
             }
         } catch (Exception e) {
             setOkAlert(R.string.msg_send_over_http_not_possible);
@@ -96,15 +99,23 @@ public abstract class EsrBaseActivity extends Activity
         invalidateOptionsMenu();
     }
 
+    protected void dismissCurrentDialog() {
+        if (mCurrentDialog != null) {
+            mCurrentDialog.dismiss();
+            mCurrentDialog = null;
+        }
+    }
+
     /**
      * Displays an error message dialog box to the user on the UI thread.
      *
      * @param title   The title for the dialog box
      * @param message The error message to be displayed
      */
-    public void showErrorMessage(String title, String message) {
-        new ErrorAlertDialog(title, message).show(getFragmentManager(),
-                "EsrBaseActivity.showErrorMessage");
+    public DialogFragment showErrorMessage(String title, String message) {
+        DialogFragment dialogFragment = new ErrorAlertDialog(title, message);
+        dialogFragment.show(getFragmentManager(), "EsrBaseActivity.showErrorMessage");
+        return dialogFragment;
     }
 
     public IEsrSender getEsrSender() {
@@ -113,21 +124,29 @@ public abstract class EsrBaseActivity extends Activity
 
     protected abstract Handler getDataSentHandler();
 
-    protected void setOkAlert(int id) {
-        new OkDialog(id).show(getFragmentManager(), "OkAlert");
+    protected DialogFragment setOkAlert(int id) {
+        DialogFragment dialogFragment = new OkDialog(id);
+        dialogFragment.show(getFragmentManager(), "OkAlert");
+        return dialogFragment;
     }
 
-    protected void setOkAlert(String message) {
-        new OkDialog(message).show(getFragmentManager(), "OkAlert");
+    protected DialogFragment setOkAlert(String message) {
+        DialogFragment dialogFragment = new OkDialog(message);
+        dialogFragment.show(getFragmentManager(), "OkAlert");
+        return dialogFragment;
     }
 
-    protected void setOptionalOkAlert(int id) {
+    protected DialogFragment setOptionalOkAlert(int id) {
         int dontShow = mSharedPreferences.getInt(PreferencesActivity.KEY_NOT_SHOW_ALERT + String.valueOf(
                 id), 0);
 
         if (dontShow == 0) {
-            new OptionalOkDialog(id).show(getFragmentManager(), "EsrBaseActivity.setOptionalOkAlert");
+            DialogFragment dialogFragment = new OptionalOkDialog(id);
+            dialogFragment.show(getFragmentManager(), "EsrBaseActivity.setOptionalOkAlert");
+            return dialogFragment;
         }
+
+        return null;
     }
 
     protected void addCodeRowToClipboard(String toCopy) {

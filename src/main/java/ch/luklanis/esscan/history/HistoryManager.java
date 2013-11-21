@@ -647,6 +647,13 @@ public final class HistoryManager {
     }
 
     public long addBankProfile(BankProfile bankProfile) {
+//        StackTraceElement[] stacks = new Throwable().getStackTrace();
+//        StringBuilder stringBuilder = new StringBuilder();
+//
+//        for (StackTraceElement element:stacks) {
+//            stringBuilder.append(element.toString() + "\n");
+//        }
+//        Log.e(TAG, "created a bank profile: " + stringBuilder.toString());
         return addAddress("BP", bankProfile.toString());
     }
 

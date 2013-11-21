@@ -1,5 +1,6 @@
 package ch.luklanis.esscan;
 
+import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Handler;
 
@@ -29,7 +30,7 @@ public interface IBase {
 
     void resumeOcrEngine();
 
-    void showErrorMessage(String string, String string2);
+    DialogFragment showErrorMessage(String string, String string2);
 
     void showDialogAndRestartScan(int resourceId);
 

@@ -357,6 +357,10 @@ public class PreferencesActivity extends PreferenceActivity
                         }
                     }
 
+                    namePreference.setText("");
+                    ibanPreference.setText("");
+                    executionDayPreference.setValue("26");
+
                     return 0;
                 }
             });

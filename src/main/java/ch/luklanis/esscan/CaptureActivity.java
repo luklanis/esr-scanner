@@ -773,6 +773,7 @@ public final class CaptureActivity extends EsrBaseActivity
             int lastVersion = prefs.getInt(PreferencesActivity.KEY_HELP_VERSION_SHOWN, 0);
 
             if (currentVersion > lastVersion) {
+                dismissCurrentDialog();
 
                 File oldStorage = getOldTessdataDirectory();
 
@@ -780,7 +781,7 @@ public final class CaptureActivity extends EsrBaseActivity
                     DeleteRecursive(new File(oldStorage.toString()));
                 }
 
-                if (lastVersion <= 42) {
+                if (lastVersion > 0 && lastVersion <= 42) {
                     long bankProfileId = mHistoryManager.addBankProfile(new BankProfile("Default",
                             prefs.getString(PreferencesActivity.KEY_IBAN, ""),
                             prefs.getString(PreferencesActivity.KEY_EXECUTION_DAY, "")));

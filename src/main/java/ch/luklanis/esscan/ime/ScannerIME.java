@@ -3,6 +3,7 @@
  */
 package ch.luklanis.esscan.ime;
 
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -540,8 +541,9 @@ public class ScannerIME extends InputMethodService
      * @param title   The title for the dialog box
      * @param message The error message to be displayed
      */
-    public void showErrorMessage(String title, String message) {
+    public DialogFragment showErrorMessage(String title, String message) {
         mStatusViewBottomRight.setText(message);
+        return null;
     }
 
     public void setBaseApi(TessBaseAPI baseApi) {
