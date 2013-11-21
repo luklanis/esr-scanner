@@ -86,9 +86,12 @@
     <string name="msg_confirm_delete_payment_title">Supprimer le paiement</string>
     <string name="msg_confirm_delete_message">Le paiement doit-il être effacé ?</string>
     <string name="msg_reason_line_to_long">Le format DTA permet seulement 28 caractères par ligne et 4 lignes en tout. Le surplus sera coupé lors de l\'exportation.</string>
+    <string name="msg_send_over_http_not_possible">Envoyer ligne de code n\'est pas possible!</string>
     <string name="msg_unsupported_field">Le champ d\'entrée sélectionné ne correspond pas au nombre de caractères requis !</string>
     <string name="msg_unsupported_orientation">Le scanner ESR ne fonctionne qu\'en orientation paysage. Veuillez basculer le dispositif !</string>
     <string name="msg_touch_to_focus">Touchez l\'écran pour focaliser !</string>
+    <string name="msg_wait_title">Attendez s\'il vous plaît.</string>
+    <string name="msg_wait_sending">Verrouille et envoie la ligne de code&#8230;</string>
     <string name="notif_scan_to_clipboard_title">Scanner l\'ESR dans le presse-papiers</string>
     <string name="notif_scan_to_clipboard_summary">Sélectionner pour scanner un ESR directement dans le presse papier</string>
     <string name="picture">Une petite image d\'un bulletin de versement orange</string>

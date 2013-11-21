@@ -23,6 +23,9 @@
     <string name="address_new">Enter a new address</string>
     <string name="alert_title_information">Information</string>
     <string name="alert_dont_show_again">Don\'t show again!</string>
+    <string name="bank_profile_default">Default</string>
+    <string name="dialog_bank_profile_title">Bank profiles</string>
+    <string name="bank_profile_name">Name</string>
     <string name="button_cancel">Cancel</string>
     <string name="button_ok">OK</string>
     <string name="button_save">Save</string>
@@ -162,12 +165,13 @@
         But please check the payment before execute.
     </string>
     <string name="preferences_show_scan_result_title">Open history after each scan</string>
-    <string name="preferences_stream_title">Stream settings</string>
+    <string name="preferences_stream_title">Payment slip stream mode</string>
     <string name="preferences_username_title">Username</string>
     <string name="preferences_username_summary">An email address as username is recommended</string>
     <string name="result_account">Account</string>
     <string name="result_address">Recipient</string>
     <string name="result_amount_not_set">0.00</string>
+    <string name="result_dta_bank_profile">Bank profile</string>
     <string name="result_exported_dta">Payment exported in file</string>
     <string name="result_reference_number">Reference Number</string>
     <string name="result_reason">Reason</string>
@@ -175,10 +179,6 @@
     <string name="status_view_ip_address">IP Address(es):%s</string>
     <string name="status_stream_mode_active">Payment slip stream mode active on\n%1$s:%2$d</string>
     <string name="subtype_esr_label">ESR Scanner IME</string>
-    <string name="result_dta_bank_profile">DTA create with profile</string>
-    <string name="bank_profile_default">Default</string>
-    <string name="bank_profile_dialog_title">Bank profiles</string>
-    <string name="bank_profile_name">Name</string>
     <string name="button_new">New</string>
     <string name="button_choose">Choose</string>
     <string name="bank_profile_iban">IBAN</string>

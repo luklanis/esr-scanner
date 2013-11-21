@@ -6,7 +6,7 @@
               android:layout_height="match_parent">
 
     <TextView
-        android:text="@string/bank_profile_dialog_title"
+        android:text="@string/dialog_bank_profile_title"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:hint="@string/bank_profile_name"

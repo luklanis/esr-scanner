@@ -85,6 +85,7 @@
     <string name="msg_confirm_delete_payment_title">Lösche Zahlung</string>
     <string name="msg_confirm_delete_message">Soll die Zahlung gelöscht werden?</string>
     <string name="msg_reason_line_to_long">Das DTA Format erlaubt nur 28 Zeichen pro Zeile und instgesamt 4 Zeilen. Beim Export wird abgeschnitten.</string>
+    <string name="msg_send_over_http_not_possible">Senden der Codierzeile nicht möglich!</string>
     <string name="msg_unsupported_field">Das selektierte Eingabefeld unterstützt nicht die benötigten Zeichen!</string>
     <string name="msg_unsupported_orientation">ESRScanner funktioniert nur Horizontal! Bitte drehen Sie ihr Smartphone.</string>
     <string name="msg_touch_to_focus">Zum Fokussieren bitte Display berühren!</string>
@@ -93,19 +94,20 @@
     <string name="notif_scan_to_clipboard_title">ESR in die Zwischenablage scannen</string>
     <string name="notif_scan_to_clipboard_summary">Anwählen um einen ESR direkt in die Zwischenablage zu scannen</string>
     <string name="picture">Ein kleines Bild von einem Orangen Einzahlungsschein</string>
-    <string name="preferences_only_macro_focus_title">Makrofokus</string>
+    <string name="preferences_address_summary">Mindestens Vor- und Nachname und auf der zweiten Linie PLZ und Ort</string>
+    <string name="preferences_address_title">Deine Adresse</string>
+    <string name="preferences_advanced_title">Erweiterte Einstellungen</string>
+    <string name="preferences_character_whitelist_title">Zeichen Whitelist</string>
     <string name="preferences_copy_part_title">Zu kopierender Ergebnisteil</string>
+    <string name="preferences_enable_torch_title">Frontleuchte</string>
+    <string name="preferences_default_bank_title">Standard Bankenprofil</string>
+    <string name="preferences_dta_format_title">DTA Einstellungen</string>
+    <string name="preferences_play_beep_title">Beepton abspielen</string>
     <string name="preferences_no_continous_auto_focus_title">Kein fortlaufender Autofokus</string>
     <string name="preferences_no_continous_auto_focus_summary">Benutze nur den Standard Autofokus</string>
-    <string name="preferences_enable_torch_title">Frontleuchte</string>
-    <string name="preferences_dta_format_title">DTA Einstellungen</string>
-    <string name="preferences_advanced_title">Erweiterte Einstellungen</string>
-    <string name="preferences_play_beep_title">Beepton abspielen</string>
-    <string name="preferences_character_whitelist_title">Zeichen Whitelist</string>
     <string name="preferences_reverse_image_title">Kamerabild umdrehen</string>
     <string name="preferences_reverse_image_summary">Aktivieren bei Geräten mit nur einer Frontkamera.</string>
-    <string name="preferences_address_title">Deine Adresse</string>
-    <string name="preferences_address_summary">Mindestens Vor- und Nachname und auf der zweiten Linie PLZ und Ort</string>
+    <string name="preferences_stream_title">Beleglesermodus</string>
     <string name="preferences_iban_title">Deine IBAN</string>
     <string name="preferences_vibrate_title">Vibration</string>
     <string name="preferences_execution_day_title">Ausführungsdatum</string>
@@ -122,6 +124,7 @@
     <string name="preferences_only_copy_title">Kopiere Ergebnis über Benachrichtigung</string>
     <string name="preferences_only_copy_summary">Wenn aktiviert, erscheint beim Verlassen des ESRScanners eine Benachrichtigung,
          über die Scans direkt in die Zwischenablage gelangen.</string>
+    <string name="preferences_only_macro_focus_title">Makrofokus</string>
     <string name="preferences_password_title">Passwort</string>
     <string name="preferences_password_summary">Passwort um die Codierzeile zu verschlüsseln</string>
     <string name="preferences_show_ocr_result_title">OCR Ergebnis zeigen</string>
@@ -133,6 +136,7 @@
     <string name="result_account">Konto</string>
     <string name="result_address">Empfänger</string>
     <string name="result_amount_not_set">0.00</string>
+    <string name="result_dta_bank_profile">Bankenprofil</string>
     <string name="result_exported_dta">Payment exported in file</string>
     <string name="result_reference_number">Referenznummer</string>
     <string name="result_reason">Verwendungszweck</string>

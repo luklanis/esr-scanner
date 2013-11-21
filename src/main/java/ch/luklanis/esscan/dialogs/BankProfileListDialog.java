@@ -40,7 +40,7 @@ public class BankProfileListDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new AlertDialog.Builder(getActivity()).setTitle(R.string.bank_profile_dialog_title)
+        return new AlertDialog.Builder(getActivity()).setTitle(R.string.dialog_bank_profile_title)
                 .setItems(mBanks.toArray(new String[mBanks.size()]), mOnItemClickListener)
                 .setNeutralButton(R.string.button_cancel, null)
                 .create();
