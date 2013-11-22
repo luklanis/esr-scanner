@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ch.luklanis.esscan.dialogs.CancelOkDialog;
 import ch.luklanis.esscan.dialogs.OkDialog;
 import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.DBHelper;
@@ -152,15 +153,7 @@ public class PreferencesActivity extends PreferenceActivity
         //      // Set the summary text
         //      editTextPreferenceCharacterWhitelist.setSummary(sharedPreferences.getString(key, OcrCharacterHelper.getDefaultWhitelist(listPreferenceSourceLanguage.getValue())));
 
-        if (key.equals(KEY_IBAN) || key.equals(KEY_IBAN_NEW)) {
-            String iban = sharedPreferences.getString(key, "").toUpperCase();
-            sharedPreferences.edit().putString(key, iban).commit();
-
-            int warning = BankProfile.validateIBAN(iban);
-            if (warning != 0) {
-                new OkDialog(warning).show(getFragmentManager(), "OkAlert");
-            }
-        } else if (key.equals(KEY_ADDRESS)) {
+        if (key.equals(KEY_ADDRESS)) {
             String address = sharedPreferences.getString(key, "");
 
             int warning = DTAFileCreator.validateAddress(address);
@@ -196,10 +189,10 @@ public class PreferencesActivity extends PreferenceActivity
             int error = sSaveBankProfileCallback.save();
 
             if (error > 0) {
-                new OkDialog(error).setOkClickListener(new DialogInterface.OnClickListener() {
+                new CancelOkDialog(error).setCancelClickListener(new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        finish();
+                        getFragmentManager().popBackStack();
                     }
                 }).show(getFragmentManager(), "PreferenceActivity.onKeyDown");
 

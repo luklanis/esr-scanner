@@ -38,7 +38,8 @@ public class PsDetailActivity extends EsrBaseActivity implements Handler.Callbac
                     getIntent().getIntExtra(PsDetailFragment.ARG_POSITION, 0));
             PsDetailFragment fragment = new PsDetailFragment();
             fragment.setArguments(arguments);
-            getFragmentManager().beginTransaction().add(R.id.ps_detail_container, fragment)
+            getFragmentManager().beginTransaction()
+                    .add(R.id.ps_detail_container, fragment)
                     .commit();
         }
 
@@ -76,8 +77,6 @@ public class PsDetailActivity extends EsrBaseActivity implements Handler.Callbac
 
                 if (error > 0) {
                     setCancelOkAlertDialog(error);
-                    new CancelOkDialog(error).show(getFragmentManager(),
-                            "PsDetailActivity.setCancelOkAlert");
                     return true;
                 }
 

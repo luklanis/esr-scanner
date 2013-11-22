@@ -217,12 +217,14 @@ public class PsDetailFragment extends Fragment {
     }
 
     private void setBankProfileText(final TextView bankViewText) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                bankViewText.setText(mHistoryItem.getBankProfile().getName());
-            }
-        });
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    bankViewText.setText(mHistoryItem.getBankProfile().getName());
+                }
+            });
+        }
     }
 
     public HistoryItem getHistoryItem() {
