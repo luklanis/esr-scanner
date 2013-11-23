@@ -192,7 +192,7 @@ public class PreferencesActivity extends PreferenceActivity
                 new CancelOkDialog(error).setCancelClickListener(new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        getFragmentManager().popBackStack();
+                        finish();
                     }
                 }).show(getFragmentManager(), "PreferenceActivity.onKeyDown");
 
