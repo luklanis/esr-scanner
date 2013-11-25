@@ -64,7 +64,6 @@ public class PsDetailFragment extends Fragment {
     private HistoryManager mHistoryManager;
     private HistoryItem mHistoryItem;
     private int mListPosition;
-    private boolean isNewBankProfile;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -333,8 +332,8 @@ public class PsDetailFragment extends Fragment {
             return;
         }
 
-        new AddressDialog(addresses).show(getFragmentManager(),
-                "PsDetailFragment.showAddressDialog");
+        new AddressDialog(addresses, (EditText) view.findViewById(R.id.result_address)).show(
+                getFragmentManager(), "PsDetailFragment.showAddressDialog");
     }
 
     private void showBankProfileChoiceDialog() {
@@ -444,9 +443,11 @@ public class PsDetailFragment extends Fragment {
 
     protected class AddressDialog extends DialogFragment {
         private final List<String> addresses;
+        final EditText addressEditText;
 
-        public AddressDialog(List<String> addresses) {
+        public AddressDialog(List<String> addresses, EditText addressEditText) {
             this.addresses = addresses;
+            this.addressEditText = addressEditText;
         }
 
         @Override
@@ -458,7 +459,6 @@ public class PsDetailFragment extends Fragment {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
 
-                                    EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
                                     long addressId = mHistoryManager.getAddressId(mHistoryItem.getResult()
                                             .getAccount(), which);
 
@@ -484,7 +484,6 @@ public class PsDetailFragment extends Fragment {
                         public void onClick(DialogInterface dialogInterface, int i) {
                             mHistoryItem.update(new HistoryItem.Builder(mHistoryItem).setAddressId(-1)
                                     .create(mHistoryManager));
-                            EditText addressEditText = (EditText) getView().findViewById(R.id.result_address);
                             addressEditText.setText(mHistoryItem.getAddress());
                         }
                     })
