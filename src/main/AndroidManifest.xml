@@ -17,8 +17,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="ch.luklanis.esscan"
           android:installLocation="auto"
-          android:versionCode="41"
-          android:versionName="0.8.14">
+          android:versionCode="42"
+          android:versionName="0.8.15">
 
 <uses-sdk
         android:minSdkVersion="11"

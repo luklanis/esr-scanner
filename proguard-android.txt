@@ -15,9 +15,6 @@
 -keep class javax.crypto.** { *; }
 -keep interface javax.crypto.** { *; }
 
--keep class javax.jmdns.JmDNS { *; }
--keep interface javax.jmdns.ServiceInfo { *; }
-
 -keep class org.bouncycastle.** { *; }
 -keep interface org.bouncycastle.** { *; }
 -keep enum org.bouncycastle.** { *; }
@@ -25,5 +22,7 @@
 -keep class com.google.gson.** { *; }
 -keep class org.java-websocket.** { *; }
 -keep class com.koushikdutta.** { *; }
+
+-keep class ch.luklanis.esscan.** { *; }
 
 -dontwarn javax.naming.**
