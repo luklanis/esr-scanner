@@ -483,11 +483,6 @@ public final class HistoryActivity extends EsrBaseActivity
         return false;
     }
 
-    @Override
-    public IEsrSender getEsrSender() {
-        return mEsrSenderHttp;
-    }
-
     private void setNewDetails(int position) {
         Bundle arguments = new Bundle();
         arguments.putInt(PsDetailFragment.ARG_POSITION, position);

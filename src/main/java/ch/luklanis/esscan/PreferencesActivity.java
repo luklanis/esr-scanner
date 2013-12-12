@@ -98,7 +98,6 @@ public class PreferencesActivity extends PreferenceActivity
     public static final String KEY_BUTTON_RESTORE = "preferences_button_restore";
     public static final String KEY_SERVER_PORT = "preferences_server_port";
     private static final String TAG = PreferencesActivity.class.getName();
-
     private static BankProfile.SaveBankProfileCallback sSaveBankProfileCallback;
 
     /**
@@ -116,6 +115,10 @@ public class PreferencesActivity extends PreferenceActivity
 //
 //        addPreferencesFromResource(R.xml.preferences);
 //    }
+    public static void setSaveBankProfileCallback(
+            BankProfile.SaveBankProfileCallback saveBankProfileCallback) {
+        sSaveBankProfileCallback = saveBankProfileCallback;
+    }
 
     /**
      * Interface definition for a callback to be invoked when a shared
@@ -227,6 +230,18 @@ public class PreferencesActivity extends PreferenceActivity
         loadHeadersFromResource(R.xml.preference_headers, target);
     }
 
+    @Override
+    protected boolean isValidFragment(String fragmentName) {
+        if (StreamFragment.class.getName().equals(fragmentName) ||
+                AdvancedFragment.class.getName().equals(fragmentName) ||
+                BackupFragment.class.getName().equals(fragmentName) ||
+                DtaFormatFragment.class.getName().equals(fragmentName)) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * This fragment shows the preferences for the first header.
      */
@@ -238,11 +253,6 @@ public class PreferencesActivity extends PreferenceActivity
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.fragmented_stream);
         }
-    }
-
-    public static void setSaveBankProfileCallback(
-            BankProfile.SaveBankProfileCallback saveBankProfileCallback) {
-        sSaveBankProfileCallback = saveBankProfileCallback;
     }
 
     /**

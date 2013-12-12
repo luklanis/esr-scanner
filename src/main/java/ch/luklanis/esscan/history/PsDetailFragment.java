@@ -70,13 +70,19 @@ public class PsDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         mHistoryManager = new HistoryManager(getActivity().getApplicationContext());
+        mHistoryItem = null;
+        mListPosition = -1;
 
         if (getArguments().containsKey(ARG_POSITION)) {
             mListPosition = getArguments().getInt(ARG_POSITION);
             mHistoryItem = mHistoryManager.buildHistoryItem(mListPosition);
-        } else {
-            mHistoryItem = null;
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        changeSendFunctionality();
     }
 
     @Override
@@ -135,22 +141,6 @@ public class PsDetailFragment extends Fragment {
 
             TextView referenceTextView = (TextView) rootView.findViewById(R.id.result_reference_number);
             referenceTextView.setText(result.getReference());
-
-            EsrBaseActivity getSendServiceCallback = (EsrBaseActivity) getActivity();
-            final IEsrSender esrSender = getSendServiceCallback.getEsrSender();
-            if (esrSender != null) {
-                referenceTextView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        send(SEND_COMPONENT_REFERENCE, esrSender);
-                    }
-                });
-
-                referenceTextView.setTypeface(null, Typeface.BOLD | Typeface.ITALIC);
-            } else {
-                referenceTextView.setTextAppearance(getActivity(),
-                        android.R.attr.textAppearanceSmall);
-            }
 
             reasonTextView.setVisibility(View.GONE);
             reasonEditText.setVisibility(View.GONE);
@@ -213,6 +203,25 @@ public class PsDetailFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+    private void changeSendFunctionality() {
+        TextView referenceTextView = (TextView) getView().findViewById(R.id.result_reference_number);
+        final EsrBaseActivity getSendServiceCallback = (EsrBaseActivity) getActivity();
+        final IEsrSender esrSender = getSendServiceCallback.getEsrSender();
+        if (esrSender != null) {
+            referenceTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    getSendServiceCallback.showSendingProgressDialog();
+                    send(SEND_COMPONENT_REFERENCE, esrSender, mListPosition);
+                }
+            });
+
+            referenceTextView.setTypeface(null, Typeface.BOLD | Typeface.ITALIC);
+        } else {
+            referenceTextView.setTextAppearance(getActivity(), android.R.attr.textAppearanceSmall);
+        }
     }
 
     private void setBankProfileText(final TextView bankViewText) {

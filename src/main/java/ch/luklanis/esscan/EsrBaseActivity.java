@@ -122,6 +122,14 @@ public abstract class EsrBaseActivity extends Activity
         return mEsrSenderHttp;
     }
 
+    public void showSendingProgressDialog() {
+        mSendingProgressDialog.show();
+    }
+
+    public void dismissSendingProgressDialog() {
+        mSendingProgressDialog.dismiss();
+    }
+
     protected abstract Handler getDataSentHandler();
 
     protected DialogFragment setOkAlert(int id) {
