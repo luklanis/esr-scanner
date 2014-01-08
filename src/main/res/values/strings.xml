@@ -189,5 +189,6 @@
     <string name="preferences_default_bank_summary">Select default bank profile</string>
     <string name="msg_bank_profile_needs_name">The new bank profile needs a name</string>
     <string name="msg_how_to_enable_stream_mode">If you\'d like to use the payment stream mode, you have to set username/password in Preferences.</string>
+    <string name="preferences_copy_part_summary">This option becomes active in payment slip stream mode and scanning over notification</string>
 
 </resources>

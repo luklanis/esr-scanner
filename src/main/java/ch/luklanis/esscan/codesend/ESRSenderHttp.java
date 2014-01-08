@@ -97,7 +97,7 @@ public class ESRSenderHttp implements IEsrSender {
 
                                     if (mDataSentHandler != null) {
                                         Message message = Message.obtain(mDataSentHandler,
-                                                result.equals("OK") ? R.id.es_send_succeeded : R.id.es_send_failed);
+                                                "OK".equals(result) ? R.id.es_send_succeeded : R.id.es_send_failed);
                                         message.obj = itemId;
                                         message.arg1 = position;
                                         message.sendToTarget();

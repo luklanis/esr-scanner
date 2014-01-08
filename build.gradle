@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.6.3'
+        classpath 'com.android.tools.build:gradle:0.7.+'
     }
 }
 
@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     compile 'com.android.support:support-v4:18.0.+'
-    compile 'com.koushikdutta.ion:ion:1.1.5'
+    compile 'com.koushikdutta.ion:ion:1.2.0'
     compile 'com.google.code.gson:gson:2.2.4'
     compile 'org.bouncycastle:bcprov-jdk15on:1.49'
 
@@ -78,7 +78,7 @@ android {
 }
 
 task wrapper(type: org.gradle.api.tasks.wrapper.Wrapper) {
-    gradleVersion = '1.8'
+    gradleVersion = '1.9'
 }
 //
 //task copyNativeLibs(type: Copy) {

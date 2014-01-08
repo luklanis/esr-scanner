@@ -103,7 +103,7 @@ public class PreferencesActivity extends PreferenceActivity
     /**
      * Set the default preference values.
      *
-     * @param savedInstanceState the current Activity's state, as passed by
+     * @param saveBankProfileCallback the current Activity's state, as passed by
      *                           Android
      */
 //    @Override

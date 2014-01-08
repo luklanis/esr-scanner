@@ -75,10 +75,10 @@
         <ListPreference
             android:key="preferences_copy_part"
             android:title="@string/preferences_copy_part_title"
+            android:summary="@string/preferences_copy_part_summary"
             android:entries="@array/copy_part"
             android:entryValues="@array/copy_part_values"
-            android:defaultValue="0"
-            android:dependency="preferences_only_copy"/>
+            android:defaultValue="0"/>
 
         <CheckBoxPreference
             android:defaultValue="true"

@@ -552,24 +552,27 @@ public final class CaptureActivity extends EsrBaseActivity
     public void showResult(PsResult psResult) {
         mBeepManager.playBeepSoundAndVibrate();
 
+        String toCopy = psResult.getCompleteCode();
+
+        if (psResult.getType()
+                .equals(EsrResult.PS_TYPE_NAME) && PreferenceManager.getDefaultSharedPreferences(
+                this).getString(PreferencesActivity.KEY_COPY_PART, "0").equals("0")) {
+            EsrResult esrResult = (EsrResult) psResult;
+            toCopy = esrResult.getReference();
+        }
+
         if (mEnableStreamMode && getEsrSender() != null) {
             mSendingProgressDialog.show();
-            String completeCode = psResult.getCompleteCode();
-            int indexOfNewline = completeCode.indexOf('\n');
+            int indexOfNewline = toCopy.indexOf('\n');
             if (indexOfNewline < 0) {
-                getEsrSender().sendToListener(completeCode);
+                getEsrSender().sendToListener(toCopy);
             } else {
-                getEsrSender().sendToListener(completeCode.substring(0, indexOfNewline));
+                getEsrSender().sendToListener(toCopy.substring(0, indexOfNewline));
             }
             return;
         }
 
         if (sCopyAndReturn) {
-            EsrResult esrResult = (EsrResult) psResult;
-            String toCopy = PreferenceManager.getDefaultSharedPreferences(this)
-                    .getString(PreferencesActivity.KEY_COPY_PART, "0")
-                    .equals("0") ? esrResult.getCompleteCode() : esrResult.getReference();
-
             addCodeRowToClipboard(toCopy);
 
             finish();
