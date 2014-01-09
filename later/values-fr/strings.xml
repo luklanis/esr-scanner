@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ Copyright (C) 2010 ZXing authors
+ Copyright (C) 2012 Lukas Landis
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+
+-->
+<resources>
+
+    <string name="app_name">Scanner ERS</string>
+    <string name="address_dialog_title">Sélectionner adresse</string>
+    <string name="address_new">Saisir nouvelle adresse</string>
+    <string name="alert_title_information">Information</string>
+    <string name="alert_dont_show_again">Ne pas montrer à nouveau</string>
+    <string name="button_cancel">Annuler</string>
+    <string name="button_ok">OK</string>
+    <string name="button_save">Enregistrer</string>
+    <string name="button_export_again">Encore une fois</string>
+    <string name="button_change">Autre</string>
+    <string name="button_copy_code_row">Copier ligne de code</string>
+    <string name="button_send_code_row">Envoyez ligne de code</string>
+    <string name="button_send_reference_number">Envoyez numéro de référence</string>
+    <string name="button_switch_ime">Changer de méthode de saisie</string>
+    <string name="detail_title">Détails</string>
+    <string name="help_button_done">Fermer</string>
+    <string name="help_button_back">Retour</string>
+    <string name="history_clear_text">Tout effacer</string>
+    <string name="history_item_sent">Envoyé par WIFI</string>
+    <string name="history_send_dta">DTA</string>
+    <string name="history_send_dta_wlan">Récepteur ESR</string>
+    <string name="history_send_dta_email">E-mail</string>
+    <string name="history_send_dta_other">autres…</string>
+    <string name="history_send_dta_save">seulement sauvegarder</string>
+    <string name="history_send">CSV</string>
+    <string name="history_email_title">Historique du scanner ESR</string>
+    <string name="history_share_as_dta_title">Ordre de paiement transmis par le scanner ESR</string>
+    <string name="history_share_as_dta_summary">DTA devrait être annexé.
+        Si ce n\'est pas le cas, alors ceci n\'est pas supporté par l\'application e-mail.
+        Veuillez ajouter le fichier \&quot;%s\&quot; manuellement.
+    </string>
+    <string name="history_title">Historique</string>
+    <string name="history_clear_one_history_text">Effacer le bulletin de dépôt</string>
+    <string name="history_empty">Vide</string>
+    <string name="history_empty_detail">Jusqu\'à présent, aucun bulletin de dépôt n\'a été scanné
+    </string>
+    <string name="menu_about">À propos de</string>
+    <string name="menu_help">Aide</string>
+    <string name="menu_history">Historique</string>
+    <string name="menu_settings">Paramètres</string>
+    <string name="menu_search">Rechercher</string>
+    <string name="menu_switch_ps">Changer le type de bulletin de dépôt</string>
+    <string name="menu_switch_stream_mode">Lecteur de documents</string>
+    <string name="msg_sure">Es-tu sûr ?</string>
+    <string name="msg_unmount_usb">Désolé, la carte SD n\'est pas accessible</string>
+    <string name="msg_address_line_to_long_20">Le format DTA permet seulement 20 caractères par
+        ligne et 4 lignes en tout. Le surplus sera coupé lors de l\'exportation.
+    </string>
+    <string name="msg_address_line_to_long_24">Le format DTA permet seulement 24 caractères par
+        ligne et 4 lignes en tout. Le surplus sera coupé lors de l\'exportation.
+    </string>
+    <string name="msg_saved">Sauvegarde réussie !</string>
+    <string name="msg_dta_saved">Le fichier DTA a été enregistré dans %s</string>
+    <string name="msg_database_saved">Sauvegarde des données réussie !</string>
+    <string name="msg_database_restored">Récupération des données réussi !</string>
+    <string name="msg_click_ok_to_export_again">Click ok if you want to include this payment in the
+        next exported DTA.
+    </string>
+    <string name="msg_copied">Copie réussie !</string>
+    <string name="msg_not_copied">Le résultat n\'a malheureusement pas pu être copié dans le
+        presse-papiers !
+    </string>
+    <string name="msg_nothing_to_export">Tous les paiements ont déjà été exportés.</string>
+    <string name="msg_amount_not_valid">Montant n\'est pas valide.</string>
+    <string name="msg_no_email_client">Aucune application de messagerie n\'a été trouvée</string>
+    <string name="msg_amount_is_empty">Veuillez saisir le montant pour %s.</string>
+    <string name="msg_own_iban_is_not_set">Pour créer un ordre de paiement, votre propre IBAN est
+        requis. Tu peux le spécifier dans les paramètres.
+    </string>
+    <string name="msg_own_iban_is_not_valid">L\'IBAN n\'est pas valide. Il doit être de Suisse et le
+        cryptogramme doit être correct.
+    </string>
+    <string name="msg_own_address_is_not_set">Pour créer un ordre de paiement, ta propre adresse est
+        nécessaire. Tu peux le spécifier dans les paramètres.
+    </string>
+    <string name="msg_stream_mode_not_available">Mode de lecteur de document n\'est possible que sur
+        le réseau local.
+    </string>
+    <string name="msg_coderow_saved">La ligne de code a été sauvegardée !</string>
+    <string name="msg_coderow_sent">La ligne de code a été envoyée !</string>
+    <string name="msg_coderow_not_sent">La ligne de code ne peut pas être envoyée. Nom
+        d\'utilisateur et mot de passe sont corrects?
+    </string>
+    <string name="msg_confirm_delete_payment_title">Supprimer le paiement</string>
+    <string name="msg_confirm_delete_message">Le paiement doit-il être effacé ?</string>
+    <string name="msg_reason_line_to_long">Le format DTA permet seulement 28 caractères par ligne et
+        4 lignes en tout. Le surplus sera coupé lors de l\'exportation.
+    </string>
+    <string name="msg_send_over_http_not_possible">Envoyer ligne de code n\'est pas possible!
+    </string>
+    <string name="msg_unsupported_field">Le champ d\'entrée sélectionné ne correspond pas au nombre
+        de caractères requis !
+    </string>
+    <string name="msg_unsupported_orientation">Le scanner ESR ne fonctionne qu\'en orientation
+        paysage. Veuillez basculer le dispositif !
+    </string>
+    <string name="msg_touch_to_focus">Touchez l\'écran pour focaliser !</string>
+    <string name="msg_wait_title">Attendez s\'il vous plaît.</string>
+    <string name="msg_wait_sending">Verrouille et envoie la ligne de code&#8230;</string>
+    <string name="notif_scan_to_clipboard_title">Scanner l\'ESR dans le presse-papiers</string>
+    <string name="notif_scan_to_clipboard_summary">Sélectionner pour scanner un ESR directement dans
+        le presse papier
+    </string>
+    <string name="picture">Une petite image d\'un bulletin de versement orange</string>
+    <string name="preferences_only_macro_focus_title">Mise au point macro</string>
+    <string name="preferences_copy_part_title">Section des résultats à copier</string>
+    <string name="preferences_no_continous_auto_focus_title">Pas de mise au point automatique en
+        continu
+    </string>
+    <string name="preferences_no_continous_auto_focus_summary">Il suffit d\'utiliser la mise au
+        point automatique par défaut
+    </string>
+    <string name="preferences_enable_torch_title">Lumière avant</string>
+    <string name="preferences_dta_format_title">Paramètres DTA</string>
+    <string name="preferences_advanced_title">Paramètres avancés</string>
+    <string name="preferences_play_beep_title">Écouter le son bip</string>
+    <string name="preferences_character_whitelist_title">Symbole de la liste blanche</string>
+    <string name="preferences_reverse_image_title">Tourner l\'image de l\'appareil photo</string>
+    <string name="preferences_reverse_image_summary">L\'activation des dispositifs ayant seulement
+        une caméra frontale.
+    </string>
+    <string name="preferences_address_title">Ton adresse</string>
+    <string name="preferences_address_summary">Au moins le nom et le prénom et, sur la deuxième
+        ligne, le code postal et la ville
+    </string>
+    <string name="preferences_iban_title">Ton IBAN</string>
+    <string name="preferences_vibrate_title">Vibration</string>
+    <string name="preferences_execution_day_title">Date d\'exécution</string>
+    <string name="preferences_execution_day_summary">Jour du mois auquel tous les paiements doivent
+        être effectués
+    </string>
+    <string name="preferences_email_address_title">Adresse e-mail par défaut</string>
+    <string name="preferences_email_address_summary"></string>
+    <string name="preferences_enable_stream_mode_title">Passer en mode de lecteur de document
+    </string>
+    <string name="preferences_enable_stream_mode_summary">Envoie le paiement saisi directement à
+        votre ordinateur
+    </string>
+    <string name="preferences_backup_restore_title">Sauvegarde / Restauration</string>
+    <string name="preferences_backup_title">Sauvegarder</string>
+    <string name="preferences_backup_summary">Cliquez ici pour créer une copie de la base de données
+        et des paramètres sur le stockage externe.
+    </string>
+    <string name="preferences_restore_title">dans la barre standard.</string>
+    <string name="preferences_restore_summary">Cliquez ici pour restaurer les paramètres et la base
+        de données à partir d\'une copie créée précédemment. Toutes les données seront écrasées.
+    </string>
+    <string name="preferences_only_copy_title">Copier le résultat de la notification</string>
+    <string name="preferences_only_copy_summary">Si cela est activé, une notification sera affichée
+        lorsque l\'on quitte le scanner ESR et les scans seront transmis directement dans le
+        presse-papiers.
+    </string>
+    <string name="preferences_password_title">Mot de passe</string>
+    <string name="preferences_password_summary">Mot de passe pour crypter la ligne de code</string>
+    <string name="preferences_show_ocr_result_title">Afficher le résultat OCR</string>
+    <string name="preferences_show_scan_result_summary">Si cette option est désactivée, le scanner
+        ESR reste en mode de scanner et de ne perdra pas la mise au point.
+        Veuillez vérifier le paiement avant de l\'effectuer !
+    </string>
+    <string name="preferences_show_scan_result_title">Ouvrir l\'historique après chaque scan
+    </string>
+    <string name="preferences_username_title">Nom d\'utilisateur</string>
+    <string name="preferences_username_summary">S\'il vous plaît utilisez votre adresse électronique
+        comme nom d\'utilisateur
+    </string>
+    <string name="result_account">Compte</string>
+    <string name="result_address">Destinataire</string>
+    <string name="result_amount_not_set">0.00</string>
+    <string name="result_exported_dta">Paiement exporté dans le fichier</string>
+    <string name="result_reference_number">Numéro de référence</string>
+    <string name="result_reason">Référence</string>
+    <string name="scanner_ime_label">Scanner ESR IME</string>
+    <string name="status_view_ip_address">Adresse(s) IP : %s</string>
+    <string name="status_stream_mode_active">Mode de lecteur de document est actif le\n%1$s:%2$d
+    </string>
+    <string name="subtype_esr_label">Scanner ESR IME</string>
+    <string name="bank_profile_iban">IBAN</string>
+
+</resources>

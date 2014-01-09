@@ -28,7 +28,7 @@ android {
     buildToolsVersion "19"
 
     defaultConfig {
-        minSdkVersion 11
+        minSdkVersion 13
         targetSdkVersion 19
 
         testPackageName "ch.luklanis.esscan.test"
@@ -74,6 +74,11 @@ android {
             proguardFile 'proguard-android.txt'
             signingConfig signingConfigs.release
         }
+    }
+
+    lintOptions {
+        // turn off checking the given issue id's
+        disable 'InvalidPackage'
     }
 }
 

@@ -23,11 +23,12 @@
     <string name="address_new">Enter a new address</string>
     <string name="alert_title_information">Information</string>
     <string name="alert_dont_show_again">Don\'t show again!</string>
-    <string name="bank_profile_default">Default</string>
     <string name="dialog_bank_profile_title">Bank profiles</string>
     <string name="bank_profile_name">Name</string>
     <string name="button_cancel">Cancel</string>
+    <string name="button_choose">Choose</string>
     <string name="button_ok">OK</string>
+    <string name="button_new">New</string>
     <string name="button_save">Save</string>
     <string name="button_export_again">Again</string>
     <string name="button_change">Change</string>
@@ -179,8 +180,6 @@
     <string name="status_view_ip_address">IP Address(es):%s</string>
     <string name="status_stream_mode_active">Payment slip stream mode active on\n%1$s:%2$d</string>
     <string name="subtype_esr_label">ESR Scanner IME</string>
-    <string name="button_new">New</string>
-    <string name="button_choose">Choose</string>
     <string name="bank_profile_iban">IBAN</string>
     <string name="preferences_bank_profile_title">Bank profiles</string>
     <string name="button_edit">Edit</string>
