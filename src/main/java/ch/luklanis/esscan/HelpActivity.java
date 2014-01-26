@@ -60,8 +60,7 @@ public final class HelpActivity extends Activity {
     private static final String BASE_HELP_URL;
 
     private static final Collection<String> TRANSLATED_HELP_ASSET_LANGUAGES = Arrays.asList("en",
-            "de",
-            "fr");
+            "de");
 
     private static final String BASE_URL = "file:///android_asset/html";
 

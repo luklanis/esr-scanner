@@ -235,7 +235,9 @@ public class PreferencesActivity extends PreferenceActivity
         if (StreamFragment.class.getName().equals(fragmentName) ||
                 AdvancedFragment.class.getName().equals(fragmentName) ||
                 BackupFragment.class.getName().equals(fragmentName) ||
-                DtaFormatFragment.class.getName().equals(fragmentName)) {
+                DtaFormatFragment.class.getName().equals(fragmentName) ||
+                EditBankProfileFragment.class.getName().equals(fragmentName) ||
+                NewBankProfileFragment.class.getName().equals(fragmentName)) {
             return true;
         }
 
@@ -306,7 +308,7 @@ public class PreferencesActivity extends PreferenceActivity
      * This fragment contains a second-level set of preference that you
      * can get to by tapping an item in the first preferences fragment.
      */
-    public static class NewBankProfile extends PreferenceFragment {
+    public static class NewBankProfileFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -374,7 +376,7 @@ public class PreferencesActivity extends PreferenceActivity
      * This fragment contains a second-level set of preference that you
      * can get to by tapping an item in the first preferences fragment.
      */
-    public static class EditBankProfile extends PreferenceFragment {
+    public static class EditBankProfileFragment extends PreferenceFragment {
         private String mBankProfileNumber;
         private EditTextPreference mNamePreference;
         private EditTextPreference mIbanPreference;

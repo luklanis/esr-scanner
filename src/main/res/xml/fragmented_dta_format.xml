@@ -31,12 +31,12 @@
             android:defaultValue="0"/>
 
         <PreferenceScreen
-            android:fragment="ch.luklanis.esscan.PreferencesActivity$NewBankProfile"
+            android:fragment="ch.luklanis.esscan.PreferencesActivity$NewBankProfileFragment"
             android:title="@string/preferences_new_bank_profile"/>
 
         <PreferenceScreen
             android:key="preferences_bank_profile_edit"
-            android:fragment="ch.luklanis.esscan.PreferencesActivity$EditBankProfile"
+            android:fragment="ch.luklanis.esscan.PreferencesActivity$EditBankProfileFragment"
             android:title="@string/preferences_edit_bank_profile"/>
 
     </PreferenceCategory>
