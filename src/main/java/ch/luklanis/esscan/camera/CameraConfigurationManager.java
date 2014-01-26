@@ -74,13 +74,13 @@ final class CameraConfigurationManager {
         Display display = ((WindowManager) mPreviewView.getContext()
                 .getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 
-        int screenWidth = display.getWidth();
-        int screenHeight = display.getHeight();
+        //int screenWidth = display.getWidth();
+        //int screenHeight = display.getHeight();
 
         // uncomment when removing support for API < 13
-//		display.getSize(sScreenResolution);
-//		int screenWidth = sScreenResolution.x;
-//		int screenHeight = sScreenResolution.y;
+        display.getSize(sScreenResolution);
+        int screenWidth = sScreenResolution.x;
+        int screenHeight = sScreenResolution.y;
 
         // We're landscape-only, and have apparently seen issues with display
         // thinking it's portrait
