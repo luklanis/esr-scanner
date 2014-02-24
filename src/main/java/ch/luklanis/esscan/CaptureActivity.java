@@ -556,7 +556,7 @@ public final class CaptureActivity extends EsrBaseActivity
 
         if (psResult.getType()
                 .equals(EsrResult.PS_TYPE_NAME) && PreferenceManager.getDefaultSharedPreferences(
-                this).getString(PreferencesActivity.KEY_COPY_PART, "0").equals("0")) {
+                this).getString(PreferencesActivity.KEY_COPY_PART, "0").equals("1")) {
             EsrResult esrResult = (EsrResult) psResult;
             toCopy = esrResult.getReference();
         }

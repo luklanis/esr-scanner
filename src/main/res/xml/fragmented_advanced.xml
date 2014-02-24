@@ -12,8 +12,8 @@
         android:title="@string/preferences_copy_part_title"
         android:entries="@array/copy_part"
         android:entryValues="@array/copy_part_values"
-        android:defaultValue="0"
-        android:dependency="preferences_only_copy"/>
+        android:defaultValue="0"/>
+    <!--android:dependency="preferences_only_copy"/>-->
 
     <CheckBoxPreference
         android:defaultValue="true"
