@@ -68,7 +68,7 @@ final class CameraConfigurationManager {
     void initFromCameraParameters(Camera camera) {
         Camera.Parameters parameters = camera.getParameters();
 
-        int previewWidth = mPreviewView.getWidth();
+        // int previewWidth = mPreviewView.getWidth();
         int previewHeight = mPreviewView.getHeight();
 
         Display display = ((WindowManager) mPreviewView.getContext()
@@ -101,17 +101,21 @@ final class CameraConfigurationManager {
         // so we had to take notice of it in offset calculation
         this.mHeightDiff = screenHeight - previewHeight;
 
-        if (previewWidth <= previewHeight) {
-            Log.i(TAG, "Display reports portrait orientation; assuming this is incorrect");
-            previewWidth = screenWidth;
+//        if (previewWidth <= previewHeight) {
+//            Log.i(TAG, "Display reports portrait orientation; assuming this is incorrect");
+//
+//            mHeightDiff = screenWidth - previewHeight;
+//            previewHeight = (screenHeight - mHeightDiff);
+//        }
 
-            this.mHeightDiff = screenWidth - previewHeight;
-        }
+        int previewWidth = screenWidth;
 
         cameraResolution = findBestPreviewSizeValue(parameters, sScreenResolution, false);
 
         LayoutParams params = mPreviewView.getLayoutParams();
-        params.height = screenHeight;
+        //params.height = screenHeight;
+        params.height = previewHeight;
+        params.width = previewWidth;
         mPreviewView.setLayoutParams(params);
 
         previewHeight = screenHeight;
