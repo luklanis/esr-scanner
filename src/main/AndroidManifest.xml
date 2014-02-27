@@ -54,7 +54,7 @@
         android:theme="@android:style/Theme.Holo">
         <activity
             android:name=".CaptureActivity"
-            android:configChanges="keyboardHidden|orientation"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="landscape"
             android:uiOptions="splitActionBarWhenNarrow"
             android:windowSoftInputMode="stateAlwaysHidden">
