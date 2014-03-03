@@ -21,6 +21,7 @@ import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -181,9 +182,14 @@ public abstract class EsrBaseActivity extends Activity
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return new AlertDialog.Builder(getActivity()).setTitle(title)
                     .setMessage(message)
-                    .setOnCancelListener(new FinishListener(getActivity()))
                     .setPositiveButton("Done", new FinishListener(getActivity()))
                     .create();
+        }
+
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            super.onCancel(dialog);
+            getActivity().finish();
         }
     }
 }
