@@ -1,10 +1,16 @@
+# DIRS
+/build/
+/thirdparty/*
+/.gradle/
+/.idea/
+
+# add gradle build example for thirdpartys
+!/thirdparty/build.gradle
+
+# local and temp files
 *.swp
 *~
 *.suo
 *.iml
 local.properties
 gradle.properties
-build/
-thirdparty/
-.gradle/
-.idea/
