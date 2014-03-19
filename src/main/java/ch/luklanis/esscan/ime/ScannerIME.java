@@ -389,7 +389,6 @@ public class ScannerIME extends InputMethodService
                 ocrResult.getWordConfidences(),
                 ocrResult.getMeanConfidence(),
                 ocrResult.getBitmapDimensions(),
-                ocrResult.getCharacterBoundingBoxes(),
                 ocrResult.getWordBoundingBoxes(),
                 ocrResult.getTextlineBoundingBoxes(),
                 ocrResult.getRegionBoundingBoxes()));

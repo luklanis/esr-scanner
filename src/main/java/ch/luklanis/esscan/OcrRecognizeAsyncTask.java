@@ -105,7 +105,6 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, PsValidation
 
         // Get bounding boxes for characters and words
         List<Rect> wordBoxes = baseApi.getWords().getBoxRects();
-        List<Rect> characterBoxes = baseApi.getCharacters().getBoxRects();
         List<Rect> textlineBoxes = baseApi.getTextlines().getBoxRects();
         List<Rect> regionBoxes = baseApi.getRegions().getBoxRects();
 
@@ -138,7 +137,6 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, PsValidation
                 textResult,
                 wordConfidences,
                 overallConf,
-                characterBoxes,
                 textlineBoxes,
                 wordBoxes,
                 regionBoxes,

@@ -30,19 +30,17 @@ public final class OcrResultText {
     private final int meanConfidence;
     private final Point bitmapDimensions;
     private final List<Rect> wordBoundingBoxes;
-    private final List<Rect> characterBoundingBoxes;
     private final List<Rect> textlineBoundingBoxes;
     private final List<Rect> regionBoundingBoxes;
 
     public OcrResultText(String text, int[] wordConfidences, int meanConfidence,
-                         Point bitmapDimensions, List<Rect> characterBoundingBoxes,
+                         Point bitmapDimensions,
                          List<Rect> wordBoundingBoxes, List<Rect> textlineBoundingBoxes,
                          List<Rect> regionBoundingBoxes) {
         this.text = text;
         this.wordConfidences = wordConfidences;
         this.meanConfidence = meanConfidence;
         this.bitmapDimensions = bitmapDimensions;
-        this.characterBoundingBoxes = characterBoundingBoxes;
         this.wordBoundingBoxes = wordBoundingBoxes;
         this.textlineBoundingBoxes = textlineBoundingBoxes;
         this.regionBoundingBoxes = regionBoundingBoxes;
@@ -62,10 +60,6 @@ public final class OcrResultText {
 
     public int getMeanConfidence() {
         return meanConfidence;
-    }
-
-    public List<Rect> getCharacterBoundingBoxes() {
-        return characterBoundingBoxes;
     }
 
     public List<Rect> getTextlineBoundingBoxes() {

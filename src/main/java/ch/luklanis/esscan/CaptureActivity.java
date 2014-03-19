@@ -637,7 +637,6 @@ public final class CaptureActivity extends EsrBaseActivity
                 ocrResult.getWordConfidences(),
                 ocrResult.getMeanConfidence(),
                 ocrResult.getBitmapDimensions(),
-                ocrResult.getCharacterBoundingBoxes(),
                 ocrResult.getWordBoundingBoxes(),
                 ocrResult.getTextlineBoundingBoxes(),
                 ocrResult.getRegionBoundingBoxes()));

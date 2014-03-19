@@ -35,7 +35,6 @@ public final class OcrResult {
     private final int meanConfidence;
 
     private final List<Rect> wordBoundingBoxes;
-    private final List<Rect> characterBoundingBoxes;
     private final List<Rect> textlineBoundingBoxes;
     private final List<Rect> regionBoundingBoxes;
 
@@ -45,14 +44,13 @@ public final class OcrResult {
     private final Paint paint;
 
     public OcrResult(Bitmap bitmap, String text, int[] wordConfidences, int meanConfidence,
-                     List<Rect> characterBoundingBoxes, List<Rect> textlineBoundingBoxes,
+                     List<Rect> textlineBoundingBoxes,
                      List<Rect> wordBoundingBoxes, List<Rect> regionBoxes,
                      long recognitionTimeRequired) {
         this.bitmap = bitmap;
         this.text = text;
         this.wordConfidences = wordConfidences;
         this.meanConfidence = meanConfidence;
-        this.characterBoundingBoxes = characterBoundingBoxes;
         this.textlineBoundingBoxes = textlineBoundingBoxes;
         this.wordBoundingBoxes = wordBoundingBoxes;
         this.regionBoundingBoxes = regionBoxes;
@@ -63,7 +61,7 @@ public final class OcrResult {
     }
 
     public Bitmap getBitmap() {
-        if (characterBoundingBoxes.isEmpty()) {
+        if (wordBoundingBoxes.isEmpty()) {
             return bitmap;
         } else {
             return getAnnotatedBitmap();
@@ -113,10 +111,6 @@ public final class OcrResult {
 
     public Point getBitmapDimensions() {
         return new Point(bitmap.getWidth(), bitmap.getHeight());
-    }
-
-    public List<Rect> getCharacterBoundingBoxes() {
-        return characterBoundingBoxes;
     }
 
     public List<Rect> getTextlineBoundingBoxes() {
