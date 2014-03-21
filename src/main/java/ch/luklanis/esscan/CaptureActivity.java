@@ -64,7 +64,7 @@ import ch.luklanis.esscan.history.BankProfile;
 import ch.luklanis.esscan.history.HistoryActivity;
 import ch.luklanis.esscan.history.HistoryItem;
 import ch.luklanis.esscan.history.HistoryManager;
-import ch.luklanis.esscan.paymentslip.EsResult;
+import ch.luklanis.esscan.paymentslip.EsIbanResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
@@ -98,7 +98,8 @@ public final class CaptureActivity extends EsrBaseActivity
     private static final String SOURCE_LANGUAGE_CODE_OCR = "psl";
     private static final String SOURCE_LANGUAGE_READABLE = "payment slip";
 
-    private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE;
+    //    private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_LINE;
+    private static final int PAGE_SEGMENTATION_MODE = TessBaseAPI.PageSegMode.PSM_SINGLE_BLOCK;
     private static final String CHARACTER_WHITELIST = "0123456789>+";
 
     private static final int NOTIFICATION_ID = 1;
@@ -351,7 +352,7 @@ public final class CaptureActivity extends EsrBaseActivity
                             .apply();
 
                     clearIPAddresses();
-                    if (mPsValidation.getSpokenType().equals(EsResult.PS_TYPE_NAME)) {
+                    if (mPsValidation.getSpokenType().equals(EsIbanResult.PS_TYPE_NAME)) {
                         mPsValidation = new EsrValidation();
                     }
                     resetStatusView();

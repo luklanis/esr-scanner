@@ -40,7 +40,7 @@ import java.util.List;
 
 import ch.luklanis.esscan.CaptureActivity;
 import ch.luklanis.esscan.PreferencesActivity;
-import ch.luklanis.esscan.paymentslip.EsResult;
+import ch.luklanis.esscan.paymentslip.EsIbanResult;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
 /**
@@ -238,8 +238,8 @@ public final class HistoryManager {
 
                 PsResult result = PsResult.getInstance(code_row, timestamp);
 
-                if (result instanceof EsResult) {
-                    ((EsResult) result).setReason(reason);
+                if (result instanceof EsIbanResult) {
+                    ((EsIbanResult) result).setReason(reason);
                 }
 
                 HistoryItem item = new HistoryItem.Builder().setItemId(itemId)
@@ -277,8 +277,8 @@ public final class HistoryManager {
 
                 PsResult result = PsResult.getInstance(codeRow, timestamp);
 
-                if (result instanceof EsResult) {
-                    ((EsResult) result).setReason(reason);
+                if (result instanceof EsIbanResult) {
+                    ((EsIbanResult) result).setReason(reason);
                 }
 
                 HistoryItem item = new HistoryItem.Builder().setItemId(itemId)

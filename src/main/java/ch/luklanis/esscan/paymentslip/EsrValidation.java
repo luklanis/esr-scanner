@@ -96,7 +96,7 @@ public class EsrValidation extends PsValidation {
             return null;
         }
 
-        relatedText = text.replaceAll("\\s", "");
+        relatedText = removeUnneededChars(text);
 
         if (currentStep > 0) {
             int indexOfControlCharBefore = relatedText.indexOf(String.valueOf(CONTROL_CHARS_IN_STEP[currentStep - 1]));

@@ -119,12 +119,12 @@ public class DTAFileCreator {
                 reason = new String[0];
                 account = esrResult.getAccountUnformated();
             } else {
-                EsResult esResult = (EsResult) filteredHistoryItem.get(i).getResult();
-                referenzNumber = esResult.getReference();
-                clearing = esResult.getClearing();
-                psResult = esResult;
+                EsIbanResult esIbanResult = (EsIbanResult) filteredHistoryItem.get(i).getResult();
+                referenzNumber = esIbanResult.getReference();
+                clearing = esIbanResult.getClearing();
+                psResult = esIbanResult;
 
-                String reasonInOneLine = esResult.getReason();
+                String reasonInOneLine = esIbanResult.getReason();
                 reason = reasonInOneLine != null ? reasonInOneLine.split(NEWLINE_PATTERN) : new String[0];
             }
 
@@ -170,9 +170,9 @@ public class DTAFileCreator {
                     .append(spacePaddedEnd("", 6))
                             // Valuta (Blanks in ESR and ES)
                     .append(psResult.getCurrency())
-                    .append(spacePaddedEnd(amount.replace('.', ','), 12))
-                    .append(spacePaddedEnd("", 14))
-                            // Reserve
+                    .append(spacePaddedEnd(amount.replace('.', ','), 12)).append(spacePaddedEnd("",
+                    14))
+                    // Reserve
                     .append("02")
                             // Begin Segment 02
                     .append(spacePaddedEnd(ownAddress[0], 20))
@@ -329,7 +329,8 @@ public class DTAFileCreator {
         return validateAddress(address,
                 psResult.getMaxAddressLength(),
                 psResult.getType()
-                        .equals(EsrResult.PS_TYPE_NAME) ? R.string.msg_address_line_to_long_20 : R.string.msg_address_line_to_long_24);
+                        .equals(EsrResult.PS_TYPE_NAME) ? R.string.msg_address_line_to_long_20 : R.string.msg_address_line_to_long_24
+        );
     }
 
     public static int validateAddress(String address) {

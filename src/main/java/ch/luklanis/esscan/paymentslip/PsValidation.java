@@ -99,6 +99,10 @@ public abstract class PsValidation {
         return result;
     }
 
+    protected String removeUnneededChars(String text) {
+        return text.replaceAll("\\s", "").replaceAll("\\n", "");
+    }
+
     public abstract boolean validate(String text);
 
     public abstract String getRelatedText();

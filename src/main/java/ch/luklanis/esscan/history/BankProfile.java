@@ -108,7 +108,7 @@ public class BankProfile {
     public static int validateIBAN(String iban) {
         iban = iban.replaceAll("[\\s\\r\\n]+", "");
 
-        if (iban == "") {
+        if (iban.equals("")) {
             return R.string.msg_own_iban_is_not_valid;
         }
 

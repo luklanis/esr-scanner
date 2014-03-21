@@ -16,8 +16,8 @@ package ch.luklanis.esscan.test;/*
 
 import junit.framework.TestCase;
 
+import ch.luklanis.esscan.paymentslip.EsIbanResult;
 import ch.luklanis.esscan.paymentslip.EsIbanValidation;
-import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
@@ -123,11 +123,11 @@ public class PaymentSlipTest extends TestCase {
 
         PsResult esResult = PsResult.getInstance(
                 "000000000000001234567890128+ 070888854>\n800009393>");
-        assertTrue("Should be an instance of EsResult", esResult instanceof EsResult);
+        assertTrue("Should be an instance of EsIbanResult", esResult instanceof EsIbanResult);
         assertEquals("Account", "80-939-3", esResult.getAccount());
         assertEquals("Reference",
                 "000000000000001234567890128",
-                ((EsResult) esResult).getReference());
-        assertEquals("Clearing", "070888854", ((EsResult) esResult).getClearing());
+                ((EsIbanResult) esResult).getReference());
+        assertEquals("Clearing", "070888854", ((EsIbanResult) esResult).getClearing());
     }
 }

@@ -30,7 +30,7 @@ import ch.luklanis.esscan.codesend.IEsrSender;
 import ch.luklanis.esscan.dialogs.BankProfileListDialog;
 import ch.luklanis.esscan.dialogs.CancelOkDialog;
 import ch.luklanis.esscan.paymentslip.DTAFileCreator;
-import ch.luklanis.esscan.paymentslip.EsResult;
+import ch.luklanis.esscan.paymentslip.EsIbanResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.PsResult;
 
@@ -144,8 +144,8 @@ public class PsDetailFragment extends Fragment {
 
             reasonTextView.setVisibility(View.GONE);
             reasonEditText.setVisibility(View.GONE);
-        } else if (psResult instanceof EsResult) {
-            EsResult result = (EsResult) psResult;
+        } else if (psResult instanceof EsIbanResult) {
+            EsIbanResult result = (EsIbanResult) psResult;
 
             TextView currencyTextView = (TextView) rootView.findViewById(R.id.result_currency);
             currencyTextView.setText("CHF");
@@ -251,7 +251,7 @@ public class PsDetailFragment extends Fragment {
 
         PsResult result = PsResult.getInstance(mHistoryItem.getResult().getCompleteCode());
 
-        if (result instanceof EsResult || TextUtils.isEmpty(((EsrResult) result).getAmount())) {
+        if (result instanceof EsIbanResult || TextUtils.isEmpty(((EsrResult) result).getAmount())) {
             EditText amountEditText = (EditText) getView().findViewById(R.id.result_amount_edit);
             String newAmount = amountEditText.getText().toString().replace(',', '.');
             try {
@@ -342,7 +342,8 @@ public class PsDetailFragment extends Fragment {
         }
 
         new AddressDialog(addresses, (EditText) view.findViewById(R.id.result_address)).show(
-                getFragmentManager(), "PsDetailFragment.showAddressDialog");
+                getFragmentManager(),
+                "PsDetailFragment.showAddressDialog");
     }
 
     private void showBankProfileChoiceDialog() {
@@ -486,7 +487,8 @@ public class PsDetailFragment extends Fragment {
                                         toast.show();
                                     }
                                 }
-                            })
+                            }
+                    )
                     .setNeutralButton(R.string.button_cancel, null)
                     .setPositiveButton(R.string.address_new, new DialogInterface.OnClickListener() {
                         @Override

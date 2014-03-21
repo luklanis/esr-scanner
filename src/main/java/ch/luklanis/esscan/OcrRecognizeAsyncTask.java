@@ -27,8 +27,8 @@ import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.util.List;
 
+import ch.luklanis.esscan.paymentslip.EsIbanResult;
 import ch.luklanis.esscan.paymentslip.EsIbanValidation;
-import ch.luklanis.esscan.paymentslip.EsResult;
 import ch.luklanis.esscan.paymentslip.EsrResult;
 import ch.luklanis.esscan.paymentslip.EsrValidation;
 import ch.luklanis.esscan.paymentslip.PsResult;
@@ -157,7 +157,7 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, PsValidation
 
                 String completeCode = validation.getCompleteCode();
                 PsResult psResult = validation.getSpokenType()
-                        .equals(EsrResult.PS_TYPE_NAME) ? new EsrResult(completeCode) : new EsResult(
+                        .equals(EsrResult.PS_TYPE_NAME) ? new EsrResult(completeCode) : new EsIbanResult(
                         completeCode);
 
                 Message message = Message.obtain(handler, R.id.es_decode_succeeded, psResult);

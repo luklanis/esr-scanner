@@ -32,7 +32,7 @@ public abstract class PsResult {
             return timestamp == 0 ? new EsrResult(completeCode) : new EsrResult(completeCode,
                     timestamp);
         } else {
-            return timestamp == 0 ? new EsResult(completeCode) : new EsResult(completeCode,
+            return timestamp == 0 ? new EsIbanResult(completeCode) : new EsIbanResult(completeCode,
                     timestamp);
         }
     }
@@ -59,7 +59,7 @@ public abstract class PsResult {
         int plusLocation = completeCodeRow.indexOf("+");
         int greaterThanLocation = completeCodeRow.indexOf(">");
 
-        return (plusLocation > greaterThanLocation) ? EsrResult.PS_TYPE_NAME : EsResult.PS_TYPE_NAME;
+        return (plusLocation > greaterThanLocation) ? EsrResult.PS_TYPE_NAME : EsIbanResult.PS_TYPE_NAME;
     }
 
     public String getType() {

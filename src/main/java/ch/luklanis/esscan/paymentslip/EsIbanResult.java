@@ -18,23 +18,23 @@ package ch.luklanis.esscan.paymentslip;
 /**
  * Encapsulates the result of OCR.
  */
-public final class EsResult extends PsResult {
+public final class EsIbanResult extends PsResult {
 
     public static final String PS_TYPE_NAME = "red";
 
     private String reason;
 
-    public EsResult(String completeCode) {
+    public EsIbanResult(String completeCode) {
         super(completeCode);
         reason = "";
     }
 
-    public EsResult(String completeCode, long timestamp) {
+    public EsIbanResult(String completeCode, long timestamp) {
         super(completeCode, timestamp);
         reason = "";
     }
 
-    public EsResult(String completeCode, String reason, long timestamp) {
+    public EsIbanResult(String completeCode, String reason, long timestamp) {
         super(completeCode, timestamp);
         this.reason = reason;
     }

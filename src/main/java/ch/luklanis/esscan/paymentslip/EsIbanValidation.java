@@ -78,7 +78,7 @@ public class EsIbanValidation extends PsValidation {
             return null;
         }
 
-        relatedText = text.replaceAll("\\s", "");
+        relatedText = removeUnneededChars(text);
 
         if (currentStep == 1) {
             int indexOfControlCharBefore = relatedText.indexOf(String.valueOf(CONTROL_CHARS_IN_STEP[currentStep - 1]));
@@ -123,7 +123,7 @@ public class EsIbanValidation extends PsValidation {
 
     @Override
     public String getSpokenType() {
-        return EsResult.PS_TYPE_NAME;
+        return EsIbanResult.PS_TYPE_NAME;
     }
 
     @Override
