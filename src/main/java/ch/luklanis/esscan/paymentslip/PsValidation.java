@@ -100,7 +100,7 @@ public abstract class PsValidation {
     }
 
     protected String removeUnneededChars(String text) {
-        return text.replaceAll("\\s", "").replaceAll("\\n", "");
+        return text.replaceAll("[\\s\\r\\n]+", "");
     }
 
     public abstract boolean validate(String text);
