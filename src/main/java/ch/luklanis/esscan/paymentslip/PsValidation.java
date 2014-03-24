@@ -18,11 +18,15 @@ package ch.luklanis.esscan.paymentslip;
 public abstract class PsValidation {
     private static final int STEP_COUNT = 1;
 
+    protected static final char SEPERATOR = '|';
+
     protected static final int[][] MODULO10 = {{0, 9, 4, 6, 8, 2, 7, 1, 3, 5}, {9, 4, 6, 8, 2, 7, 1, 3, 5, 0}, {4, 6, 8, 2, 7, 1, 3, 5, 0, 9}, {6, 8, 2, 7, 1, 3, 5, 0, 9, 4}, {8, 2, 7, 1, 3, 5, 0, 9, 4, 6}, {2, 7, 1, 3, 5, 0, 9, 4, 6, 8}, {7, 1, 3, 5, 0, 9, 4, 6, 8, 2}, {1, 3, 5, 0, 9, 4, 6, 8, 2, 7}, {3, 5, 0, 9, 4, 6, 8, 2, 7, 1}, {5, 0, 9, 4, 6, 8, 2, 7, 1, 3}};
 
     protected static final int[] CHECK_DIGIT = {0, 9, 8, 7, 6, 5, 4, 3, 2, 1};
 
     protected int currentStep;
+    protected int indexOfCurrentControlChar;
+    protected int indexOfControlCharBefore;
 
     protected String relatedText;
     protected boolean finished;
@@ -52,6 +56,9 @@ public abstract class PsValidation {
     }
 
     public boolean nextStep() {
+        indexOfControlCharBefore = indexOfCurrentControlChar;
+        indexOfCurrentControlChar = 0;
+
         if (currentStep < getStepCount() - 1) {
             currentStep++;
             relatedText = null;
@@ -71,6 +78,18 @@ public abstract class PsValidation {
 
     public boolean finished() {
         return finished;
+    }
+
+    public boolean hasNonDigts(String text, int length) throws Exception {
+        for (int i = 0; i < length; i++) {
+            int digit = text.charAt(i) - '0';
+
+            if (digit < 0 || digit > 9) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public int[] getDigitsFromText(String text, int length) throws Exception {
@@ -99,19 +118,35 @@ public abstract class PsValidation {
         return result;
     }
 
-    protected String removeUnneededChars(String text) {
-        return text.replaceAll("[\\s\\r\\n]+", "");
+    protected void resetStartSearchIndexes() {
+        indexOfCurrentControlChar = 0;
+        indexOfControlCharBefore = 0;
+    }
+
+    protected String preformatText(String text) {
+        return SEPERATOR + text.replaceAll("\\+\\s", "+")
+                .replaceAll("[\\s\\r\\n]+", String.valueOf(SEPERATOR));
+    }
+
+    protected void resetCompleteCode() {
+        resetStartSearchIndexes();
+
+        if (completeCode == null) {
+            return;
+        }
+
+        for (int i = 0; i < completeCode.length; i++) {
+            completeCode[i] = null;
+        }
     }
 
     public abstract boolean validate(String text);
 
-    public abstract String getRelatedText();
+    public abstract String getCurrentRelatedText();
 
-    public abstract String getRelatedText(String text);
+    public abstract String getNextRelatedText(String text);
 
     public abstract String getSpokenType();
-
-    protected abstract void resetCompleteCode();
 
     protected abstract boolean additionalStepTest(String related);
 }

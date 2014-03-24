@@ -39,25 +39,42 @@ public class EsrValidation extends PsValidation {
     @Override
     public boolean validate(String text) {
         try {
+            resetStartSearchIndexes();
+            text = preformatText(text);
             // Log.d(TAG, String.format("text: %s", text));
-            String related = getRelatedText(text);
-            // Log.d(TAG, String.format("related: %s", related));
+            String related;
+            while (!(related = getNextRelatedText(text)).isEmpty()) {
+                // Log.d(TAG, String.format("related: %s", related));
 
-            if (related.charAt(related.length() - 1) != CONTROL_CHARS_IN_STEP[currentStep] || (related
-                    .length() != VALID_LENGTHS_IN_STEP[currentStep][0] && related.length() != VALID_LENGTHS_IN_STEP[currentStep][1])) {
-                return false;
-            }
+                for (int validLength : VALID_LENGTHS_IN_STEP[currentStep]) {
+                    if (validLength == -1 || related.length() < (validLength + 1)) {
+                        continue;
+                    }
 
-            int[] digits = getDigitsFromText(related, related.length() - 1);
-            int[] withoutCheckDigit = new int[digits.length - 1];
+                    if (related.charAt(related.length() - (validLength + 1)) != (currentStep > 0 ? CONTROL_CHARS_IN_STEP[currentStep - 1] : SEPERATOR)) {
+                        continue;
+                    }
 
-            System.arraycopy(digits, 0, withoutCheckDigit, 0, withoutCheckDigit.length);
+                    String possiblePart = related.substring(related.length() - validLength,
+                            related.length());
 
-            int checkDigit = getCheckDigit(withoutCheckDigit);
+                    if (hasNonDigts(possiblePart, possiblePart.length() - 1)) {
+                        continue;
+                    }
 
-            if (checkDigit == digits[digits.length - 1] && additionalStepTest(related)) {
-                completeCode[currentStep] = String.format(STEP_FORMAT[currentStep], related);
-                return true;
+                    int[] digits = getDigitsFromText(possiblePart, possiblePart.length() - 1);
+                    int[] withoutCheckDigit = new int[digits.length - 1];
+
+                    System.arraycopy(digits, 0, withoutCheckDigit, 0, withoutCheckDigit.length);
+
+                    int checkDigit = getCheckDigit(withoutCheckDigit);
+
+                    if (checkDigit == digits[digits.length - 1] && additionalStepTest(possiblePart)) {
+                        completeCode[currentStep] = String.format(STEP_FORMAT[currentStep],
+                                possiblePart);
+                        return true;
+                    }
+                }
             }
         } catch (Exception exc) {
             Log.e(TAG, exc.toString());
@@ -86,44 +103,39 @@ public class EsrValidation extends PsValidation {
     }
 
     @Override
-    public String getRelatedText() {
+    public String getCurrentRelatedText() {
         return relatedText;
     }
 
     @Override
-    public String getRelatedText(String text) {
+    public String getNextRelatedText(String text) {
         if (text == null || text == "") {
-            return null;
+            return "";
         }
 
-        relatedText = removeUnneededChars(text);
+        relatedText = text;
 
-        if (currentStep > 0) {
-            int indexOfControlCharBefore = relatedText.indexOf(String.valueOf(CONTROL_CHARS_IN_STEP[currentStep - 1]));
+//        if (currentStep > 0) {
+//            indexOfControlCharBefore = relatedText.indexOf(String.valueOf(CONTROL_CHARS_IN_STEP[currentStep - 1]), indexOfControlCharBefore);
+//
+//            if (indexOfControlCharBefore != -1 && indexOfControlCharBefore < (relatedText.length() - 1)) {
+//                relatedText = relatedText.substring(indexOfControlCharBefore + 1);
+//            } else {
+//                return "";
+//            }
+//        }
 
-            if (indexOfControlCharBefore != -1 && indexOfControlCharBefore < (relatedText.length() - 1)) {
-                relatedText = relatedText.substring(indexOfControlCharBefore + 1);
-            }
-        }
+//        indexOfCurrentControlChar = relatedText.indexOf(String.valueOf(CONTROL_CHARS_IN_STEP[currentStep]), indexOfControlCharBefore + indexOfCurrentControlChar + 1);
+        indexOfCurrentControlChar = relatedText.indexOf(String.valueOf(CONTROL_CHARS_IN_STEP[currentStep]),
+                indexOfCurrentControlChar + 1);
 
-        int indexOfCurrentControlChar = relatedText.indexOf(String.valueOf(CONTROL_CHARS_IN_STEP[currentStep]));
-
-        if (indexOfCurrentControlChar != -1 && indexOfCurrentControlChar != (relatedText.length() - 1)) {
+        if (indexOfCurrentControlChar != -1) {
             relatedText = relatedText.substring(0, indexOfCurrentControlChar + 1);
+        } else {
+            return "";
         }
 
         return relatedText;
-    }
-
-    @Override
-    public void resetCompleteCode() {
-        if (completeCode == null) {
-            return;
-        }
-
-        for (int i = 0; i < completeCode.length; i++) {
-            completeCode[i] = null;
-        }
     }
 
     @Override
