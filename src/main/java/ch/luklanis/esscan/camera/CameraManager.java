@@ -49,7 +49,7 @@ public final class CameraManager {
 
     public static final double FRAME_WIDTH_INCHES = 3.5;
     //    public static final double FRAME_HEIGHT_INCHES = 0.23;
-    public static final double FRAME_HEIGHT_INCHES = 0.3;
+    public static final double FRAME_HEIGHT_INCHES = 0.4;
 
     private final View mPreviewView;
     private final CameraConfigurationManager mConfigManager;

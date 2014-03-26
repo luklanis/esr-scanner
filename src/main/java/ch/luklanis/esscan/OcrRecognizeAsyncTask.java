@@ -23,6 +23,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.googlecode.leptonica.android.Binarize;
+import com.googlecode.leptonica.android.Pix;
+import com.googlecode.leptonica.android.ReadFile;
 import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.util.List;
@@ -73,10 +76,16 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, PsValidation
         start = System.currentTimeMillis();
         end = start;
 
+        Pix thresholdedImage = Binarize.otsuAdaptiveThreshold(ReadFile.readBitmap(bitmap));
+        Log.e("OcrRecognizeAsyncTask",
+                "thresholding completed. converting to bmp. size:" + bitmap.getWidth() + "x" + bitmap
+                        .getHeight()
+        );
+
         try {
             // Log.i("OcrRecognizeAsyncTask",
             // "converted to bitmap. doing setImage()...");
-            baseApi.setImage(bitmap);
+            baseApi.setImage(thresholdedImage);
 
             // Log.i("OcrRecognizeAsyncTask", "setImage() completed");
             textResult = baseApi.getUTF8Text();
