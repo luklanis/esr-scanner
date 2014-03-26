@@ -69,6 +69,7 @@ public final class ViewfinderView extends View {
     private Rect rect;
 
     private Rect bounds;
+    private boolean mShowDebugOutput;
 
     // This constructor is used when the class is built from an XML resource.
     public ViewfinderView(Context context, AttributeSet attrs) {
@@ -83,6 +84,8 @@ public final class ViewfinderView extends View {
         previewFrame = new Rect();
         rect = new Rect();
         bounds = new Rect();
+
+        mShowDebugOutput = false;
     }
 
     public void setCameraManager(CameraManager cameraManager) {
@@ -112,7 +115,7 @@ public final class ViewfinderView extends View {
         canvas.drawRect(0, frame.bottom + 1, width, height, paint);
 
         // If we have an OCR result, overlay its information on the viewfinder.
-        if (resultText != null) {
+        if (resultText != null && mShowDebugOutput) {
 
             // Only draw text/bounding boxes on viewfinder if it hasn't been resized since the OCR was requested.
             Point bitmapSize = resultText.getBitmapDimensions();
@@ -232,5 +235,9 @@ public final class ViewfinderView extends View {
      */
     public void removeResultText() {
         resultText = null;
+    }
+
+    public void setmShowDebugOutput(boolean mShowDebugOutput) {
+        this.mShowDebugOutput = mShowDebugOutput;
     }
 }

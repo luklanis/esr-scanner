@@ -49,7 +49,7 @@
 
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="preferences_show_ocr_result"
+        android:key="preferences_show_debug_output"
         android:title="@string/preferences_show_ocr_result_title"/>
 
     <CheckBoxPreference

@@ -90,7 +90,7 @@ public class PreferencesActivity extends PreferenceActivity
     public static final String KEY_PLAY_BEEP = "preferences_play_beep";
     public static final String KEY_VIBRATE = "preferences_vibrate";
     public static final String KEY_HELP_VERSION_SHOWN = "preferences_help_version_shown";
-    public static final String KEY_SHOW_OCR_RESULT_PREFERENCE = "preferences_show_ocr_result";
+    public static final String KEY_SHOW_DEBUG_OUTPUT_PREFERENCE = "preferences_show_debug_output";
     public static final String KEY_SHOW_SCAN_RESULT_PREFERENCE = "preferences_show_scan_result";
     public static final String KEY_NOT_SHOW_ALERT = "preferences_not_show_alertid_";
     public static final String KEY_ENABLE_STREAM_MODE = "preferences_enable_stream_mode";

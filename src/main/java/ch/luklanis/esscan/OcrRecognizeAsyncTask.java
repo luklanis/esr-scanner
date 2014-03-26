@@ -77,10 +77,6 @@ final class OcrRecognizeAsyncTask extends AsyncTask<String, String, PsValidation
         end = start;
 
         Pix thresholdedImage = Binarize.otsuAdaptiveThreshold(ReadFile.readBitmap(bitmap));
-        Log.e("OcrRecognizeAsyncTask",
-                "thresholding completed. converting to bmp. size:" + bitmap.getWidth() + "x" + bitmap
-                        .getHeight()
-        );
 
         try {
             // Log.i("OcrRecognizeAsyncTask",

@@ -126,7 +126,7 @@ public final class CaptureActivity extends EsrBaseActivity
 
     private int mLastValidationStep;
 
-    private boolean mShowOcrResult;
+    private boolean mShowDebugOutput;
     private boolean mEnableStreamMode;
 
     private TextView mStatusViewBottomRight;
@@ -146,7 +146,7 @@ public final class CaptureActivity extends EsrBaseActivity
 
         Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
-        mShowOcrResult = false;
+        mShowDebugOutput = false;
 
         mHasSurface = false;
         mHistoryManager = new HistoryManager(getApplicationContext());
@@ -702,12 +702,13 @@ public final class CaptureActivity extends EsrBaseActivity
 
         mStatusViewBottomLeft.setText("");
 
-        if (mShowOcrResult) {
+        if (mShowDebugOutput) {
             mStatusViewBottomLeft.setVisibility(View.VISIBLE);
         }
 
         mViewfinderView.removeResultText();
         mViewfinderView.setVisibility(View.VISIBLE);
+        mViewfinderView.setmShowDebugOutput(mShowDebugOutput);
 
         Log.i(TAG, "resetStatusView: set lastItem to null");
         mViewfinderView.removeResultText();
@@ -829,7 +830,7 @@ public final class CaptureActivity extends EsrBaseActivity
         // preferences
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-        mShowOcrResult = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_OCR_RESULT_PREFERENCE,
+        mShowDebugOutput = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_DEBUG_OUTPUT_PREFERENCE,
                 false);
 
         mShowScanResult = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_SCAN_RESULT_PREFERENCE,

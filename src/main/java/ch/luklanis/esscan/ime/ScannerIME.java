@@ -528,7 +528,7 @@ public class ScannerIME extends InputMethodService
         mSharedPreferences.registerOnSharedPreferenceChangeListener(
                 mOnSharedPreferenceChangeListener);
 
-        mShowOcrResult = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_OCR_RESULT_PREFERENCE,
+        mShowOcrResult = mSharedPreferences.getBoolean(PreferencesActivity.KEY_SHOW_DEBUG_OUTPUT_PREFERENCE,
                 false);
 
         mBeepManager.updatePrefs();

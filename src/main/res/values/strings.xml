@@ -160,7 +160,7 @@
     </string>
     <string name="preferences_password_title">Password</string>
     <string name="preferences_password_summary">Password to encrypt code row</string>
-    <string name="preferences_show_ocr_result_title">Show OCR result</string>
+    <string name="preferences_show_ocr_result_title">Show debug output</string>
     <string name="preferences_show_scan_result_summary">If disabled, the ESR Scanner stays in the
         scan mode and doesn\'t loose the focus.
         But please check the payment before execute.
