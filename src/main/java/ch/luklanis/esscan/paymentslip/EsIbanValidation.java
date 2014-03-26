@@ -51,7 +51,7 @@ public class EsIbanValidation extends PsValidation {
                         continue;
                     }
 
-                    if (related.charAt(related.length() - (validLength + 1)) != (currentStep > 0 ? CONTROL_CHARS_IN_STEP[currentStep - 1] : SEPERATOR)) {
+                    if (related.charAt(related.length() - (validLength + 1)) != (currentStep == 1 ? CONTROL_CHARS_IN_STEP[currentStep - 1] : SEPERATOR)) {
                         continue;
                     }
 
