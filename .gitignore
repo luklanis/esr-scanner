@@ -1,6 +1,6 @@
 # DIRS
 /build/
-/thirdparty/*
+/tess-two/*
 /.gradle/
 /.idea/
 
